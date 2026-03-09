@@ -1,69 +1,175 @@
 # Connector Catalogue
 
-**Pre-shipped connector implementations for ModelMesh Lite.** Each section covers one connector type with descriptions, free-tier limits, and provider links. Custom connectors register in the same catalogue and receive identical treatment (see [Developer Manual](README.md#connector-based-extensibility)).
+**Pre-shipped connector implementations for ModelMesh Lite.** Each section lists available implementations for one connector type. Individual connector documentation is in [connectors/](connectors/openai-llm.md). Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.md). Custom connectors implement the same interfaces and register in the same catalogue (see [Developer Manual](SystemConcept.md#connector-based-extensibility)).
+
+> **Building custom connectors?** The [Connector Development Kit](cdk/Overview.md) provides base classes and tutorials for creating new connectors with minimal code.
 
 > Pricing and availability change frequently; consult each provider's documentation for current details.
 
 ---
 
-## AI Model Providers
+## Naming Convention
 
-Provider connectors expose AI models through a uniform OpenAI-compatible interface. ModelMesh Lite ships with connectors for: **OpenAI**, **Gemini**, **HuggingFace**, **OpenRouter**, and **Cloudflare Workers AI**. The remaining providers below are supported through custom or community connectors.
+Every connector has a globally unique identifier following the pattern:
+
+```
+connector_type.vendor.service.version
+```
+
+| Segment | Description | Examples |
+| --- | --- | --- |
+| **connector_type** | Connector category | `provider`, `rotation`, `secret-store`, `storage`, `observability`, `discovery` |
+| **vendor** | Company or organization; `modelmesh` for built-in connectors | `openai`, `aws`, `google`, `modelmesh` |
+| **service** | Capability hint (providers) or service name (others) | `llm`, `image-gen`, `tts`, `secrets-manager`, `s3` |
+| **version** | Version tag | `v1`, `v2` |
+
+In YAML configuration, the `connector_type.` prefix is omitted within its own section (e.g., under `providers:`, write `openai.llm.v1` instead of `provider.openai.llm.v1`).
+
+---
+
+## Provider Connectors
+
+Interface: [ConnectorInterfaces.md — Provider](ConnectorInterfaces.md#provider)
+
+ModelMesh Lite ships with provider connectors for: **OpenAI** (`provider.openai.llm.v1`), **Gemini** (`provider.google.gemini.v1`), **HuggingFace** (`provider.huggingface.inference.v1`), **OpenRouter** (`provider.openrouter.gateway.v1`), and **Cloudflare Workers AI** (`provider.cloudflare.workers-ai.v1`). The remaining providers below are supported through custom or community connectors.
+
+### Provider Capability Format
+
+Provider connectors (OpenAI, Anthropic, and others) declare model capabilities using **dot-notation paths** that reference the [capability hierarchy](ModelCapabilities.md). Short-form capability names (`"chat"`, `"tools"`, `"vision"`) are no longer used; capabilities now map directly to tree nodes such as `generation.text-generation.chat-completion`. Features like tool calling, vision, and system prompt support are declared separately in a `features` dict.
+
+**Before (short-form, deprecated):**
+
+```python
+ModelInfo(
+    id="gpt-4o",
+    capabilities=["chat", "tools", "vision"],
+)
+```
+
+**After (dot-notation):**
+
+```python
+ModelInfo(
+    id="gpt-4o",
+    capabilities=["generation.text-generation.chat-completion"],
+    features={"tool_calling": True, "vision": True, "system_prompt": True},
+)
+```
+
+The provider-level `capabilities` config follows the same convention. For example, both `provider.openai.llm.v1` and `provider.anthropic.llm.v1` declare `capabilities=["generation.text-generation.chat-completion"]` instead of the former `["chat"]`.
+
+> **Auto-discovery of model capabilities:** When a model defined in configuration does not declare `capabilities`, ModelMesh queries the provider connector's `list_models()` method to resolve them automatically. If the provider returns per-model capability information, those capabilities are used. Otherwise, the provider-level `get_capabilities()` is used as a fallback. This means most configurations only need to specify a provider and model ID; capabilities are inferred from the connector.
+
+### Pool Definition Modes
+
+Pools support three definition modes (see also [SystemConfiguration.md -- Pools](SystemConfiguration.md#pools)):
+
+| Mode | Config Fields | Behaviour |
+| --- | --- | --- |
+| **Capability-based** | `capability` | Pool targets a capability node. Models whose resolved capabilities overlap with that node (or its descendants) are matched automatically. |
+| **Explicit models** | `models` | Pool contains a fixed list of model IDs. No capability matching is performed. |
+| **Hybrid** | `capability` + `models` | Capability matching discovers models automatically, and the explicit `models` list adds additional entries on top. |
+
+```yaml
+pools:
+  # Capability-based: all models with chat-completion capability
+  text-generation:
+    capability: generation.text-generation.chat-completion
+    strategy: modelmesh.cost-first.v1
+
+  # Explicit models: hand-picked model IDs only
+  premium-chat:
+    models: [gpt-4o, claude-sonnet-4-20250514]
+    strategy: modelmesh.priority-selection.v1
+
+  # Hybrid: capability matching plus extra models
+  code-review:
+    capability: generation.text-generation.code-generation
+    models: [gpt-4o]
+    strategy: modelmesh.priority-selection.v1
+```
 
 ### General-Purpose LLM Providers
 
-| Provider | Description | Key Models | Free Tier | Docs |
-| --- | --- | --- | --- | --- |
-| **OpenAI** | Full-stack AI platform. Broadest capability set of any single provider. | GPT-5.2, GPT-5.2 Pro, GPT-5 mini, GPT-5 nano, Whisper, text-embedding-3-small/large, omni-moderation-latest | ~10 messages/5h (GPT-5.2 Instant); moderation API free; $5 initial credits | [developers.openai.com/api](https://developers.openai.com/api) |
-| **Anthropic** | Safety-focused LLM provider. Strong at reasoning, code, and long-context tasks. | Claude Opus 4.5, Claude Sonnet 4.5, Claude Haiku 4.5 | ~30-100 messages/day (no Opus); 90% cached token discount | [docs.anthropic.com](https://docs.anthropic.com) |
-| **Google Gemini** | Google's multimodal AI family. Largest context windows (up to 1M tokens). | Gemini 3.1 Pro, Gemini 3 Flash, Gemini 2.5 Pro/Flash | Generous rate-limited tier; no credit card required; 1M context included | [ai.google.dev/gemini-api](https://ai.google.dev/gemini-api) |
-| **xAI (Grok)** | High-performance models with real-time data access via X integration. | Grok 4, Grok 4.1 Fast (2M context) | $25 signup credits; $150/month via data sharing | [docs.x.ai/developers](https://docs.x.ai/developers) |
-| **DeepSeek** | Ultra-low-cost reasoning and chat. Strongest price-to-performance ratio. | DeepSeek V3.2 (chat), DeepSeek R1 (reasoning) | 5M tokens for new accounts (30-day expiry); off-peak 75% discount | [api-docs.deepseek.com](https://api-docs.deepseek.com) |
-| **Mistral AI** | European AI lab with efficient open-weight and proprietary models. | Mistral Large, Mistral Small 3.1 (vision), Nemo, Codestral, Mistral Embed | Rate-limited access to all models; no credit card required | [docs.mistral.ai](https://docs.mistral.ai) |
-| **Cohere** | Enterprise-focused: text understanding, embeddings, and retrieval. | Command R+, Command R, Embed 4 (multimodal), Rerank 3.5 | 1,000 calls/month; 5-20 calls/min; non-production only | [docs.cohere.com](https://docs.cohere.com) |
-| **Perplexity (Sonar)** | Search-augmented AI. Grounded answers with real-time web data and citations. | Sonar, Sonar Pro, Sonar Reasoning Pro | No free API tier; Pro subscribers get $5/month credits | [docs.perplexity.ai](https://docs.perplexity.ai) |
+| Provider | ID | Description | Key Models | Free Tier | Docs |
+| --- | --- | --- | --- | --- | --- |
+| **OpenAI** | `provider.openai.llm.v1` | Full-stack AI platform. Broadest capability set of any single provider. | GPT-4o, GPT-4.1, GPT-4.1 mini/nano, o3, o3-mini, o4-mini, DALL-E 3, Whisper, TTS-1, text-embedding-3-small/large, text-moderation-latest | Moderation API free; $5 initial credits | [developers.openai.com/api](https://developers.openai.com/api) |
+| **Anthropic** | `provider.anthropic.llm.v1` | Safety-focused LLM provider. Strong at reasoning, code, and long-context tasks. | Claude Opus 4, Claude Sonnet 4, Claude 3.7 Sonnet, Claude 3.5 Haiku, Claude 3.5 Sonnet | ~30-100 messages/day (no Opus); 90% cached token discount | [docs.anthropic.com](https://docs.anthropic.com) |
+| **Google Gemini** | `provider.google.gemini.v1` | Google's multimodal AI family. Largest context windows (up to 1M tokens). | Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.0 Flash, Gemini 2.0 Flash Lite, Gemini 1.5 Pro/Flash | Generous rate-limited tier; no credit card required; 1M context included | [ai.google.dev/gemini-api](https://ai.google.dev/gemini-api) |
+| **xAI (Grok)** | `provider.xai.grok.v1` | High-performance models with real-time data access via X integration. | Grok 3, Grok 3 Mini, Grok 3 Fast, Grok 2, Grok 2 Vision | $25 signup credits; $150/month via data sharing | [docs.x.ai/developers](https://docs.x.ai/developers) |
+| **DeepSeek** | `provider.deepseek.llm.v1` | Ultra-low-cost reasoning and chat. Strongest price-to-performance ratio. | DeepSeek Chat, DeepSeek Reasoner | 5M tokens for new accounts (30-day expiry); off-peak 75% discount | [api-docs.deepseek.com](https://api-docs.deepseek.com) |
+| **Mistral AI** | `provider.mistral.llm.v1` | European AI lab with efficient open-weight and proprietary models. | Mistral Large, Mistral Small, Mistral Nemo, Codestral, Mistral Embed | Rate-limited access to all models; no credit card required | [docs.mistral.ai](https://docs.mistral.ai) |
+| **Cohere** | `provider.cohere.nlp.v1` | Enterprise-focused: text understanding, embeddings, and retrieval. | Command R+, Command R, Command A, Embed v4, Embed v3 (English/Multilingual), Rerank v3.5 | 1,000 calls/month; 5-20 calls/min; non-production only | [docs.cohere.com](https://docs.cohere.com) |
+| **Perplexity (Sonar)** | `provider.perplexity.search.v1` | Search-augmented AI. Grounded answers with real-time web data and citations. | Sonar, Sonar Pro, Sonar Reasoning, Sonar Reasoning Pro | No free API tier; Pro subscribers get $5/month credits | [docs.perplexity.ai](https://docs.perplexity.ai) |
 
 ### Media Generation Providers
 
-| Provider | Description | Key Models | Free Tier | Docs |
-| --- | --- | --- | --- | --- |
-| **Stability AI** | Pioneer in open image generation models. | Stable Diffusion 3.5, SDXL, Stable Image Core | 25-200 credits on signup (~100-200 images); community license (revenue < $1M) | [platform.stability.ai/docs](https://platform.stability.ai/docs) |
-| **fal.ai** | Fast media generation API. Specializes in image and video. | Flux, Kling 3.0, Ideogram V3, Stable Diffusion, HaiLuo (video) | Free credits for new users; pay-per-image thereafter | [docs.fal.ai](https://docs.fal.ai) |
-| **Replicate** | Run any open-source model via API. Pay-per-second billing. | Flux, SDXL, Stable Video, Whisper, Llama 3, Wan 2.1 (video) | Limited free predictions; no credit card required | [replicate.com/docs](https://replicate.com/docs) |
-| **ElevenLabs** | Leading voice AI. Realistic speech synthesis and voice cloning. | Multilingual v2, Turbo v2.5, Flash (low-latency) | 10,000 chars/month (~20 min audio); 3 custom voices; non-commercial | [elevenlabs.io/docs](https://elevenlabs.io/docs) |
-| **AssemblyAI** | Speech intelligence platform. Transcription with built-in NLU. | Universal, Universal-Streaming, conformer-based | $50 credits (~185h transcription); one-time, non-recurring | [www.assemblyai.com/docs](https://www.assemblyai.com/docs) |
+| Provider | ID | Description | Key Models | Free Tier | Docs |
+| --- | --- | --- | --- | --- | --- |
+| **Stability AI** | `provider.stability.image-gen.v1` | Pioneer in open image generation models. | SD 3.5 Large/Medium/Turbo, Stable Image Core, Stable Image Ultra | 25-200 credits on signup (~100-200 images); community license (revenue < $1M) | [platform.stability.ai/docs](https://platform.stability.ai/docs) |
+| **fal.ai** | `provider.fal.media-gen.v1` | Fast media generation API. Specializes in image and video. | Flux Pro/Dev/Schnell, Kling V2 (video), Ideogram V3, HaiLuo (video) | Free credits for new users; pay-per-image thereafter | [docs.fal.ai](https://docs.fal.ai) |
+| **Replicate** | `provider.replicate.inference.v1` | Run any open-source model via API. Pay-per-second billing. | Flux Schnell, SDXL, Llama 3, Whisper | Limited free predictions; no credit card required | [replicate.com/docs](https://replicate.com/docs) |
+| **ElevenLabs** | `provider.elevenlabs.tts.v1` | Leading voice AI. Realistic speech synthesis and voice cloning. | Multilingual v2, Turbo v2.5, Flash v2.5, Monolingual v1 | 10,000 chars/month (~20 min audio); 3 custom voices; non-commercial | [elevenlabs.io/docs](https://elevenlabs.io/docs) |
+| **AssemblyAI** | `provider.assemblyai.stt.v1` | Speech intelligence platform. Transcription with built-in NLU. | Universal, Nano | $50 credits (~185h transcription); one-time, non-recurring | [www.assemblyai.com/docs](https://www.assemblyai.com/docs) |
 
 ### Aggregators and Inference Platforms
 
-| Provider | Description | Key Models | Free Tier | Docs |
-| --- | --- | --- | --- | --- |
-| **HuggingFace** | Gateway to 100,000+ open-source models across all modalities. | All public Hub models; curated Providers for Llama, Mistral, Flux, Whisper | Monthly credits; serverless for models < 10 GB; PRO ($9/mo) 20x more | [huggingface.co/docs/inference-providers](https://huggingface.co/docs/inference-providers) |
-| **OpenRouter** | Unified API gateway to 290+ models from all major providers. | Aggregates OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek, xAI | 24+ free models; 20 req/min, 200 req/day on free; no credit card | [openrouter.ai/docs](https://openrouter.ai/docs) |
-| **Cloudflare Workers AI** | Edge-deployed AI inference with global distribution. No cold starts. | Llama 3, Mistral, Qwen, SDXL, Whisper, BGE embeddings | 10,000 neurons/day; 100k requests/day | [developers.cloudflare.com/workers-ai](https://developers.cloudflare.com/workers-ai) |
-| **Groq** | Ultra-fast inference on custom LPU hardware. 500+ tokens/second. | Llama 4 Scout, Llama 3.3 70B, DeepSeek R1 Distill, Whisper Large v3 | Rate-limited access; no credit card; Developer tier 10x limits | [console.groq.com/docs](https://console.groq.com/docs) |
-| **Together AI** | Open-model cloud with 200+ models, fine-tuning, and batch inference. | Llama 3, Mistral, Qwen, DeepSeek, Flux, SDXL | $5 credits on signup; 6,000 req/min on Build tier | [docs.together.ai](https://docs.together.ai) |
+| Provider | ID | Description | Key Models | Free Tier | Docs |
+| --- | --- | --- | --- | --- | --- |
+| **HuggingFace** | `provider.huggingface.inference.v1` | Gateway to 100,000+ open-source models across all modalities. | All public Hub models; curated Providers for Llama, Mistral, Flux, Whisper | Monthly credits; serverless for models < 10 GB; PRO ($9/mo) 20x more | [huggingface.co/docs/inference-providers](https://huggingface.co/docs/inference-providers) |
+| **OpenRouter** | `provider.openrouter.gateway.v1` | Unified API gateway to 290+ models from all major providers. | Aggregates OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek, xAI | 24+ free models; 20 req/min, 200 req/day on free; no credit card | [openrouter.ai/docs](https://openrouter.ai/docs) |
+| **Cloudflare Workers AI** | `provider.cloudflare.workers-ai.v1` | Edge-deployed AI inference with global distribution. No cold starts. | Llama 3, Mistral, Qwen, SDXL, Whisper, BGE embeddings | 10,000 neurons/day; 100k requests/day | [developers.cloudflare.com/workers-ai](https://developers.cloudflare.com/workers-ai) |
+| **Groq** | `provider.groq.inference.v1` | Ultra-fast inference on custom LPU hardware. 500+ tokens/second. | Llama 3.3 70B, Llama 3.1 8B, Gemma 2 9B, DeepSeek R1 Distill, Whisper Large v3/v3-turbo | Rate-limited access; no credit card; Developer tier 10x limits | [console.groq.com/docs](https://console.groq.com/docs) |
+| **Together AI** | `provider.together.inference.v1` | Open-model cloud with 200+ models, fine-tuning, and batch inference. | Llama 3, Mistral, Qwen, DeepSeek, Flux, SDXL | $5 credits on signup; 6,000 req/min on Build tier | [docs.together.ai](https://docs.together.ai) |
 
 ### Cloud Platforms
 
-| Provider | Description | Key Models | Free Tier | Docs |
+| Provider | ID | Description | Key Models | Free Tier | Docs |
+| --- | --- | --- | --- | --- | --- |
+| **AWS Bedrock** | `provider.aws.bedrock.v1` | Managed AI service with access to multiple foundation model providers. | Claude Sonnet 4, Claude 3.5 Haiku, Llama 3.1, Mistral Large, Amazon Nova Pro/Lite, Titan Embed, Stable Diffusion XL | No free tier; $200 new-account credit (all AWS, 6-month expiry) | [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock) |
+| **Google Cloud AI APIs** | `provider.google.cloud-ai.v1` | Individual AI services for speech, vision, translation, and NLU. | Speech-to-Text (Chirp), TTS (WaveNet, Neural2), Vision, Translation, NL | 60 min/mo STT; 1M chars/mo TTS; 1,000 images/mo Vision; $300 credit | [cloud.google.com/apis](https://cloud.google.com/apis) |
+
+### Web API Services
+
+Non-AI web services can be wrapped as provider connectors using the same interface, gaining rotation, quota management, and failover. These services are accessed through virtual model names and routed through capability pools like any other model.
+
+#### Search
+
+| Service | ID | Description | Free Tier | Docs |
 | --- | --- | --- | --- | --- |
-| **AWS Bedrock** | Managed AI service with access to multiple foundation model providers. | Claude, Llama, Mistral, Amazon Nova, Stable Diffusion, Cohere, AI21 | No free tier; $200 new-account credit (all AWS, 6-month expiry) | [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock) |
-| **Google Cloud AI APIs** | Individual AI services for speech, vision, translation, and NLU. | Speech-to-Text (Chirp), TTS (WaveNet, Neural2), Vision, Translation, NL | 60 min/mo STT; 1M chars/mo TTS; 1,000 images/mo Vision; $300 credit | [cloud.google.com/apis](https://cloud.google.com/apis) |
+| **Google Custom Search** | `provider.google.search.v1` | Programmable search engine for web and image search | 100 queries/day free; $5 per 1,000 queries thereafter | [developers.google.com/custom-search](https://developers.google.com/custom-search) |
+| **Bing Web Search API** | `provider.microsoft.bing-search.v1` | Microsoft's web search API via Azure Cognitive Services | 1,000 transactions/month free (S1); 3 calls/second | [learn.microsoft.com/en-us/bing/search-apis](https://learn.microsoft.com/en-us/bing/search-apis) |
+| **Tavily** | `provider.tavily.search.v1` | AI-optimized search API for LLM agents and RAG pipelines | 1,000 calls/month free; no credit card required | [docs.tavily.com](https://docs.tavily.com) |
+| **Serper** | `provider.serper.search.v1` | Google Search API for structured results (organic, news, images, maps) | 2,500 queries free on signup; no credit card required | [serper.dev/docs](https://serper.dev/docs) |
+
+#### Document Parsing
+
+| Service | ID | Description | Free Tier | Docs |
+| --- | --- | --- | --- | --- |
+| **Unstructured** | `provider.unstructured.doc-parse.v1` | Extracts structured data from PDFs, images, Office docs, HTML | Free serverless API with rate limits; open-source self-hosted available | [docs.unstructured.io](https://docs.unstructured.io) |
+| **LlamaParse** | `provider.llamaindex.doc-parse.v1` | Document parsing by LlamaIndex. Optimized for complex layouts, tables, charts | 1,000 pages/day free; 10 files/day; no credit card required | [docs.cloud.llamaindex.ai](https://docs.cloud.llamaindex.ai) |
+
+#### Translation and Moderation
+
+| Service | ID | Description | Free Tier | Docs |
+| --- | --- | --- | --- | --- |
+| **DeepL** | `provider.deepl.translation.v1` | Machine translation API. 30+ languages with high accuracy | 500,000 characters/month free; document translation included | [developers.deepl.com/docs](https://developers.deepl.com/docs) |
+| **Perspective API** | `provider.google.moderation.v1` | Content moderation. Scores text for toxicity, profanity, threats | Free for all users; 1 query/second default quota (increase on request) | [developers.perspectiveapi.com](https://developers.perspectiveapi.com) |
 
 ### Provider Capability Matrix
 
 | Provider              | Text Gen | Image Gen | Audio | Embeddings | Search | Tool Use | Batch | Fine-Tune | Free Tier     |
 | --------------------- | -------- | --------- | ----- | ---------- | ------ | -------- | ----- | --------- | ------------- |
-| **OpenAI**            | yes      | yes       | yes   | yes        | yes    | yes      | yes   | yes       | limited       |
+| **OpenAI**            | yes      | yes       | yes   | yes        | -      | yes      | yes   | yes       | limited       |
 | **Anthropic**         | yes      | -         | -     | -          | -      | yes      | yes   | -         | limited       |
-| **Google Gemini**     | yes      | yes       | -     | yes        | yes    | yes      | yes   | yes       | generous      |
+| **Google Gemini**     | yes      | yes       | -     | yes        | -      | yes      | yes   | yes       | generous      |
 | **xAI (Grok)**        | yes      | -         | -     | -          | -      | yes      | yes   | -         | credits       |
 | **DeepSeek**          | yes      | -         | -     | -          | -      | yes      | -     | -         | credits       |
 | **Mistral AI**        | yes      | -         | -     | yes        | -      | yes      | -     | yes       | rate-limited  |
 | **Cohere**            | yes      | -         | -     | yes        | yes    | yes      | -     | yes       | 1k calls/mo   |
-| **HuggingFace**       | yes      | yes       | yes   | yes        | -      | -        | -     | yes       | credits       |
+| **HuggingFace**       | yes      | yes       | yes   | yes        | -      | yes      | yes   | yes       | credits       |
 | **OpenRouter**        | yes      | yes       | yes   | yes        | -      | yes      | -     | -         | 24+ models    |
-| **Cloudflare**        | yes      | yes       | yes   | yes        | -      | -        | -     | -         | 10k neurons/d |
+| **Cloudflare**        | yes      | yes       | yes   | yes        | -      | yes      | -     | -         | 10k neurons/d |
 | **Groq**              | yes      | -         | yes   | -          | -      | yes      | -     | -         | rate-limited  |
 | **Together AI**       | yes      | yes       | -     | yes        | -      | yes      | yes   | yes       | $5 credit     |
 | **Replicate**         | yes      | yes       | yes   | -          | -      | -        | -     | -         | limited       |
@@ -77,107 +183,231 @@ Provider connectors expose AI models through a uniform OpenAI-compatible interfa
 
 ---
 
-## Web API Services
+## Rotation Policies
 
-Non-AI web services can be wrapped as provider connectors, gaining the same rotation, quota management, and failover as AI models. These services are accessed through virtual model names and routed through capability pools like any other model.
+Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.md#rotation-policy). Full attributes in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
 
-### Search
-
-| Service | Description | Free Tier | Docs |
-| --- | --- | --- | --- |
-| **Google Custom Search** | Programmable search engine for web and image search | 100 queries/day free; $5 per 1,000 queries thereafter | [developers.google.com/custom-search](https://developers.google.com/custom-search) |
-| **Bing Web Search API** | Microsoft's web search API via Azure Cognitive Services | 1,000 transactions/month free (S1); 3 calls/second | [learn.microsoft.com/en-us/bing/search-apis](https://learn.microsoft.com/en-us/bing/search-apis) |
-| **Tavily** | AI-optimized search API for LLM agents and RAG pipelines | 1,000 calls/month free; no credit card required | [docs.tavily.com](https://docs.tavily.com) |
-| **Serper** | Google Search API for structured results (organic, news, images, maps) | 2,500 queries free on signup; no credit card required | [serper.dev/docs](https://serper.dev/docs) |
-
-### Document Parsing
-
-| Service | Description | Free Tier | Docs |
-| --- | --- | --- | --- |
-| **Unstructured** | Extracts structured data from PDFs, images, Office docs, HTML | Free serverless API with rate limits; open-source self-hosted available | [docs.unstructured.io](https://docs.unstructured.io) |
-| **LlamaParse** | Document parsing by LlamaIndex. Optimized for complex layouts, tables, charts | 1,000 pages/day free; 10 files/day; no credit card required | [docs.cloud.llamaindex.ai](https://docs.cloud.llamaindex.ai) |
-
-### Translation and Moderation
-
-| Service | Description | Free Tier | Docs |
-| --- | --- | --- | --- |
-| **DeepL** | Machine translation API. 30+ languages with high accuracy | 500,000 characters/month free; document translation included | [developers.deepl.com/docs](https://developers.deepl.com/docs) |
-| **Perspective API** | Content moderation. Scores text for toxicity, profanity, threats | Free for all users; 1 query/second default quota (increase on request) | [developers.perspectiveapi.com](https://developers.perspectiveapi.com) |
-
----
-
-## Storage Connectors
-
-Storage connectors persist library state, configuration, and observability logs to external backends.
-
-| Connector | Backend | Concurrency | Free Tier | Best For | Docs |
-| --- | --- | --- | --- | --- | --- |
-| **`local-file`** | local disk | single-process only | Built-in | development, single-instance deploys | - |
-| **`s3`** | AWS S3 | conditional writes | 5 GB, 20K GET, 2K PUT/month (12 months) | multi-instance, serverless | [aws.amazon.com/s3](https://aws.amazon.com/s3) |
-| **`google-drive`** | Google Drive | revision-based | 15 GB free (shared across Google services) | shared team state, client-side apps | [developers.google.com/drive](https://developers.google.com/drive) |
-| **`redis`** | Redis | atomic operations | Redis Cloud 30 MB free; self-hosted open-source | low-latency multi-instance sync | [redis.io](https://redis.io) |
+| Policy | Description |
+| --- | --- |
+| **`rotation.modelmesh.stick-until-failure.v1`** | Use the current model until it fails, then rotate. Default policy. |
+| **`rotation.modelmesh.priority-selection.v1`** | Follow an ordered model/provider preference list; fall back on exhaust. |
+| **`rotation.modelmesh.round-robin.v1`** | Cycle through active models in sequence. |
+| **`rotation.modelmesh.cost-first.v1`** | Select the cheapest active model for each request. |
+| **`rotation.modelmesh.latency-first.v1`** | Select the model with the lowest observed latency. |
+| **`rotation.modelmesh.session-stickiness.v1`** | Route all requests in a session to the same model. |
+| **`rotation.modelmesh.rate-limit-aware.v1`** | Switch models preemptively before hitting rate limits. |
+| **`rotation.modelmesh.load-balanced.v1`** | Distribute requests proportionally to each model's rate-limit headroom. |
 
 ---
 
 ## Secret Store Connectors
 
-Secret store connectors resolve API keys and tokens from secure backends at runtime. Configuration references secrets by name (`${secrets:openai-key}`); the library resolves them through the configured store.
+Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.md#secret-store)
 
 | Store | Description | Free Tier | Docs |
 | --- | --- | --- | --- |
-| **`env`** | Reads secrets from environment variables. Default store. | Built-in | - |
-| **`dotenv`** | Loads secrets from `.env` files. Ideal for local development. | Built-in | - |
-| **`aws-secrets-manager`** | Managed secret storage with automatic rotation and IAM integration | 30-day trial; then $0.40/secret/month + $0.05/10K calls | [aws.amazon.com/secrets-manager](https://aws.amazon.com/secrets-manager) |
-| **`gcp-secret-manager`** | Google Cloud managed secrets with IAM and audit logging | 6 active versions free; 10K access ops/month free | [cloud.google.com/secret-manager](https://cloud.google.com/secret-manager) |
-| **`azure-key-vault`** | Microsoft cloud secret, key, and certificate management | 10K operations/month free (Standard tier) | [azure.microsoft.com/en-us/products/key-vault](https://azure.microsoft.com/en-us/products/key-vault) |
-| **`1password`** | Secrets Automation API for CI/CD and server-side use | No free API tier; requires Business or Enterprise plan | [developer.1password.com](https://developer.1password.com) |
+| **`secret-store.modelmesh.env.v1`** | Reads secrets from environment variables. Default store. | Built-in | - |
+| **`secret-store.modelmesh.dotenv.v1`** | Loads secrets from `.env` files. Ideal for local development. | Built-in | - |
+| **`secret-store.aws.secrets-manager.v1`** | Managed secret storage with automatic rotation and IAM integration | 30-day trial; then $0.40/secret/month + $0.05/10K calls | [aws.amazon.com/secrets-manager](https://aws.amazon.com/secrets-manager) |
+| **`secret-store.google.secret-manager.v1`** | Google Cloud managed secrets with IAM and audit logging | 6 active versions free; 10K access ops/month free | [cloud.google.com/secret-manager](https://cloud.google.com/secret-manager) |
+| **`secret-store.microsoft.key-vault.v1`** | Microsoft cloud secret, key, and certificate management | 10K operations/month free (Standard tier) | [azure.microsoft.com/en-us/products/key-vault](https://azure.microsoft.com/en-us/products/key-vault) |
+| **`secret-store.1password.connect.v1`** | Secrets Automation API for CI/CD and server-side use | No free API tier; requires Business or Enterprise plan | [developer.1password.com](https://developer.1password.com) |
+
+### Connector-Specific Configuration
+
+**`secret-store.modelmesh.dotenv.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `path` | string | Path to `.env` file. Default: `./.env`. |
+| `override` | boolean | Override existing environment variables. Default: `false`. |
+
+**`secret-store.aws.secrets-manager.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `region` | string | AWS region (e.g., `us-east-1`). |
+| `prefix` | string | Key name prefix for scoping (e.g., `modelmesh/`). |
+| `version_stage` | string | Version stage to retrieve: `AWSCURRENT`, `AWSPREVIOUS`. Default: `AWSCURRENT`. |
+
+**`secret-store.google.secret-manager.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `project` | string | GCP project ID. |
+| `prefix` | string | Secret name prefix for scoping. |
+
+**`secret-store.microsoft.key-vault.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `vault_url` | string | Key Vault URL (e.g., `https://my-vault.vault.azure.net`). |
+| `tenant_id` | string | Azure AD tenant ID. |
+
+**`secret-store.1password.connect.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `server_url` | string | 1Password Connect server URL. |
+| `vault_id` | string | Vault UUID to resolve secrets from. |
+| `token` | string | Connect server token (or secret reference). |
 
 ### Deployment Patterns
 
 | Environment | Recommended Store | Reason |
 | --- | --- | --- |
-| Local dev | `dotenv` / `env` | simple, no infra |
+| Local dev | `modelmesh.dotenv.v1` / `modelmesh.env.v1` | simple, no infra |
 | AWS / GCP | native secret manager | IAM integration |
 | Serverless | cloud secret manager | runtime injection |
 | Client-side | server proxy | keys never reach client |
-| CI/CD | `env` | pipeline-injected |
+| CI/CD | `modelmesh.env.v1` | pipeline-injected |
+
+---
+
+## Storage Connectors
+
+Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.md#storage)
+
+| Connector | Backend | Concurrency | Free Tier | Best For | Docs |
+| --- | --- | --- | --- | --- | --- |
+| **`storage.modelmesh.local-file.v1`** | local disk | single-process only | Built-in | development, single-instance deploys | - |
+| **`storage.aws.s3.v1`** | AWS S3 | conditional writes | 5 GB, 20K GET, 2K PUT/month (12 months) | multi-instance, serverless | [aws.amazon.com/s3](https://aws.amazon.com/s3) |
+| **`storage.google.drive.v1`** | Google Drive | revision-based | 15 GB free (shared across Google services) | shared team state, client-side apps | [developers.google.com/drive](https://developers.google.com/drive) |
+| **`storage.redis.redis.v1`** | Redis | atomic operations | Redis Cloud 30 MB free; self-hosted open-source | low-latency multi-instance sync | [redis.io](https://redis.io) |
+
+### Connector-Specific Configuration
+
+**`storage.modelmesh.local-file.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `path` | string | File path for state data (e.g., `./mesh-state.json`). |
+| `backup` | boolean | Create a `.bak` copy before each write. Default: `false`. |
+
+**`storage.aws.s3.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `bucket` | string | S3 bucket name. |
+| `key` | string | Object key (e.g., `state.json`). |
+| `region` | string | AWS region. |
+| `endpoint` | string | Custom S3-compatible endpoint URL. |
+
+**`storage.google.drive.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `folder_id` | string | Google Drive folder ID for state files. |
+| `credentials` | string | Service account credentials path or secret reference. |
+| `filename` | string | File name in Drive. Default: `mesh-state.json`. |
+
+**`storage.redis.redis.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `url` | string | Redis connection URL (e.g., `redis://localhost:6379/0`). |
+| `host` | string | Redis host. Alternative to `url`. |
+| `port` | integer | Redis port. Default: `6379`. |
+| `db` | integer | Redis database number. Default: `0`. |
+| `password` | string | Redis password or secret reference. |
+| `key_prefix` | string | Key namespace prefix (e.g., `modelmesh:`). |
+| `ttl` | duration | Expiration for stored entries. Default: none. |
 
 ---
 
 ## Observability Connectors
 
-Observability connectors export routing decisions, request logs, and aggregate statistics. Multiple connectors can be active simultaneously.
+Interface: [ConnectorInterfaces.md — Observability](ConnectorInterfaces.md#observability)
+
+The observability interface combines four concerns: **events** (state changes), **logging** (request/response data), **statistics** (aggregate metrics), and **tracing** (severity-tagged structured traces). All core components (Router, Pool, Mesh) and CDK base classes (BaseProvider) emit traces through the configured observability connector. If no connector is configured, the `null` connector is used (zero overhead).
+
+### Severity Levels
+
+All trace entries carry a severity level. The `min_severity` configuration option filters traces below the threshold.
+
+| Level | Value | Usage |
+| --- | --- | --- |
+| `DEBUG` | `"debug"` | Detailed diagnostic info: request routing, pool resolution, model selection |
+| `INFO` | `"info"` | Normal operational events: initialization, successful requests, rotation |
+| `WARNING` | `"warning"` | Potential issues: request failures, retries, provider errors |
+| `ERROR` | `"error"` | Significant failures: model deactivation, pool exhaustion, all retries failed |
+| `CRITICAL` | `"critical"` | System-level failures: unrecoverable errors, configuration invalid |
+
+### Pre-shipped Connectors
 
 | Connector | Output | Description |
 | --- | --- | --- |
-| **`console`** | stdout/stderr | Writes routing decisions and logs to standard output. Default connector. |
-| **`local-file`** | JSONL file | Appends structured records to a local file. Suitable for development and single-instance deploys. |
-| **`webhook`** | HTTP POST | Sends routing events and logs to a configurable URL. Use for alerting, dashboards, or external log aggregation. |
+| **`observability.modelmesh.null.v1`** | (none) | No-op connector. Discards all output with zero overhead. Used as default when no observability is configured. |
+| **`observability.modelmesh.console.v1`** | stdout | ANSI-colored console output for development and debugging. Color-codes events by type and traces by severity. |
+| **`observability.modelmesh.file.v1`** | JSONL file | Appends structured JSON-Lines records to a local file. Suitable for development, log aggregation, and single-instance deploys. |
+| **`observability.modelmesh.webhook.v1`** | HTTP POST | Sends routing events and logs to a configurable URL. Use for alerting, dashboards, or external log aggregation. |
+
+### Connector-Specific Configuration
+
+**`observability.modelmesh.console.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `log_level` | string | Detail level for request logging: `metadata`, `summary`, `full`. Default: `metadata`. |
+| `min_severity` | string | Minimum severity for trace output: `debug`, `info`, `warning`, `error`, `critical`. Default: `info`. |
+| `event_filter` | list | Event types to include (empty = all). Default: `[]`. |
+| `use_color` | boolean | Enable ANSI color codes. Default: `true`. |
+| `show_timestamp` | boolean | Show timestamps in output. Default: `true`. |
+| `prefix` | string | Prefix for all output lines. Default: `[ModelMesh]`. |
+| `redact_secrets` | boolean | Redact API keys and tokens in output. Default: `true`. |
+
+**`observability.modelmesh.file.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | string | Output file path. Default: `modelmesh.log`. |
+| `log_level` | string | Detail level for request logging: `metadata`, `summary`, `full`. Default: `metadata`. |
+| `min_severity` | string | Minimum severity for trace output. Default: `info`. |
+| `append` | boolean | Append to existing file (vs overwrite). Default: `true`. |
+| `flush_each_line` | boolean | Flush after every write for durability. Default: `true`. |
+| `max_file_size_bytes` | integer | Maximum file size before rotation (0 = no limit). Default: `0`. |
+| `redact_secrets` | boolean | Redact API keys and tokens. Default: `true`. |
+
+**`observability.modelmesh.webhook.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `url` | string | Webhook endpoint URL. |
+| `headers` | object | Custom HTTP headers (e.g., authorization). |
+| `timeout` | duration | Request timeout (e.g., `10s`). |
+| `retry_count` | integer | Retries on delivery failure. Default: `3`. |
+| `batch_size` | integer | Events to buffer before sending. Default: `1` (immediate). |
+
+### Trace Record Format
+
+All observability connectors write records with a `"type"` field. The file connector writes one JSON object per line (JSON-Lines format):
+
+```jsonl
+{"type":"trace","severity":"info","timestamp":"...","component":"mesh","message":"Initialized: 2 provider(s), 1 pool(s)"}
+{"type":"trace","severity":"debug","timestamp":"...","component":"router","message":"Routing request","metadata":{"model":"chat-completion"}}
+{"type":"trace","severity":"warning","timestamp":"...","component":"pool.text-generation","message":"Request failure","metadata":{"model_id":"openai.gpt-4o","failure_count":2,"threshold":3}}
+{"type":"trace","severity":"error","timestamp":"...","component":"pool.text-generation","message":"Model deactivated","metadata":{"model_id":"openai.gpt-4o","reason":"error_threshold"}}
+{"type":"event","event_type":"model_rotated","timestamp":"...","model_id":"openai.gpt-4o","provider_id":"openai.llm.v1"}
+{"type":"log","timestamp":"...","model_id":"openai.gpt-4o","provider_id":"openai.llm.v1","status_code":200,"latency_ms":450}
+{"type":"stats","scope_id":"pool.text-generation","requests_total":100,"requests_success":97,"requests_failed":3}
+```
+
+### Components That Emit Traces
+
+| Component | Traces Emitted |
+| --- | --- |
+| **ModelMesh** | INFO: initialization, shutdown. DEBUG: provider/pool setup. WARNING: rotation with no alternative. |
+| **Router** | DEBUG: request routing, pool resolution. INFO: request success. WARNING: failures, retries. ERROR: pool exhaustion. |
+| **CapabilityPool** | DEBUG: model added, request succeeded. WARNING: request failure. ERROR: model deactivated. INFO: rotation, reactivation. |
+| **BaseProvider** | DEBUG: sending request, error classification. INFO: request success with latency/tokens. WARNING: retryable errors. ERROR: non-retryable errors. |
 
 ---
 
 ## Discovery Connectors
 
-Discovery connectors keep the model catalogue accurate and provider health visible without manual intervention.
+Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.md#discovery)
 
 | Connector | Description |
 | --- | --- |
-| **`registry-sync`** | Synchronizes the local model catalogue with provider APIs on a configurable schedule. Detects new models, deprecated models, and pricing changes. Sync frequency and auto-registration are configurable per provider. |
-| **`health-monitor`** | Background process that probes providers at a configurable interval. Records latency, success/failure, and error codes; maintains rolling availability scores; feeds results into rotation policies for proactive deactivation. |
-
----
-
-## Rotation Policies
-
-Rotation policies govern model lifecycle within each pool. Each policy combines deactivation, recovery, and selection components, configurable independently per pool. Full attributes in [Appendix F](APPENDICES.md#appendix-f--per-pool-rotation-policy-attributes).
-
-| Policy | Description |
-| --- | --- |
-| **`stick-until-failure`** | Use the current model until it fails, then rotate. Default policy. |
-| **`priority-selection`** | Follow an ordered model/provider preference list; fall back on exhaust. |
-| **`round-robin`** | Cycle through active models in sequence. |
-| **`cost-first`** | Select the cheapest active model for each request. |
-| **`latency-first`** | Select the model with the lowest observed latency. |
-| **`session-stickiness`** | Route all requests in a session to the same model. |
-| **`rate-limit-aware`** | Switch models preemptively before hitting rate limits. |
-| **`load-balanced`** | Distribute requests proportionally to each model's rate-limit headroom. |
+| **`discovery.modelmesh.registry-sync.v1`** | Synchronizes the local model catalogue with provider APIs on a configurable schedule. Detects new models, deprecated models, and pricing changes. Sync frequency and auto-registration are configurable per provider. |
+| **`discovery.modelmesh.health-monitor.v1`** | Probes providers at a configurable interval. Records latency, success/failure, and error codes; maintains rolling availability scores; feeds results into rotation policies for proactive deactivation. |
