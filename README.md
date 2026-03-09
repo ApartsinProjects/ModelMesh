@@ -11,7 +11,7 @@
   <a href="https://pypi.org/project/modelmesh-lite/"><img src="https://img.shields.io/pypi/v/modelmesh-lite?color=blue" alt="PyPI"></a>
   <a href="https://pypi.org/project/modelmesh-lite/"><img src="https://img.shields.io/pypi/pyversions/modelmesh-lite" alt="Python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-356%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-579%20passed-brightgreen" alt="Tests"></a>
 </p>
 
 ---
@@ -37,15 +37,7 @@ export OPENAI_API_KEY="sk-..."
 ```python
 import modelmesh
 
-# Create an OpenAI-compatible client with automatic provider routing
 client = modelmesh.create("chat-completion")
-
-# See what's behind the virtual model
-print(client.describe())
-# Pool "chat-completion" (strategy: stick-until-failure)
-#   capability: generation.text-generation.chat-completion
-#   → openai.gpt-4o [openai.llm.v1] (active)
-#     openai.gpt-4o-mini [openai.llm.v1] (active)
 
 response = client.chat.completions.create(
     model="chat-completion",          # virtual model name = capability pool
@@ -70,7 +62,7 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);
 ```
 
-## What Happens Under the Hood
+## How It Works
 
 ```
 client.chat.completions.create(model="chat-completion", ...)
@@ -86,7 +78,7 @@ client.chat.completions.create(model="chat-completion", ...)
 
 **`"chat-completion"`** resolves to a pool containing all models that support chat. The pool's **rotation policy** picks the best active model. If it fails, the router retries with backoff, then rotates to the next model. When a provider's free quota runs out, rotation automatically moves to the next provider.
 
-## Multi-Provider Example
+## Multi-Provider Failover
 
 Add more API keys -- ModelMesh chains them automatically:
 
@@ -97,11 +89,9 @@ export GEMINI_API_KEY="AI..."
 ```
 
 ```python
-import modelmesh
-
-# All detected providers join the pool -- failover is automatic
 client = modelmesh.create("chat-completion")
 
+# Inspect the providers behind the virtual model
 print(client.describe())
 # Pool "chat-completion" (strategy: stick-until-failure)
 #   capability: generation.text-generation.chat-completion
@@ -109,14 +99,9 @@ print(client.describe())
 #     openai.gpt-4o-mini [openai.llm.v1] (active)
 #     anthropic.claude-sonnet-4 [anthropic.claude.v1] (active)
 #     google.gemini-2.0-flash [google.gemini.v1] (active)
-
-response = client.chat.completions.create(
-    model="chat-completion",
-    messages=[{"role": "user", "content": "Explain quantum computing briefly."}],
-)
 ```
 
-OpenAI, Anthropic, and Gemini models are now in the same pool. If OpenAI is down or its quota is exhausted, the request routes to Anthropic, then Gemini.
+Same `client.chat.completions.create()` call -- but now if OpenAI is down or its quota is exhausted, the request routes to Anthropic, then Gemini.
 
 ## YAML Configuration
 
