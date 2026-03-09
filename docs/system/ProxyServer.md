@@ -1,8 +1,13 @@
+---
+layout: default
+title: "ProxyServer"
+---
+
 # ProxyServer
 
 Standalone HTTP server exposing standard OpenAI API endpoints. The proxy wraps the Router for deployment as a shared service, allowing multiple applications -- LangChain pipelines, IDE assistants, internal tools -- to connect to a single proxy with centralized configuration, credential management, and state. Authentication, CORS, and endpoint filtering are configurable.
 
-**Depends on:** [Router](Router.md), [ModelMesh](ModelMesh.md)
+**Depends on:** [Router](Router.html), [ModelMesh](ModelMesh.html)
 
 ---
 
@@ -125,7 +130,7 @@ class ProxyServer {
 
 ## Configuration
 
-See [SystemConfiguration.md -- Proxy](../SystemConfiguration.md#proxy) for full YAML reference.
+See [SystemConfiguration.md -- Proxy](../SystemConfiguration.html#proxy) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

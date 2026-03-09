@@ -1,8 +1,13 @@
+---
+layout: default
+title: "Provider Interface"
+---
+
 # Provider Interface
 
 A provider connector exposes one or more AI models (or web API services) through a uniform, OpenAI-compatible API. It bridges the gap between the library's abstract capability model and the provider's concrete API: translating requests, managing authentication, tracking usage, and reporting operational data that drives routing and rotation decisions.
 
-> **Reference:** [ConnectorInterfaces.md -- Provider](../ConnectorInterfaces.md#provider) | [ConnectorCatalogue.md -- Provider Connectors](../ConnectorCatalogue.md#provider-connectors)
+> **Reference:** [ConnectorInterfaces.md -- Provider](../ConnectorInterfaces.html#provider) | [ConnectorCatalogue.md -- Provider Connectors](../ConnectorCatalogue.html#provider-connectors)
 
 ---
 
@@ -441,7 +446,7 @@ interface ProviderConnector extends ModelExecution, Capabilities, ModelCatalogue
 
 ## Common Configuration
 
-Parameters shared by all provider connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Provider Connectors](../ConnectorCatalogue.md#provider-connectors)).
+Parameters shared by all provider connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Provider Connectors](../ConnectorCatalogue.html#provider-connectors)).
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -470,4 +475,4 @@ Parameters shared by all provider connectors. Individual connectors may add conn
 
 ## CDK Base Class
 
-The CDK provides [BaseProvider](../cdk/BaseClasses.md#baseprovider) with OpenAI-compatible defaults and 5 protected hook methods for customization. Specialized classes: [OpenAICompatibleProvider](../cdk/BaseClasses.md#openaicompatibleprovider), [HttpApiProvider](../cdk/BaseClasses.md#httpapiprovider). See [DeveloperGuide -- Tutorial 1](../cdk/DeveloperGuide.md#tutorial-1-your-first-provider-in-10-lines).
+The CDK provides [BaseProvider](../cdk/BaseClasses.html#baseprovider) with OpenAI-compatible defaults and 5 protected hook methods for customization. Specialized classes: [OpenAICompatibleProvider](../cdk/BaseClasses.html#openaicompatibleprovider), [HttpApiProvider](../cdk/BaseClasses.html#httpapiprovider). See [DeveloperGuide -- Tutorial 1](../cdk/DeveloperGuide.html#tutorial-1-your-first-provider-in-10-lines).

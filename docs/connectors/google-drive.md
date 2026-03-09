@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Google Drive Storage"
+---
+
 # Google Drive Storage
 
 **ID:** `storage.google.drive.v1`

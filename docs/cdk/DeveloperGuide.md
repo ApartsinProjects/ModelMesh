@@ -1,8 +1,13 @@
+---
+layout: default
+title: "CDK Developer Guide"
+---
+
 # CDK Developer Guide
 
 A tutorial-driven guide for using ModelMesh Lite, from the convenience layer (`modelmesh.create()`) through custom connectors built with the Connector Development Kit (CDK). Tutorials 0-1 cover the OpenAI-compatible convenience API, Tutorials 2-7 progress from zero-code configuration through full connector suites and automated testing, and Tutorial 8 provides a beginner-friendly walkthrough for new programmers.
 
-> **Prerequisites:** Tutorials 0-1 require only `pip install modelmesh` and an API key. Tutorials 2-7 assume familiarity with the [CDK Overview](Overview.md) and the [class hierarchy](Overview.md#class-hierarchy). Tutorial 8 is self-contained. Each tutorial references the relevant CDK reference documents inline.
+> **Prerequisites:** Tutorials 0-1 require only `pip install modelmesh` and an API key. Tutorials 2-7 assume familiarity with the [CDK Overview](Overview.html) and the [class hierarchy](Overview.html#class-hierarchy). Tutorial 8 is self-contained. Each tutorial references the relevant CDK reference documents inline.
 
 ---
 
@@ -199,7 +204,7 @@ const client = modelmesh.create({ config: "modelmesh.yaml" });
 
 The CDK is designed so that the simplest connector requires no code at all. `OpenAICompatibleProvider` is a semantic alias for `BaseProvider` -- it inherits every default (OpenAI-format request translation, SSE streaming, retry logic, error classification) without overriding anything. You supply a `BaseProviderConfig` with a `base_url` and `api_key`, and the provider is ready to use.
 
-> **Reference:** [BaseClasses.md -- OpenAICompatibleProvider](BaseClasses.md#openaicompatibleprovider) | [BaseClasses.md -- BaseProviderConfig](BaseClasses.md#configuration)
+> **Reference:** [BaseClasses.md -- OpenAICompatibleProvider](BaseClasses.html#openaicompatibleprovider) | [BaseClasses.md -- BaseProviderConfig](BaseClasses.html#configuration)
 
 ### Python
 
@@ -322,7 +327,7 @@ providers:
 
 Some APIs return errors in a non-standard format. For example, an internal ML service might return HTTP 200 with an error payload in the JSON body instead of using standard HTTP status codes. The CDK's hook method pattern lets you override `classify_error()` to handle this without touching request translation, retry orchestration, or streaming.
 
-> **Reference:** [BaseClasses.md -- Protected Hook Methods](BaseClasses.md#protected-hook-methods) | [BaseClasses.md -- Error Classification](BaseClasses.md#methods-and-default-behavior)
+> **Reference:** [BaseClasses.md -- Protected Hook Methods](BaseClasses.html#protected-hook-methods) | [BaseClasses.md -- Error Classification](BaseClasses.html#methods-and-default-behavior)
 
 ### Python
 
@@ -478,7 +483,7 @@ Two methods were overridden: `_parse_response` (to detect in-band errors) and `c
 
 The default `BaseRotationPolicy` deactivates models based on failure counts and error rates, recovers after a fixed cooldown, and selects by priority list. But some organizations need custom logic -- for example, routing to cheaper models during off-peak hours and deactivating all non-essential models during scheduled maintenance windows.
 
-> **Reference:** [BaseClasses.md -- BaseRotationPolicy](BaseClasses.md#baserotationpolicy) | [BaseClasses.md -- BaseRotationPolicyConfig](BaseClasses.md#baserotationpolicyconfig)
+> **Reference:** [BaseClasses.md -- BaseRotationPolicy](BaseClasses.html#baserotationpolicy) | [BaseClasses.md -- BaseRotationPolicyConfig](BaseClasses.html#baserotationpolicyconfig)
 
 ### Python
 
@@ -715,7 +720,7 @@ The custom policy overrides three methods (`should_deactivate`, `get_reason`, `s
 
 When a pre-shipped connector is 90% correct and you only need to adjust authentication, URL structure, or a few header values, derive from the concrete connector class instead of the base class. This inherits all provider-specific logic (model catalogue, pricing tables, error mapping) in addition to the CDK base behavior.
 
-> **Reference:** [Overview.md -- Derive from an Existing Pre-Shipped Connector](Overview.md#3-derive-from-an-existing-pre-shipped-connector) | [BaseClasses.md -- BaseProvider Protected Hooks](BaseClasses.md#protected-hook-methods)
+> **Reference:** [Overview.md -- Derive from an Existing Pre-Shipped Connector](Overview.html#3-derive-from-an-existing-pre-shipped-connector) | [BaseClasses.md -- BaseProvider Protected Hooks](BaseClasses.html#protected-hook-methods)
 
 ### Python
 
@@ -871,7 +876,7 @@ Only two hook methods were overridden: `_build_headers` (to swap the auth scheme
 
 AcmeCorp runs an internal AI platform. They need a provider for their custom ML API, a rotation policy that respects their SLA tiers, a secret store backed by environment variables, file-system storage for state, a webhook-based observability pipeline, and a discovery connector that polls their internal model registry. Each connector inherits from the appropriate CDK base class and overrides only what differs.
 
-> **Reference:** [BaseClasses.md](BaseClasses.md) (all six base classes) | [Mixins.md](Mixins.md) (RetryMixin, CacheMixin)
+> **Reference:** [BaseClasses.md](BaseClasses.html) (all six base classes) | [Mixins.md](Mixins.html) (RetryMixin, CacheMixin)
 
 ### Python
 
@@ -1210,7 +1215,7 @@ Six connectors, each between 5 and 20 lines of actual logic. Every connector ove
 
 The CDK ships three test utilities designed to work together. `MockHttpClient` replaces the real HTTP transport layer with canned responses. `mock_model_snapshot` and `mock_completion_request` create test fixtures with sensible defaults. `ConnectorTestHarness` runs standard interface compliance tests against any connector.
 
-> **Reference:** [Helpers.md -- MockHttpClient](Helpers.md#mockhttpclient) | [Helpers.md -- MockModelSnapshot](Helpers.md#mockmodelsnapshot) | [Helpers.md -- ConnectorTestHarness](Helpers.md#connectortestharness)
+> **Reference:** [Helpers.md -- MockHttpClient](Helpers.html#mockhttpclient) | [Helpers.md -- MockModelSnapshot](Helpers.html#mockmodelsnapshot) | [Helpers.md -- ConnectorTestHarness](Helpers.html#connectortestharness)
 
 ### Python
 
@@ -1992,11 +1997,11 @@ You have built a fully interactive AI chatbot with streaming, a custom personali
 
 | Document | Description |
 | --- | --- |
-| [Overview.md](Overview.md) | CDK philosophy, class hierarchy, and decision trees for choosing a starting point |
-| [BaseClasses.md](BaseClasses.md) | Full API reference for all 6 base classes and 7 specialized classes |
-| [Mixins.md](Mixins.md) | Cross-cutting mixins: RetryMixin, CacheMixin, RateLimiterMixin, MetricsMixin, SerializationMixin |
-| [Helpers.md](Helpers.md) | Utility functions (parse_duration, format_duration) and test utilities (MockHttpClient, ConnectorTestHarness) |
-| [Enums.md](Enums.md) | Consolidated enum reference for all CDK and interface enums |
+| [Overview.md](Overview.html) | CDK philosophy, class hierarchy, and decision trees for choosing a starting point |
+| [BaseClasses.md](BaseClasses.html) | Full API reference for all 6 base classes and 7 specialized classes |
+| [Mixins.md](Mixins.html) | Cross-cutting mixins: RetryMixin, CacheMixin, RateLimiterMixin, MetricsMixin, SerializationMixin |
+| [Helpers.md](Helpers.html) | Utility functions (parse_duration, format_duration) and test utilities (MockHttpClient, ConnectorTestHarness) |
+| [Enums.md](Enums.html) | Consolidated enum reference for all CDK and interface enums |
 | [interfaces/](../interfaces/) | Authoritative interface definitions for all six connector types |
-| [ConnectorCatalogue.md](../ConnectorCatalogue.md) | Registry of all pre-shipped connector implementations |
-| [SystemConcept.md](../SystemConcept.md) | System architecture and connector extensibility model |
+| [ConnectorCatalogue.md](../ConnectorCatalogue.html) | Registry of all pre-shipped connector implementations |
+| [SystemConcept.md](../SystemConcept.html) | System architecture and connector extensibility model |

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "AssemblyAI"
+---
+
 # AssemblyAI
 
 **ID:** `provider.assemblyai.stt.v1`

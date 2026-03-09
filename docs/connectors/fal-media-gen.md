@@ -1,3 +1,8 @@
+---
+layout: default
+title: "fal.ai"
+---
+
 # fal.ai
 
 **ID:** `provider.fal.media-gen.v1`

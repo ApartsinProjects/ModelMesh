@@ -1,3 +1,8 @@
+---
+layout: default
+title: "AWS Bedrock"
+---
+
 # AWS Bedrock
 
 **ID:** `provider.aws.bedrock.v1`

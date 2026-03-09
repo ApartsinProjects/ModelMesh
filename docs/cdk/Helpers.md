@@ -1,14 +1,19 @@
+---
+layout: default
+title: "CDK Helpers Reference"
+---
+
 # CDK Helpers Reference
 
 Utility functions, type helpers, and test utilities that support connector development. These are standalone, stateless tools -- they do not depend on mixin state or connector instances and can be imported individually.
 
 > **Cross-references:** Types referenced below are defined in the interface documentation:
-> - [Provider](../interfaces/Provider.md) -- `CompletionRequest`, `CompletionResponse`, `TokenUsage`, `ModelInfo`
-> - [Storage](../interfaces/Storage.md) -- `SerializationFormat`, `StorageEntry`
-> - [Rotation Policy](../interfaces/RotationPolicy.md) -- `ModelSnapshot`, `ModelStatus`, `SelectionResult`
-> - [Secret Store](../interfaces/SecretStore.md) -- `SecretStoreConnector`
-> - [Observability](../interfaces/Observability.md) -- `ObservabilityConnector`, `RoutingEvent`, `RequestLogEntry`, `AggregateStats`, `Severity`, `TraceEntry`
-> - [Discovery](../interfaces/Discovery.md) -- `DiscoveryConnector`, `ProbeResult`
+> - [Provider](../interfaces/Provider.html) -- `CompletionRequest`, `CompletionResponse`, `TokenUsage`, `ModelInfo`
+> - [Storage](../interfaces/Storage.html) -- `SerializationFormat`, `StorageEntry`
+> - [Rotation Policy](../interfaces/RotationPolicy.html) -- `ModelSnapshot`, `ModelStatus`, `SelectionResult`
+> - [Secret Store](../interfaces/SecretStore.html) -- `SecretStoreConnector`
+> - [Observability](../interfaces/Observability.html) -- `ObservabilityConnector`, `RoutingEvent`, `RequestLogEntry`, `AggregateStats`, `Severity`, `TraceEntry`
+> - [Discovery](../interfaces/Discovery.html) -- `DiscoveryConnector`, `ProbeResult`
 
 ---
 

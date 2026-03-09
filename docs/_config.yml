@@ -1,0 +1,13 @@
+title: ModelMesh Lite
+description: Capability-driven AI model routing with automatic failover
+theme: jekyll-theme-minimal
+baseurl: "/ModelMesh"
+url: "https://apartsinprojects.github.io"
+markdown: kramdown
+kramdown:
+  input: GFM
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true

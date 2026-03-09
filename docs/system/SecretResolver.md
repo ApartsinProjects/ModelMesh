@@ -1,8 +1,13 @@
+---
+layout: default
+title: "SecretResolver"
+---
+
 # SecretResolver
 
 Resolves `${secrets:name}` references in configuration through the configured secret store connector. The resolver caches resolved values in memory with a configurable TTL to minimize calls to the secret backend. Secrets are re-resolved on provider rotation when a new provider is activated, ensuring that API keys and tokens are always current. The resolver supports bulk resolution of entire configuration objects and manual cache invalidation for rotation or key renewal scenarios.
 
-**Depends on:** [SecretStoreConnector](../ConnectorInterfaces.md#secret-store)
+**Depends on:** [SecretStoreConnector](../ConnectorInterfaces.html#secret-store)
 
 ---
 
@@ -129,7 +134,7 @@ class SecretResolver {
 
 ## Configuration
 
-See [SystemConfiguration.md -- Secrets](../SystemConfiguration.md#secrets) for full YAML reference.
+See [SystemConfiguration.md -- Secrets](../SystemConfiguration.html#secrets) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

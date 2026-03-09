@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Perspective API"
+---
+
 # Perspective API
 
 **ID:** `provider.google.moderation.v1`

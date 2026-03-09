@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Load Balanced"
+---
+
 # Load Balanced
 
 **ID:** `rotation.modelmesh.load-balanced.v1`
@@ -81,7 +86,7 @@ In absolute mode, claude-sonnet-4-20250514 dominates because it has the most rem
 
 ## Configuration
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |

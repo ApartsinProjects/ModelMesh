@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Cloudflare Workers AI"
+---
+
 # Cloudflare Workers AI
 
 **ID:** `provider.cloudflare.workers-ai.v1`

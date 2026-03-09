@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Serper"
+---
+
 # Serper
 
 **ID:** `provider.serper.search.v1`

@@ -1,6 +1,11 @@
+---
+layout: default
+title: "System Services Overview"
+---
+
 # System Services Overview
 
-ModelMesh Lite is composed of a set of cooperating runtime services that together implement capability-based routing, model lifecycle management, provider abstraction, and observability. This document describes the overall architecture, initialization sequence, request flow, and service groupings. For conceptual foundations see [SystemConcept.md](../SystemConcept.md); for YAML configuration see [SystemConfiguration.md](../SystemConfiguration.md).
+ModelMesh Lite is composed of a set of cooperating runtime services that together implement capability-based routing, model lifecycle management, provider abstraction, and observability. This document describes the overall architecture, initialization sequence, request flow, and service groupings. For conceptual foundations see [SystemConcept.md](../SystemConcept.html); for YAML configuration see [SystemConfiguration.md](../SystemConfiguration.html).
 
 ---
 
@@ -75,20 +80,20 @@ A typical synchronous completion request follows this path:
 
 | Group | Services | Purpose |
 | --- | --- | --- |
-| **Facade** | [ModelMesh](ModelMesh.md) | Library entry point; initializes and wires all subsystems |
-| **Routing** | [Router](Router.md), [RoutingPipeline](RoutingPipeline.md), [CapabilityResolver](CapabilityResolver.md), [DeliveryFilter](DeliveryFilter.md), [StateFilter](StateFilter.md), [RetryPolicy](RetryPolicy.md) | Request orchestration, pipeline stages, and retry logic |
-| **Pools & Models** | [CapabilityPool](CapabilityPool.md), [Model](Model.md), [ProviderService](ProviderService.md), [ModelState](ModelState.md), [ProviderState](ProviderState.md) | Model grouping, runtime state, and provider abstraction |
-| **Rotation** | [RotationPolicyService](RotationPolicyService.md), [DeactivationEvaluator](DeactivationEvaluator.md), [RecoveryEvaluator](RecoveryEvaluator.md), [SelectionStrategy](SelectionStrategy.md) | Deactivation, recovery, and selection governance |
-| **Registries** | [ModelRegistry](ModelRegistry.md), [ConnectorRegistry](ConnectorRegistry.md), [CapabilityTree](CapabilityTree.md) | Model catalogue, connector catalogue, capability hierarchy |
-| **External Interfaces** | [OpenAIClient](OpenAIClient.md), [ProxyServer](ProxyServer.md) | Application-facing API surfaces |
-| **Observability** | [EventEmitter](EventEmitter.md), [RequestLogger](RequestLogger.md), [StatisticsCollector](StatisticsCollector.md) | Events, logging, and metrics |
-| **Infrastructure** | [SecretResolver](SecretResolver.md), [StateManager](StateManager.md) | Secret resolution and state persistence |
+| **Facade** | [ModelMesh](ModelMesh.html) | Library entry point; initializes and wires all subsystems |
+| **Routing** | [Router](Router.html), [RoutingPipeline](RoutingPipeline.html), [CapabilityResolver](CapabilityResolver.html), [DeliveryFilter](DeliveryFilter.html), [StateFilter](StateFilter.html), [RetryPolicy](RetryPolicy.html) | Request orchestration, pipeline stages, and retry logic |
+| **Pools & Models** | [CapabilityPool](CapabilityPool.html), [Model](Model.html), [ProviderService](ProviderService.html), [ModelState](ModelState.html), [ProviderState](ProviderState.html) | Model grouping, runtime state, and provider abstraction |
+| **Rotation** | [RotationPolicyService](RotationPolicyService.html), [DeactivationEvaluator](DeactivationEvaluator.html), [RecoveryEvaluator](RecoveryEvaluator.html), [SelectionStrategy](SelectionStrategy.html) | Deactivation, recovery, and selection governance |
+| **Registries** | [ModelRegistry](ModelRegistry.html), [ConnectorRegistry](ConnectorRegistry.html), [CapabilityTree](CapabilityTree.html) | Model catalogue, connector catalogue, capability hierarchy |
+| **External Interfaces** | [OpenAIClient](OpenAIClient.html), [ProxyServer](ProxyServer.html) | Application-facing API surfaces |
+| **Observability** | [EventEmitter](EventEmitter.html), [RequestLogger](RequestLogger.html), [StatisticsCollector](StatisticsCollector.html) | Events, logging, and metrics |
+| **Infrastructure** | [SecretResolver](SecretResolver.html), [StateManager](StateManager.html) | Secret resolution and state persistence |
 
 ---
 
 ## Cross-References
 
-- [SystemConcept.md](../SystemConcept.md) -- Conceptual architecture, design principles, and capability model
-- [SystemConfiguration.md](../SystemConfiguration.md) -- Full YAML configuration reference
-- [SystemServices.md](../SystemServices.md) -- Consolidated service reference (source for individual docs)
-- [ConnectorInterfaces.md](../ConnectorInterfaces.md) -- Connector API contracts
+- [SystemConcept.md](../SystemConcept.html) -- Conceptual architecture, design principles, and capability model
+- [SystemConfiguration.md](../SystemConfiguration.html) -- Full YAML configuration reference
+- [SystemServices.md](../SystemServices.html) -- Consolidated service reference (source for individual docs)
+- [ConnectorInterfaces.md](../ConnectorInterfaces.html) -- Connector API contracts

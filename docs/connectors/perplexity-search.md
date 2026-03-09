@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Perplexity (Sonar)"
+---
+
 # Perplexity (Sonar)
 
 **ID:** `provider.perplexity.search.v1`

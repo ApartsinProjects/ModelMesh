@@ -1,8 +1,13 @@
+---
+layout: default
+title: "Secret Store Interface"
+---
+
 # Secret Store Interface
 
 A secret store connector resolves API keys and tokens from a secure backend at runtime. Configuration references secrets by name (`${secrets:openai-key}`); the library resolves them through the configured store at initialization and on rotation (when a new provider is activated).
 
-> **Reference:** [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) | [ConnectorCatalogue.md -- Secret Store Connectors](../ConnectorCatalogue.md#secret-store-connectors)
+> **Reference:** [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) | [ConnectorCatalogue.md -- Secret Store Connectors](../ConnectorCatalogue.html#secret-store-connectors)
 
 ---
 
@@ -143,7 +148,7 @@ interface SecretStoreConnector extends SecretResolution {}
 
 ## Common Configuration
 
-Parameters shared by all secret store connectors. Individual stores may add connector-specific parameters (see [ConnectorCatalogue.md -- Secret Store Connectors](../ConnectorCatalogue.md#secret-store-connectors)).
+Parameters shared by all secret store connectors. Individual stores may add connector-specific parameters (see [ConnectorCatalogue.md -- Secret Store Connectors](../ConnectorCatalogue.html#secret-store-connectors)).
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -156,4 +161,4 @@ Parameters shared by all secret store connectors. Individual stores may add conn
 
 ## CDK Base Class
 
-The CDK provides [BaseSecretStore](../cdk/BaseClasses.md#basesecretstore) with in-memory cache and TTL. Specialized class: [FileSecretStore](../cdk/BaseClasses.md#filesecretstore). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.md#tutorial-5-complete-connector-set-for-acmecorp).
+The CDK provides [BaseSecretStore](../cdk/BaseClasses.html#basesecretstore) with in-memory cache and TTL. Specialized class: [FileSecretStore](../cdk/BaseClasses.html#filesecretstore). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.html#tutorial-5-complete-connector-set-for-acmecorp).

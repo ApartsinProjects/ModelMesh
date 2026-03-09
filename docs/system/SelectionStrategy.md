@@ -1,8 +1,13 @@
+---
+layout: default
+title: "SelectionStrategy"
+---
+
 # SelectionStrategy
 
 Chooses the best model from active candidates for a given request. The strategy is pluggable: eight pre-shipped strategies cover common patterns (priority, round-robin, cost-first, latency-first, session stickiness, rate-limit-aware, load-balanced, and stick-until-failure), and custom implementations can be registered through the connector system. Each strategy receives the full candidate list with snapshots and the incoming request, returning a scored selection result.
 
-**Depends on:** [RotationPolicyService](RotationPolicyService.md), [CapabilityPool](CapabilityPool.md)
+**Depends on:** [RotationPolicyService](RotationPolicyService.html), [CapabilityPool](CapabilityPool.html)
 
 ---
 
@@ -190,7 +195,7 @@ class SelectionStrategy {
 
 ## Configuration
 
-Parameters configured per pool under the selection and strategy keys. See [SystemConfiguration.md -- Pools](../SystemConfiguration.md#pools) for full YAML reference.
+Parameters configured per pool under the selection and strategy keys. See [SystemConfiguration.md -- Pools](../SystemConfiguration.html#pools) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

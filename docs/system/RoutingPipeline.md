@@ -1,8 +1,13 @@
+---
+layout: default
+title: "RoutingPipeline"
+---
+
 # RoutingPipeline
 
 Ordered sequence of stages that process each routing request. The default pipeline runs six stages: capability resolution, pool selection, delivery mode filter, state filter, selection strategy, and intelligent retry. Stages are composable -- custom stages can be inserted at any position or replace existing ones.
 
-**Depends on:** [CapabilityResolver](CapabilityResolver.md), [DeliveryFilter](DeliveryFilter.md), [StateFilter](StateFilter.md), [SelectionStrategy](SelectionStrategy.md), [RetryPolicy](RetryPolicy.md).
+**Depends on:** [CapabilityResolver](CapabilityResolver.html), [DeliveryFilter](DeliveryFilter.html), [StateFilter](StateFilter.html), [SelectionStrategy](SelectionStrategy.html), [RetryPolicy](RetryPolicy.html).
 
 ---
 
@@ -197,9 +202,9 @@ class RoutingPipeline {
 
 | Order | Stage | Purpose |
 | --- | --- | --- |
-| 1 | [CapabilityResolver](CapabilityResolver.md) | Map the requested capability to matching pools using the capability hierarchy |
+| 1 | [CapabilityResolver](CapabilityResolver.html) | Map the requested capability to matching pools using the capability hierarchy |
 | 2 | Pool selection | Choose the target pool (single match or priority-based) |
-| 3 | [DeliveryFilter](DeliveryFilter.md) | Exclude models that do not support the requested delivery mode |
-| 4 | [StateFilter](StateFilter.md) | Exclude standby models and models from deactivated providers |
-| 5 | [SelectionStrategy](SelectionStrategy.md) | Choose the best model from remaining candidates (see [RotationPolicyService](RotationPolicyService.md)) |
-| 6 | [RetryPolicy](RetryPolicy.md) | On failure, retry with backoff or rotate to the next candidate |
+| 3 | [DeliveryFilter](DeliveryFilter.html) | Exclude models that do not support the requested delivery mode |
+| 4 | [StateFilter](StateFilter.html) | Exclude standby models and models from deactivated providers |
+| 5 | [SelectionStrategy](SelectionStrategy.html) | Choose the best model from remaining candidates (see [RotationPolicyService](RotationPolicyService.html)) |
+| 6 | [RetryPolicy](RetryPolicy.html) | On failure, retry with backoff or rotate to the next candidate |

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Stability AI"
+---
+
 # Stability AI
 
 **ID:** `provider.stability.image-gen.v1`

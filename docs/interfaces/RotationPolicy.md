@@ -1,8 +1,13 @@
+---
+layout: default
+title: "Rotation Policy Interface"
+---
+
 # Rotation Policy Interface
 
 A rotation policy governs model lifecycle within a pool through three independently replaceable components. Rotation operates at model level (individual model moves to standby) or provider level (all models from a provider deactivated across pools). Each component receives the current model state -- failure counts, cooldown timers, quota usage, latency history -- and makes decisions accordingly.
 
-> **Reference:** [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) | [ConnectorCatalogue.md -- Rotation Policies](../ConnectorCatalogue.md#rotation-policies)
+> **Reference:** [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) | [ConnectorCatalogue.md -- Rotation Policies](../ConnectorCatalogue.html#rotation-policies)
 
 ---
 
@@ -204,7 +209,7 @@ class SelectionStrategy(ABC):
         ...
 ```
 
-Note: `CompletionRequest` is imported from the [Provider interface](Provider.md).
+Note: `CompletionRequest` is imported from the [Provider interface](Provider.html).
 
 ### TypeScript
 
@@ -272,4 +277,4 @@ Parameters shared by all rotation policies. Configured per pool; policies receiv
 
 ## CDK Base Class
 
-The CDK provides [BaseRotationPolicy](../cdk/BaseClasses.md#baserotationpolicy) with threshold-based deactivation, cooldown recovery, and priority selection. Specialized class: [ThresholdRotationPolicy](../cdk/BaseClasses.md#thresholdrotationpolicy). See [DeveloperGuide -- Tutorial 3](../cdk/DeveloperGuide.md#tutorial-3-custom-rotation-policy-from-scratch).
+The CDK provides [BaseRotationPolicy](../cdk/BaseClasses.html#baserotationpolicy) with threshold-based deactivation, cooldown recovery, and priority selection. Specialized class: [ThresholdRotationPolicy](../cdk/BaseClasses.html#thresholdrotationpolicy). See [DeveloperGuide -- Tutorial 3](../cdk/DeveloperGuide.html#tutorial-3-custom-rotation-policy-from-scratch).

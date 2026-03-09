@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Google Gemini"
+---
+
 # Google Gemini
 
 **ID:** `provider.google.gemini.v1`

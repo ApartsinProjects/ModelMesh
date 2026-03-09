@@ -1,8 +1,13 @@
+---
+layout: default
+title: "StatisticsCollector"
+---
+
 # StatisticsCollector
 
 Aggregate metrics buffer that records operational data from completed requests and flushes it on a configurable schedule through observability connectors. The collector maintains in-memory aggregates at three scopes -- model, provider, and pool -- and exposes a query API for programmatic access to operational statistics. Metrics are retained in memory for a configurable window and flushed to external systems at regular intervals.
 
-**Depends on:** [ObservabilityConnector](../ConnectorInterfaces.md#observability)
+**Depends on:** [ObservabilityConnector](../ConnectorInterfaces.html#observability)
 
 ---
 
@@ -247,7 +252,7 @@ console.log(`Total tokens: ${poolStats.total_tokens_in + poolStats.total_tokens_
 
 ## Configuration
 
-See [SystemConfiguration.md -- Observability](../SystemConfiguration.md#observability) for full YAML reference.
+See [SystemConfiguration.md -- Observability](../SystemConfiguration.html#observability) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

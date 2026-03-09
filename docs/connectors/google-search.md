@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Google Custom Search"
+---
+
 # Google Custom Search
 
 **ID:** `provider.google.search.v1`

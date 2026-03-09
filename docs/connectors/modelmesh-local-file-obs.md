@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Local File Observability"
+---
+
 # Local File Observability
 
 **ID:** `observability.modelmesh.local-file.v1`

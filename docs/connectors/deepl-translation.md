@@ -1,3 +1,8 @@
+---
+layout: default
+title: "DeepL"
+---
+
 # DeepL
 
 **ID:** `provider.deepl.translation.v1`

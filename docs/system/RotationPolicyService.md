@@ -1,8 +1,13 @@
+---
+layout: default
+title: "RotationPolicyService"
+---
+
 # RotationPolicyService
 
-Composite rotation governance object managing model lifecycle within a capability pool. Contains three independently replaceable components: deactivation evaluation, recovery evaluation, and selection strategy. Each component receives the current model state and makes decisions accordingly. Operates at model level (individual model to standby) or provider level (all models from a provider deactivated across pools). Named `RotationPolicyService` to distinguish from the conceptual rotation policy described in [SystemConcept.md](../SystemConcept.md).
+Composite rotation governance object managing model lifecycle within a capability pool. Contains three independently replaceable components: deactivation evaluation, recovery evaluation, and selection strategy. Each component receives the current model state and makes decisions accordingly. Operates at model level (individual model to standby) or provider level (all models from a provider deactivated across pools). Named `RotationPolicyService` to distinguish from the conceptual rotation policy described in [SystemConcept.md](../SystemConcept.html).
 
-**Depends on:** [DeactivationEvaluator](DeactivationEvaluator.md), [RecoveryEvaluator](RecoveryEvaluator.md), [SelectionStrategy](SelectionStrategy.md).
+**Depends on:** [DeactivationEvaluator](DeactivationEvaluator.html), [RecoveryEvaluator](RecoveryEvaluator.html), [SelectionStrategy](SelectionStrategy.html).
 
 ---
 
@@ -413,7 +418,7 @@ class RotationPolicyService {
 
 ## Configuration
 
-Rotation parameters are configured per pool under the `pools` section. See [SystemConfiguration.md -- Pools](../SystemConfiguration.md#pools).
+Rotation parameters are configured per pool under the `pools` section. See [SystemConfiguration.md -- Pools](../SystemConfiguration.html#pools).
 
 ### Deactivation Parameters
 

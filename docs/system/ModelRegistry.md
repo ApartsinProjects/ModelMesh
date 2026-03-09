@@ -1,8 +1,13 @@
+---
+layout: default
+title: "ModelRegistry"
+---
+
 # ModelRegistry
 
 Local cache of known model definitions and the source of truth for pool membership and capability resolution. The registry is populated at initialization from YAML configuration and updated by discovery sync (automatic) or manual registration (API). All changes to the registry trigger a refresh of pool memberships, ensuring that models are added to or removed from capability pools as their definitions change. State is persisted through the StateManager across restarts.
 
-**Depends on:** [CapabilityTree](CapabilityTree.md), [CapabilityPool](CapabilityPool.md)
+**Depends on:** [CapabilityTree](CapabilityTree.html), [CapabilityPool](CapabilityPool.html)
 
 ---
 

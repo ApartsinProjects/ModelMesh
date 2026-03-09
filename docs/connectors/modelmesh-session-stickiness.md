@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Session Stickiness"
+---
+
 # Session Stickiness
 
 **ID:** `rotation.modelmesh.session-stickiness.v1`
@@ -66,7 +71,7 @@ Given `affinity_mode: fallback` and `session_timeout: 30m`:
 
 ## Configuration
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |

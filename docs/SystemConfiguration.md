@@ -1,6 +1,11 @@
+---
+layout: default
+title: "System Configuration"
+---
+
 # System Configuration
 
-**YAML configuration reference for ModelMesh Lite.** The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [storage connectors](ConnectorInterfaces.md#storage) for centralized management and sharing across instances. For the runtime objects that consume this configuration see [SystemServices.md](SystemServices.md).
+**YAML configuration reference for ModelMesh Lite.** The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [storage connectors](ConnectorInterfaces.html#storage) for centralized management and sharing across instances. For the runtime objects that consume this configuration see [SystemServices.md](SystemServices.html).
 
 ---
 
@@ -38,7 +43,7 @@ secrets:
   region: us-east-1
 ```
 
-See [ConnectorCatalogue.md — Secret Store](ConnectorCatalogue.md#secret-store-connectors) for pre-shipped stores and deployment patterns.
+See [ConnectorCatalogue.md — Secret Store](ConnectorCatalogue.html#secret-store-connectors) for pre-shipped stores and deployment patterns.
 
 ---
 
@@ -107,13 +112,13 @@ providers:
     enabled: false
 ```
 
-See [ConnectorCatalogue.md — Provider](ConnectorCatalogue.md#provider-connectors) for pre-shipped provider connectors and capability matrix.
+See [ConnectorCatalogue.md — Provider](ConnectorCatalogue.html#provider-connectors) for pre-shipped provider connectors and capability matrix.
 
 ---
 
 ## Models
 
-Explicit model definitions supplement auto-discovered models. Each entry is a capability contract declaring what an application can expect. Models register at leaf nodes of the [capability hierarchy](ModelCapabilities.md) and automatically join ancestor pools.
+Explicit model definitions supplement auto-discovered models. Each entry is a capability contract declaring what an application can expect. Models register at leaf nodes of the [capability hierarchy](ModelCapabilities.html) and automatically join ancestor pools.
 
 | Attribute | Type | Description |
 | --- | --- | --- |
@@ -212,7 +217,7 @@ models:
 
 ## Pools
 
-Defines capability pools and their per-pool rotation, selection, and retry configuration. Each pool targets a node in the [capability hierarchy](ModelCapabilities.md) and automatically includes all models registered at that node or its descendants.
+Defines capability pools and their per-pool rotation, selection, and retry configuration. Each pool targets a node in the [capability hierarchy](ModelCapabilities.html) and automatically includes all models registered at that node or its descendants.
 
 | Attribute | Type | Description |
 | --- | --- | --- |
@@ -324,7 +329,7 @@ pools:
     fallback_strategy: modelmesh.cost-first.v1
 ```
 
-See [ConnectorCatalogue.md — Rotation Policies](ConnectorCatalogue.md#rotation-policies) for pre-shipped strategies.
+See [ConnectorCatalogue.md — Rotation Policies](ConnectorCatalogue.html#rotation-policies) for pre-shipped strategies.
 
 ---
 
@@ -357,7 +362,7 @@ storage:
   sync_interval: 300s
 ```
 
-See [ConnectorCatalogue.md — Storage](ConnectorCatalogue.md#storage-connectors) for pre-shipped backends.
+See [ConnectorCatalogue.md — Storage](ConnectorCatalogue.html#storage-connectors) for pre-shipped backends.
 
 ---
 
@@ -425,7 +430,7 @@ stats.model("gpt-4o").latency_p95         # 1.8s
 stats.pool("text-generation").rotation_events  # 7
 ```
 
-See [ConnectorCatalogue.md — Observability](ConnectorCatalogue.md#observability-connectors) for pre-shipped connectors.
+See [ConnectorCatalogue.md — Observability](ConnectorCatalogue.html#observability-connectors) for pre-shipped connectors.
 
 ---
 
@@ -465,7 +470,7 @@ discovery:
     failure_threshold: 3
 ```
 
-See [ConnectorCatalogue.md — Discovery](ConnectorCatalogue.md#discovery-connectors) for pre-shipped connectors.
+See [ConnectorCatalogue.md — Discovery](ConnectorCatalogue.html#discovery-connectors) for pre-shipped connectors.
 
 ---
 
@@ -484,7 +489,7 @@ connectors:
     - https://registry.example.com/connectors/pg-storage-1.0.zip
 ```
 
-Custom connectors register in the same catalogue and receive the same treatment as pre-shipped ones. See [SystemConcept.md — Connector-Based Extensibility](SystemConcept.md#connector-based-extensibility).
+Custom connectors register in the same catalogue and receive the same treatment as pre-shipped ones. See [SystemConcept.md — Connector-Based Extensibility](SystemConcept.html#connector-based-extensibility).
 
 ---
 
@@ -514,7 +519,7 @@ proxy:
       - ${secrets:proxy-token}
 ```
 
-See [SystemConcept.md — OpenAI-Compatible Proxy](SystemConcept.md#openai-compatible-proxy) and [Deployment Modes](SystemConcept.md#deployment-modes).
+See [SystemConcept.md — OpenAI-Compatible Proxy](SystemConcept.html#openai-compatible-proxy) and [Deployment Modes](SystemConcept.html#deployment-modes).
 
 ---
 

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Test Coverage Matrix"
+---
+
 # Test Coverage Matrix
 
 Correlates documented features with test coverage. Generated from the 356-test suite across 12 test files.

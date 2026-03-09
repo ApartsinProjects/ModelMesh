@@ -69,6 +69,36 @@ class MeshClient:
         """Return the list of currently active provider connector IDs."""
         return self._mesh.active_providers()
 
+    def describe(self, pool: str | None = None) -> str:
+        """Describe the models and strategy behind each virtual model (pool).
+
+        Args:
+            pool: If provided, describe only this pool. Otherwise all pools.
+
+        Returns:
+            Human-readable multi-line string showing pool composition.
+        """
+        pools = self._mesh.pools
+        if pool is not None:
+            if pool not in pools:
+                raise KeyError(f"Pool '{pool}' not found")
+            pools = {pool: pools[pool]}
+
+        lines: list[str] = []
+        for pool_id, pool_obj in pools.items():
+            strategy = pool_obj.config.get("strategy", "stick-until-failure")
+            cap = pool_obj.config.get("capability", pool_id)
+            lines.append(f'Pool "{pool_id}" (strategy: {strategy})')
+            lines.append(f"  capability: {cap}")
+            for i, m in enumerate(pool_obj.models):
+                marker = "\u2192" if i == 0 and m.status.value == "active" else " "
+                lines.append(
+                    f"  {marker} {m.model_id} [{m.provider_id}] ({m.status.value})"
+                )
+            if not pool_obj.models:
+                lines.append("  (no models)")
+        return "\n".join(lines)
+
     def rotate(self, pool: str) -> Optional[str]:
         """Force an immediate rotation in a pool.
 

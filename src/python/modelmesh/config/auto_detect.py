@@ -181,6 +181,153 @@ PROVIDER_REGISTRY: dict[str, dict] = {
             ),
         ],
     },
+    "DEEPSEEK_API_KEY": {
+        "name": "deepseek",
+        "connector": "deepseek.api.v1",
+        "base_url": "https://api.deepseek.com",
+        "default_models": [
+            ModelInfo(
+                id="deepseek.deepseek-chat",
+                name="DeepSeek Chat",
+                capabilities=["generation.text-generation.chat-completion"],
+                context_window=64000,
+                max_output_tokens=8192,
+            ),
+        ],
+    },
+    "XAI_API_KEY": {
+        "name": "xai",
+        "connector": "xai.grok.v1",
+        "base_url": "https://api.x.ai",
+        "default_models": [
+            ModelInfo(
+                id="xai.grok-2",
+                name="Grok-2",
+                capabilities=["generation.text-generation.chat-completion"],
+                context_window=128000,
+                max_output_tokens=32768,
+            ),
+        ],
+    },
+    "COHERE_API_KEY": {
+        "name": "cohere",
+        "connector": "cohere.nlp.v1",
+        "base_url": "https://api.cohere.com",
+        "default_models": [
+            ModelInfo(
+                id="cohere.command-a-03-2025",
+                name="Command A",
+                capabilities=["generation.text-generation.chat-completion"],
+                context_window=256000,
+                max_output_tokens=8192,
+            ),
+        ],
+    },
+    "PERPLEXITY_API_KEY": {
+        "name": "perplexity",
+        "connector": "perplexity.search.v1",
+        "base_url": "https://api.perplexity.ai",
+        "default_models": [
+            ModelInfo(
+                id="perplexity.sonar",
+                name="Sonar",
+                capabilities=["retrieval.grounded-generation.web-search"],
+                context_window=128000,
+                max_output_tokens=8192,
+            ),
+        ],
+    },
+    "ELEVENLABS_API_KEY": {
+        "name": "elevenlabs",
+        "connector": "elevenlabs.tts.v1",
+        "base_url": "https://api.elevenlabs.io",
+        "default_models": [
+            ModelInfo(
+                id="elevenlabs.eleven_multilingual_v2",
+                name="Eleven Multilingual v2",
+                capabilities=["generation.audio.text-to-speech"],
+                context_window=5000,
+                max_output_tokens=0,
+            ),
+        ],
+    },
+    "TAVILY_API_KEY": {
+        "name": "tavily",
+        "connector": "tavily.search.v1",
+        "base_url": "https://api.tavily.com",
+        "default_models": [
+            ModelInfo(
+                id="tavily.tavily-search",
+                name="Tavily Search",
+                capabilities=["retrieval.semantic-search.web-search"],
+                context_window=400,
+                max_output_tokens=0,
+            ),
+        ],
+    },
+    "SERPER_API_KEY": {
+        "name": "serper",
+        "connector": "serper.search.v1",
+        "base_url": "https://google.serper.dev",
+        "default_models": [
+            ModelInfo(
+                id="serper.serper-google-search",
+                name="Google Search via Serper",
+                capabilities=["retrieval.semantic-search.web-search"],
+                context_window=2048,
+                max_output_tokens=0,
+            ),
+        ],
+    },
+    "JINA_API_KEY": {
+        "name": "jina",
+        "connector": "jina.ai.v1",
+        "base_url": "https://api.jina.ai",
+        "default_models": [
+            ModelInfo(
+                id="jina.jina-reader",
+                name="Jina Reader",
+                capabilities=["understanding.document-understanding.content-extraction"],
+                context_window=0,
+                max_output_tokens=0,
+            ),
+            ModelInfo(
+                id="jina.jina-embeddings-v3",
+                name="Jina Embeddings v3",
+                capabilities=["representation.embeddings.text-embeddings"],
+                context_window=8192,
+                max_output_tokens=0,
+            ),
+        ],
+    },
+    "FIRECRAWL_API_KEY": {
+        "name": "firecrawl",
+        "connector": "firecrawl.scrape.v1",
+        "base_url": "https://api.firecrawl.dev",
+        "default_models": [
+            ModelInfo(
+                id="firecrawl.firecrawl-scrape",
+                name="Firecrawl Scrape",
+                capabilities=["understanding.document-understanding.content-extraction"],
+                context_window=0,
+                max_output_tokens=0,
+            ),
+        ],
+    },
+    "ASSEMBLYAI_API_KEY": {
+        "name": "assemblyai",
+        "connector": "assemblyai.stt.v1",
+        "base_url": "https://api.assemblyai.com",
+        "default_models": [
+            ModelInfo(
+                id="assemblyai.assemblyai-best",
+                name="AssemblyAI Best",
+                capabilities=["understanding.audio.speech-to-text"],
+                context_window=0,
+                max_output_tokens=0,
+            ),
+        ],
+    },
 }
 
 

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Groq"
+---
+
 # Groq
 
 **ID:** `provider.groq.inference.v1`

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Health Monitor"
+---
+
 # Health Monitor
 
 **ID:** `discovery.modelmesh.health-monitor.v1`

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "OpenRouter"
+---
+
 # OpenRouter
 
 **ID:** `provider.openrouter.gateway.v1`

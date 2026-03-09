@@ -1,8 +1,13 @@
+---
+layout: default
+title: "RecoveryEvaluator"
+---
+
 # RecoveryEvaluator
 
 Evaluates whether standby models should return to active status. The evaluator is triggered on timer expiry, calendar events (quota reset), health probe results, manual commands, or startup probes. It inspects the current model snapshot and determines whether the conditions that caused deactivation have been resolved, optionally returning a scheduled recovery time for deferred reactivation.
 
-**Depends on:** [ModelState](ModelState.md), [RotationPolicyService](RotationPolicyService.md)
+**Depends on:** [ModelState](ModelState.html), [RotationPolicyService](RotationPolicyService.html)
 
 ---
 
@@ -141,7 +146,7 @@ class RecoveryEvaluator {
 
 ## Configuration
 
-Parameters configured per pool under the `recovery` key. See [SystemConfiguration.md -- Pools](../SystemConfiguration.md#pools) for full YAML reference.
+Parameters configured per pool under the `recovery` key. See [SystemConfiguration.md -- Pools](../SystemConfiguration.html#pools) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

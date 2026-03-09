@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Google Cloud AI APIs"
+---
+
 # Google Cloud AI APIs
 
 **ID:** `provider.google.cloud-ai.v1`

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Azure Key Vault"
+---
+
 # Azure Key Vault
 
 **ID:** `secret-store.microsoft.key-vault.v1`
@@ -44,7 +49,7 @@ enum AuthMethod {
 | `vault_url` | string | _(required)_ | The Key Vault URL (e.g., `https://myvault.vault.azure.net`). |
 | `tenant_id` | string | _(required)_ | Azure Active Directory tenant ID for authentication. |
 
-See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
+See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
 
 ## YAML Example
 

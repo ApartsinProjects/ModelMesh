@@ -1,8 +1,13 @@
+---
+layout: default
+title: "CapabilityTree"
+---
+
 # CapabilityTree
 
-In-memory representation of the capability hierarchy. The tree provides traversal operations for capability resolution, pool membership calculation, and model lookup. The default tree includes seven top-level categories with pre-defined subcategories and leaf nodes. Users extend the tree with custom categories and leaves through configuration or the runtime API. See [ModelCapabilities.md](../ModelCapabilities.md) for the complete default tree structure and routing rules.
+In-memory representation of the capability hierarchy. The tree provides traversal operations for capability resolution, pool membership calculation, and model lookup. The default tree includes seven top-level categories with pre-defined subcategories and leaf nodes. Users extend the tree with custom categories and leaves through configuration or the runtime API. See [ModelCapabilities.md](../ModelCapabilities.html) for the complete default tree structure and routing rules.
 
-**Depends on:** [ModelCapabilities.md](../ModelCapabilities.md)
+**Depends on:** [ModelCapabilities.md](../ModelCapabilities.html)
 
 ---
 
@@ -188,7 +193,7 @@ class CapabilityTree {
 
 ## Default Categories
 
-The default capability tree ships with seven top-level categories. Each category contains subcategories and leaf nodes where models register. See [ModelCapabilities.md](../ModelCapabilities.md) for the full hierarchy.
+The default capability tree ships with seven top-level categories. Each category contains subcategories and leaf nodes where models register. See [ModelCapabilities.md](../ModelCapabilities.html) for the full hierarchy.
 
 | Category | Description | Example Leaves |
 | --- | --- | --- |

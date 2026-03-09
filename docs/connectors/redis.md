@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Redis Storage"
+---
+
 # Redis Storage
 
 **ID:** `storage.redis.redis.v1`

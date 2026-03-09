@@ -1,8 +1,13 @@
+---
+layout: default
+title: "CDK Base Classes"
+---
+
 # CDK Base Classes
 
 The Connector Development Kit (CDK) provides base classes that implement the connector interfaces with sensible defaults. Each base class handles boilerplate -- HTTP transport, caching, serialization, error classification -- so that custom connectors only override the methods that differ from the defaults. Every base class maps one-to-one with a connector interface and is designed to be subclassed.
 
-> **Interfaces:** [Provider](../interfaces/Provider.md) | [RotationPolicy](../interfaces/RotationPolicy.md) | [SecretStore](../interfaces/SecretStore.md) | [Storage](../interfaces/Storage.md) | [Observability](../interfaces/Observability.md) | [Discovery](../interfaces/Discovery.md)
+> **Interfaces:** [Provider](../interfaces/Provider.html) | [RotationPolicy](../interfaces/RotationPolicy.html) | [SecretStore](../interfaces/SecretStore.html) | [Storage](../interfaces/Storage.html) | [Observability](../interfaces/Observability.html) | [Discovery](../interfaces/Discovery.html)
 
 ---
 
@@ -10,7 +15,7 @@ The Connector Development Kit (CDK) provides base classes that implement the con
 
 The foundation for all provider connectors. Implements the full `ProviderConnector` interface with an OpenAI-compatible default behavior: POST JSON to `/v1/chat/completions`, parse an OpenAI-format response, and handle streaming via SSE. Subclasses override protected hook methods to adapt to non-OpenAI APIs without reimplementing transport, retries, or error classification.
 
-> **Implements:** [ProviderConnector](../interfaces/Provider.md)
+> **Implements:** [ProviderConnector](../interfaces/Provider.html)
 
 ### Configuration
 
@@ -692,7 +697,7 @@ class HttpError extends Error {
 
 The foundation for all rotation policies. Implements the three sub-interfaces -- `DeactivationPolicy`, `RecoveryPolicy`, and `SelectionStrategy` -- with threshold-based defaults: deactivate on consecutive failure count or error rate, recover after a cooldown period, and select by priority list with fallback to lowest error rate.
 
-> **Implements:** [DeactivationPolicy + RecoveryPolicy + SelectionStrategy](../interfaces/RotationPolicy.md)
+> **Implements:** [DeactivationPolicy + RecoveryPolicy + SelectionStrategy](../interfaces/RotationPolicy.html)
 
 ### Configuration
 
@@ -1057,7 +1062,7 @@ class BaseRotationPolicy
 
 The foundation for all secret store connectors. Implements the `SecretStoreConnector` interface with an in-memory dictionary backend and optional caching. Subclasses override the single `_resolve(name)` hook to read secrets from files, vaults, or cloud services. The base class handles cache management and missing-secret policy.
 
-> **Implements:** [SecretStoreConnector](../interfaces/SecretStore.md)
+> **Implements:** [SecretStoreConnector](../interfaces/SecretStore.html)
 
 ### Configuration
 
@@ -1265,7 +1270,7 @@ class BaseSecretStore implements SecretStoreConnector {
 
 The foundation for all storage connectors. Implements the full `StorageConnector` interface (Persistence, Inventory, StatQuery) plus the optional `Locking` interface using an in-memory dictionary backend. Handles serialization format selection and optional compression. Subclasses override persistence methods to write to files, databases, or cloud storage.
 
-> **Implements:** [StorageConnector + Locking](../interfaces/Storage.md)
+> **Implements:** [StorageConnector + Locking](../interfaces/Storage.html)
 
 ### Configuration
 
@@ -1623,7 +1628,7 @@ class BaseStorage implements StorageConnector, Locking {
 
 The foundation for all observability connectors. Implements the full `ObservabilityConnector` interface (Events, Logging, Statistics, Tracing) with configurable event filtering, log-level control, severity-based trace filtering, secret redaction, and buffered statistics flushing. Subclasses override five protected hook methods (`_format_event`, `_format_log`, `_format_stats`, `_format_trace`, `_write`) to change output format and destination without reimplementing filtering or buffering logic.
 
-> **Implements:** [ObservabilityConnector](../interfaces/Observability.md)
+> **Implements:** [ObservabilityConnector](../interfaces/Observability.html)
 
 ### Configuration
 
@@ -2094,7 +2099,7 @@ class BaseObservability implements ObservabilityConnector {
 
 The foundation for all discovery connectors. Implements the full `DiscoveryConnector` interface (RegistrySync, HealthMonitoring) with background scheduling, configurable sync and health probe intervals, and failure-threshold-based provider deactivation. Subclasses override `probe()` to implement protocol-specific health checks (HTTP, gRPC, TCP) and can override `sync()` to add custom model catalogue logic.
 
-> **Implements:** [DiscoveryConnector](../interfaces/Discovery.md)
+> **Implements:** [DiscoveryConnector](../interfaces/Discovery.html)
 
 ### Configuration
 

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Model Capability Taxonomy"
+---
+
 # Model Capability Taxonomy
 
 **The complete capability hierarchy for ModelMesh Lite.** Models register at leaf nodes; pools target any node and include all descendants. The hierarchy is extensible — custom categories, subcategories, and leaf nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones.
@@ -136,7 +141,7 @@ capability
 | `text-to-speech` | generation.audio-generation.text-to-speech | text → audio |
 | `vision-understanding` | understanding.vision-understanding | image → text |
 
-Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-context-analysis`) targeting any hierarchy node. See [SystemConcept.md — Capability-Based Model Pools](SystemConcept.md#capability-based-model-pools) for static and dynamic pool definitions.
+Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-context-analysis`) targeting any hierarchy node. See [SystemConcept.md — Capability-Based Model Pools](SystemConcept.html#capability-based-model-pools) for static and dynamic pool definitions.
 
 ---
 

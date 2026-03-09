@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Bing Web Search API"
+---
+
 # Bing Web Search API
 
 **ID:** `provider.microsoft.bing-search.v1`

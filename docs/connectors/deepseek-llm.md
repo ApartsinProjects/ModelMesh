@@ -1,3 +1,8 @@
+---
+layout: default
+title: "DeepSeek"
+---
+
 # DeepSeek
 
 **ID:** `provider.deepseek.llm.v1`

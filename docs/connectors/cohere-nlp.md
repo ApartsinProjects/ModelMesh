@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Cohere"
+---
+
 # Cohere
 
 **ID:** `provider.cohere.nlp.v1`

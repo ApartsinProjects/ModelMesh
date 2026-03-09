@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Tavily"
+---
+
 # Tavily
 
 **ID:** `provider.tavily.search.v1`

@@ -1,7 +1,9 @@
 """Pre-shipped provider connectors for ModelMesh Lite.
 
-Exports the OpenAI and Anthropic provider connectors with their
-configuration classes.
+Exports LLM providers (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek,
+Mistral, Together, OpenRouter, xAI, Cohere, Perplexity, ElevenLabs) and
+non-LLM utility providers (Tavily, Serper, Jina, Firecrawl, AssemblyAI)
+with their configuration classes.
 """
 from __future__ import annotations
 
@@ -9,14 +11,107 @@ from modelmesh.connectors.providers.anthropic_provider import (
     AnthropicProvider,
     AnthropicProviderConfig,
 )
+from modelmesh.connectors.providers.assemblyai_provider import (
+    AssemblyAIProvider,
+    AssemblyAIProviderConfig,
+)
+from modelmesh.connectors.providers.cohere_provider import (
+    CohereProvider,
+    CohereProviderConfig,
+)
+from modelmesh.connectors.providers.deepseek_provider import (
+    DeepSeekProvider,
+    DeepSeekProviderConfig,
+)
+from modelmesh.connectors.providers.elevenlabs_provider import (
+    ElevenLabsProvider,
+    ElevenLabsProviderConfig,
+)
+from modelmesh.connectors.providers.firecrawl_provider import (
+    FirecrawlProvider,
+    FirecrawlProviderConfig,
+)
+from modelmesh.connectors.providers.gemini_provider import (
+    GeminiProvider,
+    GeminiProviderConfig,
+)
+from modelmesh.connectors.providers.groq_provider import (
+    GroqProvider,
+    GroqProviderConfig,
+)
+from modelmesh.connectors.providers.jina_provider import (
+    JinaProvider,
+    JinaProviderConfig,
+)
+from modelmesh.connectors.providers.mistral_provider import (
+    MistralProvider,
+    MistralProviderConfig,
+)
 from modelmesh.connectors.providers.openai_provider import (
     OpenAIProvider,
     OpenAIProviderConfig,
 )
+from modelmesh.connectors.providers.openrouter_provider import (
+    OpenRouterProvider,
+    OpenRouterProviderConfig,
+)
+from modelmesh.connectors.providers.perplexity_provider import (
+    PerplexityProvider,
+    PerplexityProviderConfig,
+)
+from modelmesh.connectors.providers.serper_provider import (
+    SerperProvider,
+    SerperProviderConfig,
+)
+from modelmesh.connectors.providers.tavily_provider import (
+    TavilyProvider,
+    TavilyProviderConfig,
+)
+from modelmesh.connectors.providers.together_provider import (
+    TogetherProvider,
+    TogetherProviderConfig,
+)
+from modelmesh.connectors.providers.xai_provider import (
+    XAIProvider,
+    XAIProviderConfig,
+)
 
 __all__ = [
+    # LLM providers
     "OpenAIProvider",
     "OpenAIProviderConfig",
     "AnthropicProvider",
     "AnthropicProviderConfig",
+    "GeminiProvider",
+    "GeminiProviderConfig",
+    "GroqProvider",
+    "GroqProviderConfig",
+    "DeepSeekProvider",
+    "DeepSeekProviderConfig",
+    "MistralProvider",
+    "MistralProviderConfig",
+    "TogetherProvider",
+    "TogetherProviderConfig",
+    "OpenRouterProvider",
+    "OpenRouterProviderConfig",
+    "XAIProvider",
+    "XAIProviderConfig",
+    "CohereProvider",
+    "CohereProviderConfig",
+    "PerplexityProvider",
+    "PerplexityProviderConfig",
+    # Media providers
+    "ElevenLabsProvider",
+    "ElevenLabsProviderConfig",
+    # Search & utility providers
+    "TavilyProvider",
+    "TavilyProviderConfig",
+    "SerperProvider",
+    "SerperProviderConfig",
+    "JinaProvider",
+    "JinaProviderConfig",
+    "FirecrawlProvider",
+    "FirecrawlProviderConfig",
+    "AssemblyAIProvider",
+    "AssemblyAIProviderConfig",
 ]

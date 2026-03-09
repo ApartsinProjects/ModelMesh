@@ -1,6 +1,11 @@
+---
+layout: default
+title: "System Services"
+---
+
 # System Services
 
-**Runtime objects and services that implement the ModelMesh Lite architecture.** This document describes the classes, state objects, and services that orchestrate capability-based routing, model lifecycle, and provider management. Individual service documentation with full code definitions is in [system/](system/Overview.md). For the conceptual architecture see [SystemConcept.md](SystemConcept.md); for YAML configuration see [SystemConfiguration.md](SystemConfiguration.md); for connector API contracts see [ConnectorInterfaces.md](ConnectorInterfaces.md).
+**Runtime objects and services that implement the ModelMesh Lite architecture.** This document describes the classes, state objects, and services that orchestrate capability-based routing, model lifecycle, and provider management. Individual service documentation with full code definitions is in [system/](system/Overview.html). For the conceptual architecture see [SystemConcept.md](SystemConcept.html); for YAML configuration see [SystemConfiguration.md](SystemConfiguration.html); for connector API contracts see [ConnectorInterfaces.md](ConnectorInterfaces.html).
 
 ---
 
@@ -21,7 +26,7 @@ Top-level entry point for the library. Initializes all subsystems, loads configu
 | `get_registry()` | Return the ModelRegistry. |
 | `reload_config(config)` | Hot-reload configuration without full restart. Re-resolves secrets, updates pools, re-registers connectors. |
 
-**Configuration:** All top-level YAML sections ([SystemConfiguration.md](SystemConfiguration.md)).
+**Configuration:** All top-level YAML sections ([SystemConfiguration.md](SystemConfiguration.html)).
 
 **Depends on:** Router, ModelRegistry, ConnectorRegistry, SecretResolver, StateManager, EventEmitter.
 
@@ -125,7 +130,7 @@ Configurable retry logic applied before rotation. On failure, determines whether
 | `get_delay(attempt)` | Return the backoff delay for the given attempt number. |
 | `classify_error(error)` | Classify an error as retryable or non-retryable. |
 
-**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.md#pools)):
+**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.html#pools)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -158,7 +163,7 @@ Pool membership is automatic: models registered at a capability leaf node join a
 | `recover(model)` | Move a model from standby back to active. |
 | `get_state()` | Return the pool's aggregate state (active/standby counts, rotation history). |
 
-**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.md#pools)):
+**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.html#pools)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -189,7 +194,7 @@ Runtime representation of a model definition combined with its current state. Th
 | `update_state(result)` | Update state after a request (success/failure, latency, tokens used). |
 | `reset_state()` | Reset failure counts and cooldown timers. |
 
-**Configuration** ([SystemConfiguration.md — Models](SystemConfiguration.md#models)):
+**Configuration** ([SystemConfiguration.md — Models](SystemConfiguration.html#models)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -219,7 +224,7 @@ Runtime representation of a configured provider. Wraps the provider connector (w
 | `is_available()` | Return whether the provider is operational (auth valid, not deactivated). |
 | `get_models()` | Return all models registered under this provider. |
 
-**Configuration** ([SystemConfiguration.md — Providers](SystemConfiguration.md#providers)):
+**Configuration** ([SystemConfiguration.md — Providers](SystemConfiguration.html#providers)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -289,7 +294,7 @@ Composite object governing model lifecycle within a pool. Contains three indepen
 | `evaluate_recovery(model)` | Delegate to RecoveryEvaluator; return whether the model should return to active. |
 | `select_model(candidates, request)` | Delegate to SelectionStrategy; return the best candidate. |
 
-**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.md#pools)): Strategy, deactivation, and recovery parameters are configured per pool.
+**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.html#pools)): Strategy, deactivation, and recovery parameters are configured per pool.
 
 **Depends on:** DeactivationEvaluator, RecoveryEvaluator, SelectionStrategy.
 
@@ -306,7 +311,7 @@ Evaluates whether an active model should move to standby. Triggered after each r
 | `should_deactivate(snapshot)` | Return `true` if the model should move to standby. |
 | `get_reason(snapshot)` | Return the deactivation reason (error threshold, quota exhausted, budget exceeded, maintenance). |
 
-**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.md#pools)):
+**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.html#pools)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -332,7 +337,7 @@ Evaluates whether a standby model should return to active. Triggered on timer ex
 | `should_recover(snapshot)` | Return `true` if the model should return to active. |
 | `get_recovery_schedule(snapshot)` | Return the next scheduled recovery time. |
 
-**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.md#pools)):
+**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.html#pools)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -368,7 +373,7 @@ Chooses the best model from active candidates for a given request. Pluggable wit
 | `modelmesh.rate-limit-aware.v1` | Switch models preemptively before hitting rate limits. |
 | `modelmesh.load-balanced.v1` | Distribute requests proportionally to rate-limit headroom. |
 
-**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.md#pools)):
+**Configuration** ([SystemConfiguration.md — Pools](SystemConfiguration.html#pools)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -418,7 +423,7 @@ Catalogue of available connector implementations. Loads built-in connectors at i
 | `list_connectors(type)` | Return all registered connectors, optionally filtered by type. |
 | `load_package(path)` | Load a connector package (zip archive) and register its connectors. |
 
-**Configuration** ([SystemConfiguration.md — Connectors](SystemConfiguration.md#connectors)):
+**Configuration** ([SystemConfiguration.md — Connectors](SystemConfiguration.html#connectors)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -428,7 +433,7 @@ Catalogue of available connector implementations. Loads built-in connectors at i
 
 ### CapabilityTree
 
-In-memory representation of the capability hierarchy defined in [ModelCapabilities.md](ModelCapabilities.md). Provides traversal operations for capability resolution and pool membership. The default tree includes seven categories (generation, understanding, transformation, representation, retrieval, interaction, evaluation) with pre-defined leaf nodes. Users extend the tree with custom categories and leaves.
+In-memory representation of the capability hierarchy defined in [ModelCapabilities.md](ModelCapabilities.html). Provides traversal operations for capability resolution and pool membership. The default tree includes seven categories (generation, understanding, transformation, representation, retrieval, interaction, evaluation) with pre-defined leaf nodes. Users extend the tree with custom categories and leaves.
 
 **Key methods:**
 
@@ -489,7 +494,7 @@ Standalone HTTP server exposing standard OpenAI API endpoints. Wraps the Router 
 | `POST /v1/images/generations` | Image generation. |
 | `GET /v1/models` | List available virtual model names and their pools. |
 
-**Configuration** ([SystemConfiguration.md — Proxy](SystemConfiguration.md#proxy)):
+**Configuration** ([SystemConfiguration.md — Proxy](SystemConfiguration.html#proxy)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -532,7 +537,7 @@ Publishes routing events to all active observability connectors. Events include 
 | `pool_membership_changed` | Models are added to or removed from a pool. |
 | `discovery_models_updated` | Registry sync detects new or deprecated models. |
 
-**Configuration** ([SystemConfiguration.md — Observability](SystemConfiguration.md#observability)):
+**Configuration** ([SystemConfiguration.md — Observability](SystemConfiguration.html#observability)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -560,7 +565,7 @@ Records request and response data at a configurable detail level through observa
 | `summary` | Metadata plus truncated request/response (first N characters). |
 | `full` | Complete request and response payloads. |
 
-**Configuration** ([SystemConfiguration.md — Observability](SystemConfiguration.md#observability)):
+**Configuration** ([SystemConfiguration.md — Observability](SystemConfiguration.html#observability)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -592,7 +597,7 @@ Buffers aggregate metrics and flushes on a configurable schedule through observa
 | `stats.provider(name)` | Per-provider: requests, cost, availability, active models. |
 | `stats.pool(name)` | Per-pool: requests, active/standby counts, rotation events. |
 
-**Configuration** ([SystemConfiguration.md — Observability](SystemConfiguration.md#observability)):
+**Configuration** ([SystemConfiguration.md — Observability](SystemConfiguration.html#observability)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -618,7 +623,7 @@ Resolves `${secrets:name}` references in configuration through the configured se
 | `invalidate(name)` | Remove a cached secret, forcing re-resolution on next access. |
 | `reload()` | Re-resolve all cached secrets from the store. |
 
-**Configuration** ([SystemConfiguration.md — Secrets](SystemConfiguration.md#secrets)):
+**Configuration** ([SystemConfiguration.md — Secrets](SystemConfiguration.html#secrets)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -654,7 +659,7 @@ Coordinates persistence of runtime state (ModelState, ProviderState, pool member
 | `periodic` | Sync at configurable intervals (e.g., every 5 minutes). |
 | `immediate` | Persist every state change. Requires locking for multi-instance. |
 
-**Configuration** ([SystemConfiguration.md — Storage](SystemConfiguration.md#storage)):
+**Configuration** ([SystemConfiguration.md — Storage](SystemConfiguration.html#storage)):
 
 | Parameter | Type | Description |
 | --- | --- | --- |

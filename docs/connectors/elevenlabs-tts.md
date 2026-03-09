@@ -1,3 +1,8 @@
+---
+layout: default
+title: "ElevenLabs"
+---
+
 # ElevenLabs
 
 **ID:** `provider.elevenlabs.tts.v1`

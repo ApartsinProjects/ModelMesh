@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Replicate"
+---
+
 # Replicate
 
 **ID:** `provider.replicate.inference.v1`

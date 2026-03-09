@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Anthropic"
+---
+
 # Anthropic
 
 **ID:** `provider.anthropic.llm.v1`

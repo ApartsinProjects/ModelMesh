@@ -1,3 +1,8 @@
+---
+layout: default
+title: "AWS S3 Storage"
+---
+
 # AWS S3 Storage
 
 **ID:** `storage.aws.s3.v1`

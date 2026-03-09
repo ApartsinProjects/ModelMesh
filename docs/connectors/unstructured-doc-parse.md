@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Unstructured"
+---
+
 # Unstructured
 
 **ID:** `provider.unstructured.doc-parse.v1`

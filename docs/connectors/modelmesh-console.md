@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Console Observability"
+---
+
 # Console Observability
 
 **ID:** `observability.modelmesh.console.v1`

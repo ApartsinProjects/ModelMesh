@@ -1,8 +1,13 @@
+---
+layout: default
+title: "OpenAIClient"
+---
+
 # OpenAIClient
 
 Drop-in replacement for the OpenAI SDK. The client translates standard OpenAI API calls into capability-based routing through virtual model names. Applications use this client exactly as they would use the official OpenAI SDK; the library resolves virtual names to real models and providers transparently. Virtual model names map to configured capability pools -- a call to `chat.completions.create(model="text-generation", ...)` resolves to the best active model in the `text-generation` pool.
 
-**Depends on:** [Router](Router.md)
+**Depends on:** [Router](Router.html)
 
 ---
 

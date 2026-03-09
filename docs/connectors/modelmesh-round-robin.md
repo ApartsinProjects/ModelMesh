@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Round Robin"
+---
+
 # Round Robin
 
 **ID:** `rotation.modelmesh.round-robin.v1`
@@ -47,7 +52,7 @@ When B recovers, it is included in the rotation again from its original position
 
 This strategy uses only the common rotation parameters. No strategy-specific configuration is required.
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 ## YAML Example
 

@@ -1,8 +1,13 @@
+---
+layout: default
+title: "ModelMesh"
+---
+
 # ModelMesh
 
 Top-level library facade and entry point for ModelMesh Lite. Initializes all subsystems, loads configuration, resolves secrets, registers connectors, builds capability pools, and wires dependencies. Applications interact with this object to obtain a router, access an OpenAI-compatible client, reload configuration, or shut down gracefully.
 
-**Depends on:** [Router](Router.md), [ModelRegistry](ModelRegistry.md), [ConnectorRegistry](ConnectorRegistry.md), [SecretResolver](SecretResolver.md), [StateManager](StateManager.md), [EventEmitter](EventEmitter.md).
+**Depends on:** [Router](Router.html), [ModelRegistry](ModelRegistry.html), [ConnectorRegistry](ConnectorRegistry.html), [SecretResolver](SecretResolver.html), [StateManager](StateManager.html), [EventEmitter](EventEmitter.html).
 
 ---
 
@@ -161,7 +166,7 @@ class ModelMesh {
 
 ## Configuration
 
-All top-level YAML sections apply to ModelMesh. See [SystemConfiguration.md](../SystemConfiguration.md) for the full reference.
+All top-level YAML sections apply to ModelMesh. See [SystemConfiguration.md](../SystemConfiguration.html) for the full reference.
 
 | Section | Description |
 | --- | --- |

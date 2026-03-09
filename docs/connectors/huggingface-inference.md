@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Hugging Face Inference API"
+---
+
 # Hugging Face Inference API
 
 **ID:** `provider.huggingface.inference.v1`

@@ -1,10 +1,15 @@
+---
+layout: default
+title: "Convenience Layer"
+---
+
 # Convenience Layer
 
 The convenience layer is a high-level entry point that makes ModelMesh Lite feel like a drop-in replacement for the OpenAI SDK. Instead of manually wiring providers, pools, and rotation policies, a single `modelmesh.create()` call auto-detects available providers from environment variables, builds the internal routing infrastructure, and returns a `MeshClient` -- an OpenAI SDK-compatible client with the same `client.chat.completions.create()` interface and the same response shape.
 
 The goal is **progressive disclosure**: simple use cases require one line of setup; advanced use cases unlock the full configuration surface without changing the API.
 
-> **Architecture:** The convenience layer sits on top of the core ModelMesh Lite system described in [SystemConcept.md](../SystemConcept.md). It does not replace any internal component -- it constructs them automatically from minimal input.
+> **Architecture:** The convenience layer sits on top of the core ModelMesh Lite system described in [SystemConcept.md](../SystemConcept.html). It does not replace any internal component -- it constructs them automatically from minimal input.
 
 ---
 
@@ -125,7 +130,7 @@ interface CreateOptions {
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `capabilities` | positional `str` | -- | One or more capability names (e.g., `"chat-completion"`, `"text-embeddings"`). Each creates or joins a pool. |
-| `pool` | `str \| None` | `None` | Name of a predefined pool (see [ModelCapabilities.md](../ModelCapabilities.md#predefined-capability-pools)). Mutually exclusive with positional capabilities. |
+| `pool` | `str \| None` | `None` | Name of a predefined pool (see [ModelCapabilities.md](../ModelCapabilities.html#predefined-capability-pools)). Mutually exclusive with positional capabilities. |
 | `providers` | `list[str] \| None` | `None` | Restrict auto-detection to these providers only. Names match the [auto-detection registry](#auto-detection-registry). |
 | `models` | `list[str] \| None` | `None` | Restrict pool membership to these specific model IDs only. |
 | `strategy` | `str` | `"stick-until-failure"` | Rotation strategy name. Any pre-shipped or custom strategy is valid. |
@@ -340,7 +345,7 @@ for (const pool of pools) {
 }
 ```
 
-> **Reference:** The `ModelMesh` class is documented in [system/ModelMesh.md](../system/ModelMesh.md).
+> **Reference:** The `ModelMesh` class is documented in [system/ModelMesh.md](../system/ModelMesh.html).
 
 #### `client.pool_status()`
 
@@ -650,7 +655,7 @@ const response = await client.chat.completions.create({
 });
 ```
 
-> **Predefined pools:** The full list of predefined pools is in [ModelCapabilities.md -- Predefined Capability Pools](../ModelCapabilities.md#predefined-capability-pools).
+> **Predefined pools:** The full list of predefined pools is in [ModelCapabilities.md -- Predefined Capability Pools](../ModelCapabilities.html#predefined-capability-pools).
 
 ### Layer 2 -- Full Configuration
 
@@ -725,7 +730,7 @@ const cfg = MeshConfig.fromFile("modelmesh.yaml");
 const client3 = modelmesh.create({ config: cfg });
 ```
 
-> **Configuration reference:** Full YAML schema and all configuration options are documented in [SystemConfiguration.md](../SystemConfiguration.md).
+> **Configuration reference:** Full YAML schema and all configuration options are documented in [SystemConfiguration.md](../SystemConfiguration.html).
 
 ### Observability Configuration
 
@@ -842,7 +847,7 @@ When `api_keys` is provided, only the listed providers are included (environment
 
 `QuickProvider` is a lightweight provider class designed for use with the convenience layer. It extends `BaseProvider` and can operate with an empty `models` list -- in that case, it auto-discovers available models by querying the provider's `/v1/models` endpoint at initialization.
 
-> **Base class:** `QuickProvider` extends [BaseProvider](BaseClasses.md#baseprovider), inheriting all default behavior (OpenAI-format request translation, SSE streaming, retry logic, error classification).
+> **Base class:** `QuickProvider` extends [BaseProvider](BaseClasses.html#baseprovider), inheriting all default behavior (OpenAI-format request translation, SSE streaming, retry logic, error classification).
 
 ### Constructor
 
@@ -946,7 +951,7 @@ const client = modelmesh.create({
 
 `MeshClient` provides a `ChatOpenAI`-compatible interface, so LangChain and LangGraph pipelines connect directly without adapters or wrappers.
 
-> **Reference:** See [SystemConcept.md](../SystemConcept.md) for the architectural relationship between ModelMesh Lite and higher-level AI frameworks.
+> **Reference:** See [SystemConcept.md](../SystemConcept.html) for the architectural relationship between ModelMesh Lite and higher-level AI frameworks.
 
 **Python:**
 
@@ -1001,11 +1006,11 @@ ModelMesh Lite handles provider rotation, failover, and quota management transpa
 
 | Document | Description |
 | --- | --- |
-| [Overview.md](Overview.md) | CDK architecture, class hierarchy, and decision trees |
-| [BaseClasses.md](BaseClasses.md) | API reference for all base classes, including `BaseProvider` |
-| [DeveloperGuide.md](DeveloperGuide.md) | Step-by-step tutorials for building custom connectors |
-| [SystemConcept.md](../SystemConcept.md) | System architecture, capability model, and routing pipeline |
-| [ConnectorInterfaces.md](../ConnectorInterfaces.md) | Interface definitions for all connector types |
-| [SystemConfiguration.md](../SystemConfiguration.md) | Full YAML configuration reference |
-| [ModelCapabilities.md](../ModelCapabilities.md) | Capability hierarchy and predefined pools |
-| [ConnectorCatalogue.md](../ConnectorCatalogue.md) | Registry of all pre-shipped connectors |
+| [Overview.md](Overview.html) | CDK architecture, class hierarchy, and decision trees |
+| [BaseClasses.md](BaseClasses.html) | API reference for all base classes, including `BaseProvider` |
+| [DeveloperGuide.md](DeveloperGuide.html) | Step-by-step tutorials for building custom connectors |
+| [SystemConcept.md](../SystemConcept.html) | System architecture, capability model, and routing pipeline |
+| [ConnectorInterfaces.md](../ConnectorInterfaces.html) | Interface definitions for all connector types |
+| [SystemConfiguration.md](../SystemConfiguration.html) | Full YAML configuration reference |
+| [ModelCapabilities.md](../ModelCapabilities.html) | Capability hierarchy and predefined pools |
+| [ConnectorCatalogue.md](../ConnectorCatalogue.html) | Registry of all pre-shipped connectors |

@@ -1,8 +1,13 @@
+---
+layout: default
+title: "Router"
+---
+
 # Router
 
 Central request orchestrator for ModelMesh Lite. Receives capability requests from the application (through `OpenAIClient` or `ProxyServer`), executes the routing pipeline, and returns the result. Handles retry and rotation transparently so that callers never need to manage failover logic.
 
-**Depends on:** [RoutingPipeline](RoutingPipeline.md), [CapabilityPool](CapabilityPool.md), [EventEmitter](EventEmitter.md), [RequestLogger](RequestLogger.md).
+**Depends on:** [RoutingPipeline](RoutingPipeline.html), [CapabilityPool](CapabilityPool.html), [EventEmitter](EventEmitter.html), [RequestLogger](RequestLogger.html).
 
 ---
 

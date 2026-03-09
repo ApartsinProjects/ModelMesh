@@ -1,8 +1,13 @@
+---
+layout: default
+title: "Connector Interfaces"
+---
+
 # Connector Interfaces
 
-**Interface overview for every ModelMesh Lite connector type.** Each section describes the connector's purpose and the interfaces it exposes. This is a conceptual overview, not a full specification. Full interface definitions with code are in [interfaces/](interfaces/Provider.md). Pre-shipped implementations are listed in [ConnectorCatalogue.md](ConnectorCatalogue.md).
+**Interface overview for every ModelMesh Lite connector type.** Each section describes the connector's purpose and the interfaces it exposes. This is a conceptual overview, not a full specification. Full interface definitions with code are in [interfaces/](interfaces/Provider.html). Pre-shipped implementations are listed in [ConnectorCatalogue.md](ConnectorCatalogue.html).
 
-> **CDK:** Base classes with sensible defaults for each interface are available in the [Connector Development Kit](cdk/Overview.md). See [cdk/BaseClasses.md](cdk/BaseClasses.md) for implementations.
+> **CDK:** Base classes with sensible defaults for each interface are available in the [Connector Development Kit](cdk/Overview.html). See [cdk/BaseClasses.md](cdk/BaseClasses.html) for implementations.
 
 ---
 
@@ -38,7 +43,7 @@ A provider connector exposes one or more AI models (or web API services) through
 
 ### Common Configuration
 
-Parameters shared by all provider connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#provider-connectors)).
+Parameters shared by all provider connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#provider-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -79,7 +84,7 @@ A rotation policy governs model lifecycle within a pool through three independen
 
 ### Common Configuration
 
-Parameters shared by all rotation policies. Configured per pool; policies receive these through the pool context. Full YAML reference in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
+Parameters shared by all rotation policies. Configured per pool; policies receive these through the pool context. Full YAML reference in [SystemConfiguration.md — Pools](SystemConfiguration.html#pools).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -121,7 +126,7 @@ A secret store connector resolves API keys and tokens from a secure backend at r
 
 ### Common Configuration
 
-Parameters shared by all secret store connectors. Individual stores may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#secret-store-connectors)).
+Parameters shared by all secret store connectors. Individual stores may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#secret-store-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -147,7 +152,7 @@ A storage connector serializes and deserializes library data to an external back
 
 ### Common Configuration
 
-Parameters shared by all storage connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#storage-connectors)).
+Parameters shared by all storage connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#storage-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -177,7 +182,7 @@ An observability connector exports routing activity to an external output. Multi
 
 ### Common Configuration
 
-Parameters shared by all observability connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#observability-connectors)).
+Parameters shared by all observability connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#observability-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -195,7 +200,7 @@ Parameters shared by all observability connectors. Individual connectors may add
 
 ## Discovery
 
-A discovery connector keeps the model catalogue accurate and provider health visible without manual intervention. Discovery connectors run as background processes on configurable schedules and feed results into the [rotation policy](SystemConcept.md#model-rotation-failover-and-state) for proactive deactivation.
+A discovery connector keeps the model catalogue accurate and provider health visible without manual intervention. Discovery connectors run as background processes on configurable schedules and feed results into the [rotation policy](SystemConcept.html#model-rotation-failover-and-state) for proactive deactivation.
 
 **Interfaces:**
 
@@ -206,7 +211,7 @@ A discovery connector keeps the model catalogue accurate and provider health vis
 
 ### Common Configuration
 
-Parameters shared by all discovery connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#discovery-connectors)).
+Parameters shared by all discovery connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#discovery-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |

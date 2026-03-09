@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Registry Sync"
+---
+
 # Registry Sync
 
 **ID:** `discovery.modelmesh.registry-sync.v1`

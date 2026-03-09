@@ -1,8 +1,13 @@
+---
+layout: default
+title: "ProviderState"
+---
+
 # ProviderState
 
 Per-provider aggregate health tracking dataclass. Provider-level issues (authentication failure, API outage) trigger deactivation of all the provider's models across all pools. Serializable for persistence through the `StateManager`. This is a data structure, not a service.
 
-**Depends on:** [StateManager](StateManager.md) (for persistence).
+**Depends on:** [StateManager](StateManager.html) (for persistence).
 
 ---
 

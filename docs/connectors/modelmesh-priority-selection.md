@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Priority Selection"
+---
+
 # Priority Selection
 
 **ID:** `rotation.modelmesh.priority-selection.v1`
@@ -38,7 +43,7 @@ Given `model_priority: [gpt-4o, claude-sonnet-4-20250514, gemini-2.5-pro]`:
 
 ## Configuration
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |

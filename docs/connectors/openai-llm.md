@@ -1,3 +1,8 @@
+---
+layout: default
+title: "OpenAI"
+---
+
 # OpenAI
 
 **ID:** `provider.openai.llm.v1`

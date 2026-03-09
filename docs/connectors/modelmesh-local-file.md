@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Local File Storage"
+---
+
 # Local File Storage
 
 **ID:** `storage.modelmesh.local-file.v1`

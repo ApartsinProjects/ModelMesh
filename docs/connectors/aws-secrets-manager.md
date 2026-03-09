@@ -1,3 +1,8 @@
+---
+layout: default
+title: "AWS Secrets Manager"
+---
+
 # AWS Secrets Manager
 
 **ID:** `secret-store.aws.secrets-manager.v1`
@@ -45,7 +50,7 @@ enum AuthMethod {
 | `prefix` | string \| null | `null` | Prefix prepended to secret names for scoping (e.g., `modelmesh/`). When set, a resolution request for `OPENAI_API_KEY` resolves to `modelmesh/OPENAI_API_KEY` in AWS. |
 | `version_stage` | string | `"AWSCURRENT"` | Version stage to retrieve. Use `AWSCURRENT` for the latest version or `AWSPREVIOUS` for the prior version during rotation. |
 
-See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
+See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
 
 ## YAML Example
 

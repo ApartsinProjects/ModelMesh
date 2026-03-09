@@ -1,0 +1,9 @@
+services:
+  modelmesh-proxy:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./modelmesh.yaml:/app/modelmesh.yaml:ro
+    command: ["--config", "/app/modelmesh.yaml", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Together AI"
+---
+
 # Together AI
 
 **ID:** `provider.together.inference.v1`

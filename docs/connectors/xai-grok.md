@@ -1,3 +1,8 @@
+---
+layout: default
+title: "xAI (Grok)"
+---
+
 # xAI (Grok)
 
 **ID:** `provider.xai.grok.v1`

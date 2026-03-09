@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Google Cloud Secret Manager"
+---
+
 # Google Cloud Secret Manager
 
 **ID:** `secret-store.google.secret-manager.v1`
@@ -41,7 +46,7 @@ enum AuthMethod {
 | `project` | string | _(required)_ | GCP project ID where secrets are stored. |
 | `prefix` | string \| null | `null` | Prefix prepended to secret names for scoping (e.g., `modelmesh-prod-`). When set, a resolution request for `OPENAI_API_KEY` resolves to `modelmesh-prod-OPENAI_API_KEY` in GCP. |
 
-See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
+See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
 
 ## YAML Example
 

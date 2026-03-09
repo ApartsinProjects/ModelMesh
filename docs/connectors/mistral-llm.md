@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Mistral AI"
+---
+
 # Mistral AI
 
 **ID:** `provider.mistral.llm.v1`

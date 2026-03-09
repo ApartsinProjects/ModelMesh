@@ -2,8 +2,6 @@
   <img src="docs/assets/banner.png" alt="ModelMesh" width="100%">
 </p>
 
-<h1 align="center">ModelMesh Lite</h1>
-
 <p align="center">
   <strong>One integration point for all your AI providers.</strong><br>
   Automatic failover, free-tier aggregation, and capability-based routing.
@@ -41,6 +39,13 @@ import modelmesh
 
 # Create an OpenAI-compatible client with automatic provider routing
 client = modelmesh.create("chat-completion")
+
+# See what's behind the virtual model
+print(client.describe())
+# Pool "chat-completion" (strategy: stick-until-failure)
+#   capability: generation.text-generation.chat-completion
+#   → openai.gpt-4o [openai.llm.v1] (active)
+#     openai.gpt-4o-mini [openai.llm.v1] (active)
 
 response = client.chat.completions.create(
     model="chat-completion",          # virtual model name = capability pool
@@ -96,6 +101,15 @@ import modelmesh
 
 # All detected providers join the pool -- failover is automatic
 client = modelmesh.create("chat-completion")
+
+print(client.describe())
+# Pool "chat-completion" (strategy: stick-until-failure)
+#   capability: generation.text-generation.chat-completion
+#   → openai.gpt-4o [openai.llm.v1] (active)
+#     openai.gpt-4o-mini [openai.llm.v1] (active)
+#     anthropic.claude-sonnet-4 [anthropic.claude.v1] (active)
+#     google.gemini-2.0-flash [google.gemini.v1] (active)
+
 response = client.chat.completions.create(
     model="chat-completion",
     messages=[{"role": "user", "content": "Explain quantum computing briefly."}],
@@ -200,3 +214,7 @@ cd src/python && python -m pytest ../../tests/ -v
 ## License
 
 [MIT](LICENSE)
+
+---
+
+<sub>Created by [Sasha Apartsin](https://www.apartsin.com)</sub>

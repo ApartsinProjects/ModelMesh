@@ -1,8 +1,13 @@
+---
+layout: default
+title: "CapabilityPool"
+---
+
 # CapabilityPool
 
 Groups models that fulfill the same capability. Manages active and standby model lists, delegates lifecycle decisions to its rotation policy, and provides the selection interface for the router. Pool membership is automatic: models registered at a capability leaf node join all pools targeting that node or its ancestors. Pools can be static (YAML-defined) or dynamic (custom selection function).
 
-**Depends on:** [Model](Model.md), [RotationPolicyService](RotationPolicyService.md), [EventEmitter](EventEmitter.md).
+**Depends on:** [Model](Model.html), [RotationPolicyService](RotationPolicyService.html), [EventEmitter](EventEmitter.html).
 
 ---
 
@@ -194,7 +199,7 @@ class CapabilityPool {
 
 ## Configuration
 
-Pool parameters are configured under the `pools` section. See [SystemConfiguration.md -- Pools](../SystemConfiguration.md#pools).
+Pool parameters are configured under the `pools` section. See [SystemConfiguration.md -- Pools](../SystemConfiguration.html#pools).
 
 | Parameter | Type | Description |
 | --- | --- | --- |

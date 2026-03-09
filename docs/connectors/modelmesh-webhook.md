@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Webhook Observability"
+---
+
 # Webhook Observability
 
 **ID:** `observability.modelmesh.webhook.v1`

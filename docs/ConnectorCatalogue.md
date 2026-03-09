@@ -1,8 +1,13 @@
+---
+layout: default
+title: "Connector Catalogue"
+---
+
 # Connector Catalogue
 
-**Pre-shipped connector implementations for ModelMesh Lite.** Each section lists available implementations for one connector type. Individual connector documentation is in [connectors/](connectors/openai-llm.md). Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.md). Custom connectors implement the same interfaces and register in the same catalogue (see [Developer Manual](SystemConcept.md#connector-based-extensibility)).
+**Pre-shipped connector implementations for ModelMesh Lite.** Each section lists available implementations for one connector type. Individual connector documentation is in [connectors/](connectors/openai-llm.html). Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.html). Custom connectors implement the same interfaces and register in the same catalogue (see [Developer Manual](SystemConcept.html#connector-based-extensibility)).
 
-> **Building custom connectors?** The [Connector Development Kit](cdk/Overview.md) provides base classes and tutorials for creating new connectors with minimal code.
+> **Building custom connectors?** The [Connector Development Kit](cdk/Overview.html) provides base classes and tutorials for creating new connectors with minimal code.
 
 > Pricing and availability change frequently; consult each provider's documentation for current details.
 
@@ -29,13 +34,13 @@ In YAML configuration, the `connector_type.` prefix is omitted within its own se
 
 ## Provider Connectors
 
-Interface: [ConnectorInterfaces.md — Provider](ConnectorInterfaces.md#provider)
+Interface: [ConnectorInterfaces.md — Provider](ConnectorInterfaces.html#provider)
 
 ModelMesh Lite ships with provider connectors for: **OpenAI** (`provider.openai.llm.v1`), **Gemini** (`provider.google.gemini.v1`), **HuggingFace** (`provider.huggingface.inference.v1`), **OpenRouter** (`provider.openrouter.gateway.v1`), and **Cloudflare Workers AI** (`provider.cloudflare.workers-ai.v1`). The remaining providers below are supported through custom or community connectors.
 
 ### Provider Capability Format
 
-Provider connectors (OpenAI, Anthropic, and others) declare model capabilities using **dot-notation paths** that reference the [capability hierarchy](ModelCapabilities.md). Short-form capability names (`"chat"`, `"tools"`, `"vision"`) are no longer used; capabilities now map directly to tree nodes such as `generation.text-generation.chat-completion`. Features like tool calling, vision, and system prompt support are declared separately in a `features` dict.
+Provider connectors (OpenAI, Anthropic, and others) declare model capabilities using **dot-notation paths** that reference the [capability hierarchy](ModelCapabilities.html). Short-form capability names (`"chat"`, `"tools"`, `"vision"`) are no longer used; capabilities now map directly to tree nodes such as `generation.text-generation.chat-completion`. Features like tool calling, vision, and system prompt support are declared separately in a `features` dict.
 
 **Before (short-form, deprecated):**
 
@@ -62,7 +67,7 @@ The provider-level `capabilities` config follows the same convention. For exampl
 
 ### Pool Definition Modes
 
-Pools support three definition modes (see also [SystemConfiguration.md -- Pools](SystemConfiguration.md#pools)):
+Pools support three definition modes (see also [SystemConfiguration.md -- Pools](SystemConfiguration.html#pools)):
 
 | Mode | Config Fields | Behaviour |
 | --- | --- | --- |
@@ -185,7 +190,7 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 
 ## Rotation Policies
 
-Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.md#rotation-policy). Full attributes in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
+Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.html#rotation-policy). Full attributes in [SystemConfiguration.md — Pools](SystemConfiguration.html#pools).
 
 | Policy | Description |
 | --- | --- |
@@ -202,7 +207,7 @@ Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.md#r
 
 ## Secret Store Connectors
 
-Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.md#secret-store)
+Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#secret-store)
 
 | Store | Description | Free Tier | Docs |
 | --- | --- | --- | --- |
@@ -266,7 +271,7 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.md#secr
 
 ## Storage Connectors
 
-Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.md#storage)
+Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage)
 
 | Connector | Backend | Concurrency | Free Tier | Best For | Docs |
 | --- | --- | --- | --- | --- | --- |
@@ -317,7 +322,7 @@ Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.md#storage)
 
 ## Observability Connectors
 
-Interface: [ConnectorInterfaces.md — Observability](ConnectorInterfaces.md#observability)
+Interface: [ConnectorInterfaces.md — Observability](ConnectorInterfaces.html#observability)
 
 The observability interface combines four concerns: **events** (state changes), **logging** (request/response data), **statistics** (aggregate metrics), and **tracing** (severity-tagged structured traces). All core components (Router, Pool, Mesh) and CDK base classes (BaseProvider) emit traces through the configured observability connector. If no connector is configured, the `null` connector is used (zero overhead).
 
@@ -405,7 +410,7 @@ All observability connectors write records with a `"type"` field. The file conne
 
 ## Discovery Connectors
 
-Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.md#discovery)
+Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.html#discovery)
 
 | Connector | Description |
 | --- | --- |
