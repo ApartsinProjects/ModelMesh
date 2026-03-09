@@ -12,6 +12,7 @@
   <a href="https://pypi.org/project/modelmesh-lite/"><img src="https://img.shields.io/pypi/pyversions/modelmesh-lite" alt="Python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-579%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
 ---
