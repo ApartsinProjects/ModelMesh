@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.png" alt="ModelMesh" width="100%">
+  <img src="docs/assets/banner.png?v=2" alt="ModelMesh" width="100%">
 </p>
 
 <p align="center">

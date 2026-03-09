@@ -4,7 +4,7 @@ title: ModelMesh Lite
 ---
 
 <p align="center">
-  <img src="assets/banner.png" alt="ModelMesh" width="100%">
+  <img src="assets/banner.png?v=2" alt="ModelMesh" width="100%">
 </p>
 
 <h1 align="center">ModelMesh Lite</h1>
