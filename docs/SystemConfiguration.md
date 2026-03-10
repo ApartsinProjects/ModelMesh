@@ -108,7 +108,7 @@ providers:
     enabled: true
     api_key: ${secrets:hf-api-key}
 
-  anthropic.llm.v1:
+  anthropic.claude.v1:
     enabled: false
 ```
 
@@ -535,7 +535,7 @@ providers:
       enumerate_models: true
   huggingface.inference.v1:
     api_key: ${secrets:HF_API_KEY}
-  deepseek.llm.v1:
+  deepseek.api.v1:
     api_key: ${secrets:DEEPSEEK_API_KEY}
 
 pools:

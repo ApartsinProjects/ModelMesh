@@ -38,7 +38,7 @@ In YAML configuration, the `connector_type.` prefix is omitted within its own se
 
 Interface: [ConnectorInterfaces.md — Provider](ConnectorInterfaces.html#provider)
 
-ModelMesh Lite ships with provider connectors for: **OpenAI** (`provider.openai.llm.v1`), **Gemini** (`provider.google.gemini.v1`), **HuggingFace** (`provider.huggingface.inference.v1`), **OpenRouter** (`provider.openrouter.gateway.v1`), and **Cloudflare Workers AI** (`provider.cloudflare.workers-ai.v1`). The remaining providers below are supported through custom or community connectors.
+ModelMesh Lite ships with provider connectors for: **OpenAI** (`provider.openai.llm.v1`), **Gemini** (`provider.google.gemini.v1`), **OpenRouter** (`provider.openrouter.gateway.v1`), **Anthropic** (`anthropic.claude.v1`), **Groq** (`provider.groq.api.v1`), **DeepSeek** (`provider.deepseek.api.v1`), **Mistral** (`provider.mistral.api.v1`), **Together AI** (`provider.together.api.v1`), **xAI Grok** (`provider.xai.grok.v1`), **Cohere** (`provider.cohere.nlp.v1`), **Perplexity** (`provider.perplexity.search.v1`), **ElevenLabs** (`provider.elevenlabs.tts.v1`), **Azure Speech** (`provider.azure.tts.v1`), **AssemblyAI** (`provider.assemblyai.stt.v1`), **Tavily** (`provider.tavily.search.v1`), **Serper** (`provider.serper.search.v1`), **Jina** (`provider.jina.search.v1`), **Firecrawl** (`provider.firecrawl.search.v1`), **Ollama** (`ollama.local.v1`), **LM Studio** (`lmstudio.local.v1`), **vLLM** (`vllm.local.v1`), and **LocalAI** (`localai.local.v1`). Providers marked **(Planned)** below are not yet implemented.
 
 ### Provider Capability Format
 
@@ -104,8 +104,8 @@ pools:
 | **Anthropic** | `anthropic.claude.v1` | Safety-focused LLM provider. Strong at reasoning, code, and long-context tasks. | Claude Opus 4, Claude Sonnet 4, Claude 3.7 Sonnet, Claude 3.5 Haiku, Claude 3.5 Sonnet | ~30-100 messages/day (no Opus); 90% cached token discount | [docs.anthropic.com](https://docs.anthropic.com) |
 | **Google Gemini** | `provider.google.gemini.v1` | Google's multimodal AI family. Largest context windows (up to 1M tokens). | Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.0 Flash, Gemini 2.0 Flash Lite, Gemini 1.5 Pro/Flash | Generous rate-limited tier; no credit card required; 1M context included | [ai.google.dev/gemini-api](https://ai.google.dev/gemini-api) |
 | **xAI (Grok)** | `provider.xai.grok.v1` | High-performance models with real-time data access via X integration. | Grok 3, Grok 3 Mini, Grok 3 Fast, Grok 2, Grok 2 Vision | $25 signup credits; $150/month via data sharing | [docs.x.ai/developers](https://docs.x.ai/developers) |
-| **DeepSeek** | `provider.deepseek.llm.v1` | Ultra-low-cost reasoning and chat. Strongest price-to-performance ratio. | DeepSeek Chat, DeepSeek Reasoner | 5M tokens for new accounts (30-day expiry); off-peak 75% discount | [api-docs.deepseek.com](https://api-docs.deepseek.com) |
-| **Mistral AI** | `provider.mistral.llm.v1` | European AI lab with efficient open-weight and proprietary models. | Mistral Large, Mistral Small, Mistral Nemo, Codestral, Mistral Embed | Rate-limited access to all models; no credit card required | [docs.mistral.ai](https://docs.mistral.ai) |
+| **DeepSeek** | `provider.deepseek.api.v1` | Ultra-low-cost reasoning and chat. Strongest price-to-performance ratio. | DeepSeek Chat, DeepSeek Reasoner | 5M tokens for new accounts (30-day expiry); off-peak 75% discount | [api-docs.deepseek.com](https://api-docs.deepseek.com) |
+| **Mistral AI** | `provider.mistral.api.v1` | European AI lab with efficient open-weight and proprietary models. | Mistral Large, Mistral Small, Mistral Nemo, Codestral, Mistral Embed | Rate-limited access to all models; no credit card required | [docs.mistral.ai](https://docs.mistral.ai) |
 | **Cohere** | `provider.cohere.nlp.v1` | Enterprise-focused: text understanding, embeddings, and retrieval. | Command R+, Command R, Command A, Embed v4, Embed v3 (English/Multilingual), Rerank v3.5 | 1,000 calls/month; 5-20 calls/min; non-production only | [docs.cohere.com](https://docs.cohere.com) |
 | **Perplexity (Sonar)** | `provider.perplexity.search.v1` | Search-augmented AI. Grounded answers with real-time web data and citations. | Sonar, Sonar Pro, Sonar Reasoning, Sonar Reasoning Pro | No free API tier; Pro subscribers get $5/month credits | [docs.perplexity.ai](https://docs.perplexity.ai) |
 
@@ -113,9 +113,9 @@ pools:
 
 | Provider | ID | Description | Key Models | Free Tier | Docs |
 | --- | --- | --- | --- | --- | --- |
-| **Stability AI** | `provider.stability.image-gen.v1` | Pioneer in open image generation models. | SD 3.5 Large/Medium/Turbo, Stable Image Core, Stable Image Ultra | 25-200 credits on signup (~100-200 images); community license (revenue < $1M) | [platform.stability.ai/docs](https://platform.stability.ai/docs) |
-| **fal.ai** | `provider.fal.media-gen.v1` | Fast media generation API. Specializes in image and video. | Flux Pro/Dev/Schnell, Kling V2 (video), Ideogram V3, HaiLuo (video) | Free credits for new users; pay-per-image thereafter | [docs.fal.ai](https://docs.fal.ai) |
-| **Replicate** | `provider.replicate.inference.v1` | Run any open-source model via API. Pay-per-second billing. | Flux Schnell, SDXL, Llama 3, Whisper | Limited free predictions; no credit card required | [replicate.com/docs](https://replicate.com/docs) |
+| **Stability AI** (Planned) | `provider.stability.image-gen.v1` | Pioneer in open image generation models. *Not yet implemented.* | SD 3.5 Large/Medium/Turbo, Stable Image Core, Stable Image Ultra | 25-200 credits on signup (~100-200 images); community license (revenue < $1M) | [platform.stability.ai/docs](https://platform.stability.ai/docs) |
+| **fal.ai** (Planned) | `provider.fal.media-gen.v1` | Fast media generation API. Specializes in image and video. *Not yet implemented.* | Flux Pro/Dev/Schnell, Kling V2 (video), Ideogram V3, HaiLuo (video) | Free credits for new users; pay-per-image thereafter | [docs.fal.ai](https://docs.fal.ai) |
+| **Replicate** (Planned) | `provider.replicate.inference.v1` | Run any open-source model via API. Pay-per-second billing. *Not yet implemented.* | Flux Schnell, SDXL, Llama 3, Whisper | Limited free predictions; no credit card required | [replicate.com/docs](https://replicate.com/docs) |
 | **ElevenLabs** | `provider.elevenlabs.tts.v1` | Leading voice AI. Realistic speech synthesis and voice cloning. | Multilingual v2, Turbo v2.5, Flash v2.5, Monolingual v1 | 10,000 chars/month (~20 min audio); 3 custom voices; non-commercial | [elevenlabs.io/docs](https://elevenlabs.io/docs) |
 | **AssemblyAI** | `provider.assemblyai.stt.v1` | Speech intelligence platform. Transcription with built-in NLU. | Universal, Nano | $50 credits (~185h transcription); one-time, non-recurring | [www.assemblyai.com/docs](https://www.assemblyai.com/docs) |
 | **Azure Speech** | `provider.azure.tts.v1` | Microsoft Azure Cognitive Services Speech. Neural TTS with 400+ voices in 140+ languages. | en-US-JennyNeural, en-US-AndrewNeural, and all Azure Neural voices | 0.5M chars/month free (Neural); 5M chars/month free (Standard) | [learn.microsoft.com/azure/ai-services/speech-service](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-text-to-speech) |
@@ -124,18 +124,18 @@ pools:
 
 | Provider | ID | Description | Key Models | Free Tier | Docs |
 | --- | --- | --- | --- | --- | --- |
-| **HuggingFace** | `provider.huggingface.inference.v1` | Gateway to 100,000+ open-source models across all modalities. | All public Hub models; curated Providers for Llama, Mistral, Flux, Whisper | Monthly credits; serverless for models < 10 GB; PRO ($9/mo) 20x more | [huggingface.co/docs/inference-providers](https://huggingface.co/docs/inference-providers) |
+| **HuggingFace** (Planned) | `provider.huggingface.inference.v1` | Gateway to 100,000+ open-source models across all modalities. *Not yet implemented.* | All public Hub models; curated Providers for Llama, Mistral, Flux, Whisper | Monthly credits; serverless for models < 10 GB; PRO ($9/mo) 20x more | [huggingface.co/docs/inference-providers](https://huggingface.co/docs/inference-providers) |
 | **OpenRouter** | `provider.openrouter.gateway.v1` | Unified API gateway to 290+ models from all major providers. | Aggregates OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek, xAI | 24+ free models; 20 req/min, 200 req/day on free; no credit card | [openrouter.ai/docs](https://openrouter.ai/docs) |
-| **Cloudflare Workers AI** | `provider.cloudflare.workers-ai.v1` | Edge-deployed AI inference with global distribution. No cold starts. | Llama 3, Mistral, Qwen, SDXL, Whisper, BGE embeddings | 10,000 neurons/day; 100k requests/day | [developers.cloudflare.com/workers-ai](https://developers.cloudflare.com/workers-ai) |
-| **Groq** | `provider.groq.inference.v1` | Ultra-fast inference on custom LPU hardware. 500+ tokens/second. | Llama 3.3 70B, Llama 3.1 8B, Gemma 2 9B, DeepSeek R1 Distill, Whisper Large v3/v3-turbo | Rate-limited access; no credit card; Developer tier 10x limits | [console.groq.com/docs](https://console.groq.com/docs) |
-| **Together AI** | `provider.together.inference.v1` | Open-model cloud with 200+ models, fine-tuning, and batch inference. | Llama 3, Mistral, Qwen, DeepSeek, Flux, SDXL | $5 credits on signup; 6,000 req/min on Build tier | [docs.together.ai](https://docs.together.ai) |
+| **Cloudflare Workers AI** (Planned) | `provider.cloudflare.workers-ai.v1` | Edge-deployed AI inference with global distribution. No cold starts. *Not yet implemented.* | Llama 3, Mistral, Qwen, SDXL, Whisper, BGE embeddings | 10,000 neurons/day; 100k requests/day | [developers.cloudflare.com/workers-ai](https://developers.cloudflare.com/workers-ai) |
+| **Groq** | `provider.groq.api.v1` | Ultra-fast inference on custom LPU hardware. 500+ tokens/second. | Llama 3.3 70B, Llama 3.1 8B, Gemma 2 9B, DeepSeek R1 Distill, Whisper Large v3/v3-turbo | Rate-limited access; no credit card; Developer tier 10x limits | [console.groq.com/docs](https://console.groq.com/docs) |
+| **Together AI** | `provider.together.api.v1` | Open-model cloud with 200+ models, fine-tuning, and batch inference. | Llama 3, Mistral, Qwen, DeepSeek, Flux, SDXL | $5 credits on signup; 6,000 req/min on Build tier | [docs.together.ai](https://docs.together.ai) |
 
 ### Cloud Platforms
 
 | Provider | ID | Description | Key Models | Free Tier | Docs |
 | --- | --- | --- | --- | --- | --- |
-| **AWS Bedrock** | `provider.aws.bedrock.v1` | Managed AI service with access to multiple foundation model providers. | Claude Sonnet 4, Claude 3.5 Haiku, Llama 3.1, Mistral Large, Amazon Nova Pro/Lite, Titan Embed, Stable Diffusion XL | No free tier; $200 new-account credit (all AWS, 6-month expiry) | [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock) |
-| **Google Cloud AI APIs** | `provider.google.cloud-ai.v1` | Individual AI services for speech, vision, translation, and NLU. | Speech-to-Text (Chirp), TTS (WaveNet, Neural2), Vision, Translation, NL | 60 min/mo STT; 1M chars/mo TTS; 1,000 images/mo Vision; $300 credit | [cloud.google.com/apis](https://cloud.google.com/apis) |
+| **AWS Bedrock** (Planned) | `provider.aws.bedrock.v1` | Managed AI service with access to multiple foundation model providers. *Not yet implemented.* | Claude Sonnet 4, Claude 3.5 Haiku, Llama 3.1, Mistral Large, Amazon Nova Pro/Lite, Titan Embed, Stable Diffusion XL | No free tier; $200 new-account credit (all AWS, 6-month expiry) | [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock) |
+| **Google Cloud AI APIs** (Planned) | `provider.google.cloud-ai.v1` | Individual AI services for speech, vision, translation, and NLU. *Not yet implemented.* | Speech-to-Text (Chirp), TTS (WaveNet, Neural2), Vision, Translation, NL | 60 min/mo STT; 1M chars/mo TTS; 1,000 images/mo Vision; $300 credit | [cloud.google.com/apis](https://cloud.google.com/apis) |
 
 ### Local / Self-Hosted Providers
 
@@ -200,15 +200,15 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 
 | Service | ID | Description | Free Tier | Docs |
 | --- | --- | --- | --- | --- |
-| **Unstructured** | `provider.unstructured.doc-parse.v1` | Extracts structured data from PDFs, images, Office docs, HTML | Free serverless API with rate limits; open-source self-hosted available | [docs.unstructured.io](https://docs.unstructured.io) |
-| **LlamaParse** | `provider.llamaindex.doc-parse.v1` | Document parsing by LlamaIndex. Optimized for complex layouts, tables, charts | 1,000 pages/day free; 10 files/day; no credit card required | [docs.cloud.llamaindex.ai](https://docs.cloud.llamaindex.ai) |
+| **Unstructured** (Planned) | `provider.unstructured.doc-parse.v1` | Extracts structured data from PDFs, images, Office docs, HTML. *Not yet implemented.* | Free serverless API with rate limits; open-source self-hosted available | [docs.unstructured.io](https://docs.unstructured.io) |
+| **LlamaParse** (Planned) | `provider.llamaindex.doc-parse.v1` | Document parsing by LlamaIndex. Optimized for complex layouts, tables, charts. *Not yet implemented.* | 1,000 pages/day free; 10 files/day; no credit card required | [docs.cloud.llamaindex.ai](https://docs.cloud.llamaindex.ai) |
 
 #### Translation and Moderation
 
 | Service | ID | Description | Free Tier | Docs |
 | --- | --- | --- | --- | --- |
-| **DeepL** | `provider.deepl.translation.v1` | Machine translation API. 30+ languages with high accuracy | 500,000 characters/month free; document translation included | [developers.deepl.com/docs](https://developers.deepl.com/docs) |
-| **Perspective API** | `provider.google.moderation.v1` | Content moderation. Scores text for toxicity, profanity, threats | Free for all users; 1 query/second default quota (increase on request) | [developers.perspectiveapi.com](https://developers.perspectiveapi.com) |
+| **DeepL** (Planned) | `provider.deepl.translation.v1` | Machine translation API. 30+ languages with high accuracy. *Not yet implemented.* | 500,000 characters/month free; document translation included | [developers.deepl.com/docs](https://developers.deepl.com/docs) |
+| **Perspective API** (Planned) | `provider.google.moderation.v1` | Content moderation. Scores text for toxicity, profanity, threats. *Not yet implemented.* | Free for all users; 1 query/second default quota (increase on request) | [developers.perspectiveapi.com](https://developers.perspectiveapi.com) |
 
 ### Provider Capability Matrix
 
@@ -221,20 +221,13 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 | **DeepSeek**          | yes      | -         | -     | -          | -      | yes      | -     | -         | credits       |
 | **Mistral AI**        | yes      | -         | -     | yes        | -      | yes      | -     | yes       | rate-limited  |
 | **Cohere**            | yes      | -         | -     | yes        | yes    | yes      | -     | yes       | 1k calls/mo   |
-| **HuggingFace**       | yes      | yes       | yes   | yes        | -      | yes      | yes   | yes       | credits       |
 | **OpenRouter**        | yes      | yes       | yes   | yes        | -      | yes      | -     | -         | 24+ models    |
-| **Cloudflare**        | yes      | yes       | yes   | yes        | -      | yes      | -     | -         | 10k neurons/d |
 | **Groq**              | yes      | -         | yes   | -          | -      | yes      | -     | -         | rate-limited  |
 | **Together AI**       | yes      | yes       | -     | yes        | -      | yes      | yes   | yes       | $5 credit     |
-| **Replicate**         | yes      | yes       | yes   | -          | -      | -        | -     | -         | limited       |
-| **fal.ai**            | -        | yes       | -     | -          | -      | -        | -     | -         | credits       |
-| **Stability AI**      | -        | yes       | -     | -          | -      | -        | -     | -         | credits       |
 | **ElevenLabs**        | -        | -         | yes   | -          | -      | -        | -     | -         | 10k chars/mo  |
 | **AssemblyAI**        | -        | -         | yes   | -          | -      | -        | -     | -         | $50 credit    |
 | **Azure Speech**      | -        | -         | yes   | -          | -      | -        | -     | -         | 0.5M chars/mo |
 | **Perplexity**        | yes      | -         | -     | -          | yes    | yes      | -     | -         | Pro only      |
-| **AWS Bedrock**       | yes      | yes       | -     | yes        | -      | yes      | yes   | yes       | AWS credits   |
-| **Google Cloud APIs** | -        | -         | yes   | -          | -      | -        | -     | -         | generous      |
 | **Ollama**            | yes      | -         | -     | yes        | -      | yes      | -     | -         | free (local)  |
 | **LM Studio**         | yes      | -         | -     | yes        | -      | yes      | -     | -         | free (local)  |
 | **vLLM**              | yes      | -         | -     | yes        | -      | yes      | yes   | -         | free (local)  |

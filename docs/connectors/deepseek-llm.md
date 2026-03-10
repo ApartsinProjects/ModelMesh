@@ -5,7 +5,7 @@ title: "DeepSeek"
 
 # DeepSeek
 
-**ID:** `provider.deepseek.llm.v1`
+**ID:** `provider.deepseek.api.v1`
 **Type:** Provider
 
 DeepSeek offers ultra-low-cost reasoning and chat models with the strongest price-to-performance ratio in the market. The DeepSeek platform provides two primary models: a general-purpose chat model and a dedicated reasoning model. New accounts receive 5 million free tokens with a 30-day expiry, and off-peak usage benefits from a 75% discount. DeepSeek models support tool calling and structured output, making them suitable for agent-based workflows at minimal cost.
@@ -73,7 +73,7 @@ export enum DeepSeekCapability {
 
 ```yaml
 providers:
-  deepseek.llm.v1:
+  deepseek.api.v1:
     api_key: ${secrets:DEEPSEEK_API_KEY}
     timeout: 60s
     max_retries: 3

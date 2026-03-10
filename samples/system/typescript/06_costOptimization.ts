@@ -32,7 +32,7 @@ async function main(): Promise<void> {
   const config = new MeshConfig({
     providers: {
       // DeepSeek: ultra-low-cost chat and reasoning
-      "deepseek.llm.v1": {
+      "deepseek.api.v1": {
         enabled: true,
         api_key: "${secrets:DEEPSEEK_API_KEY}",
         budget: {
@@ -42,7 +42,7 @@ async function main(): Promise<void> {
       },
 
       // Groq: fast free-tier inference
-      "groq.inference.v1": {
+      "groq.api.v1": {
         enabled: true,
         api_key: "${secrets:GROQ_API_KEY}",
         budget: {
@@ -62,7 +62,7 @@ async function main(): Promise<void> {
       },
 
       // Anthropic: premium tier, strongest reasoning
-      "anthropic.llm.v1": {
+      "anthropic.claude.v1": {
         enabled: true,
         api_key: "${secrets:ANTHROPIC_API_KEY}",
         budget: {

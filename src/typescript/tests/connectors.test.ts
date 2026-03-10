@@ -809,3 +809,444 @@ describe('RuntimeEnvironment', () => {
     expect(MemorySecretStore.RUNTIME).toBe(RuntimeEnvironment.UNIVERSAL);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Cloud Provider Tests
+// ---------------------------------------------------------------------------
+
+import { OpenAIProvider, createOpenAIProviderConfig } from '@/connectors/providers/openai-provider';
+import { AnthropicProvider, createAnthropicProviderConfig } from '@/connectors/providers/anthropic-provider';
+import { GeminiProvider, createGeminiProviderConfig } from '@/connectors/providers/gemini-provider';
+import { GroqProvider, createGroqProviderConfig } from '@/connectors/providers/groq-provider';
+import { DeepSeekProvider, createDeepSeekProviderConfig } from '@/connectors/providers/deepseek-provider';
+import { MistralProvider, createMistralProviderConfig } from '@/connectors/providers/mistral-provider';
+import { TogetherProvider, createTogetherProviderConfig } from '@/connectors/providers/together-provider';
+import { OpenRouterProvider, createOpenRouterProviderConfig } from '@/connectors/providers/openrouter-provider';
+import { XAIProvider, createXAIProviderConfig } from '@/connectors/providers/xai-provider';
+import { CohereProvider, createCohereProviderConfig } from '@/connectors/providers/cohere-provider';
+import { PerplexityProvider, createPerplexityProviderConfig } from '@/connectors/providers/perplexity-provider';
+import { ElevenLabsProvider, createElevenLabsProviderConfig } from '@/connectors/providers/elevenlabs-provider';
+import { TavilyProvider, createTavilyProviderConfig } from '@/connectors/providers/tavily-provider';
+import { SerperProvider, createSerperProviderConfig } from '@/connectors/providers/serper-provider';
+import { JinaProvider, createJinaProviderConfig } from '@/connectors/providers/jina-provider';
+import { FirecrawlProvider, createFirecrawlProviderConfig } from '@/connectors/providers/firecrawl-provider';
+import { AssemblyAIProvider, createAssemblyAIProviderConfig } from '@/connectors/providers/assemblyai-provider';
+import { CONNECTOR_REGISTRY } from '@/connectors/index';
+import { detectRuntime, assertRuntimeCompatible } from '@/core/runtime-guard';
+
+describe('OpenAIProvider', () => {
+  test('connector ID', () => {
+    expect(OpenAIProvider.CONNECTOR_ID).toBe('openai.llm.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createOpenAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.openai.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(OpenAIProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createOpenAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('capabilities include chat-completion', () => {
+    const cfg = createOpenAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.capabilities).toContain('generation.text-generation.chat-completion');
+  });
+  test('endpoint', () => {
+    const p = new OpenAIProvider(createOpenAIProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('AnthropicProvider', () => {
+  test('connector ID', () => {
+    expect(AnthropicProvider.CONNECTOR_ID).toBe('anthropic.claude.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createAnthropicProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.anthropic.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(AnthropicProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createAnthropicProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new AnthropicProvider(createAnthropicProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/messages');
+  });
+});
+
+describe('GeminiProvider', () => {
+  test('connector ID', () => {
+    expect(GeminiProvider.CONNECTOR_ID).toBe('google.gemini.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createGeminiProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://generativelanguage.googleapis.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(GeminiProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createGeminiProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new GeminiProvider(createGeminiProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('generateContent');
+  });
+});
+
+describe('GroqProvider', () => {
+  test('connector ID', () => {
+    expect(GroqProvider.CONNECTOR_ID).toBe('groq.api.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createGroqProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.groq.com/openai');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(GroqProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createGroqProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new GroqProvider(createGroqProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('DeepSeekProvider', () => {
+  test('connector ID', () => {
+    expect(DeepSeekProvider.CONNECTOR_ID).toBe('deepseek.api.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createDeepSeekProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.deepseek.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(DeepSeekProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createDeepSeekProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new DeepSeekProvider(createDeepSeekProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('MistralProvider', () => {
+  test('connector ID', () => {
+    expect(MistralProvider.CONNECTOR_ID).toBe('mistral.api.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createMistralProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.mistral.ai');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(MistralProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createMistralProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new MistralProvider(createMistralProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('TogetherProvider', () => {
+  test('connector ID', () => {
+    expect(TogetherProvider.CONNECTOR_ID).toBe('together.api.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createTogetherProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.together.xyz');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(TogetherProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createTogetherProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new TogetherProvider(createTogetherProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('OpenRouterProvider', () => {
+  test('connector ID', () => {
+    expect(OpenRouterProvider.CONNECTOR_ID).toBe('openrouter.gateway.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createOpenRouterProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://openrouter.ai/api');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(OpenRouterProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createOpenRouterProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new OpenRouterProvider(createOpenRouterProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('XAIProvider', () => {
+  test('connector ID', () => {
+    expect(XAIProvider.CONNECTOR_ID).toBe('xai.grok.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createXAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.x.ai');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(XAIProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createXAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new XAIProvider(createXAIProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('CohereProvider', () => {
+  test('connector ID', () => {
+    expect(CohereProvider.CONNECTOR_ID).toBe('cohere.nlp.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createCohereProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.cohere.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(CohereProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createCohereProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new CohereProvider(createCohereProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v2/chat');
+  });
+});
+
+describe('PerplexityProvider', () => {
+  test('connector ID', () => {
+    expect(PerplexityProvider.CONNECTOR_ID).toBe('perplexity.search.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createPerplexityProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.perplexity.ai');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(PerplexityProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createPerplexityProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new PerplexityProvider(createPerplexityProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+});
+
+describe('ElevenLabsProvider', () => {
+  test('connector ID', () => {
+    expect(ElevenLabsProvider.CONNECTOR_ID).toBe('elevenlabs.tts.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createElevenLabsProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.elevenlabs.io');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(ElevenLabsProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createElevenLabsProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new ElevenLabsProvider(createElevenLabsProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/text-to-speech');
+  });
+});
+
+describe('TavilyProvider', () => {
+  test('connector ID', () => {
+    expect(TavilyProvider.CONNECTOR_ID).toBe('tavily.search.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createTavilyProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.tavily.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(TavilyProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createTavilyProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new TavilyProvider(createTavilyProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/search');
+  });
+});
+
+describe('SerperProvider', () => {
+  test('connector ID', () => {
+    expect(SerperProvider.CONNECTOR_ID).toBe('serper.search.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createSerperProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://google.serper.dev');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(SerperProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('endpoint', () => {
+    const p = new SerperProvider(createSerperProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/search');
+  });
+});
+
+describe('JinaProvider', () => {
+  test('connector ID', () => {
+    expect(JinaProvider.CONNECTOR_ID).toBe('jina.ai.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createJinaProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.jina.ai');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(JinaProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createJinaProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new JinaProvider(createJinaProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/embeddings');
+  });
+});
+
+describe('FirecrawlProvider', () => {
+  test('connector ID', () => {
+    expect(FirecrawlProvider.CONNECTOR_ID).toBe('firecrawl.scrape.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createFirecrawlProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.firecrawl.dev');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(FirecrawlProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createFirecrawlProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new FirecrawlProvider(createFirecrawlProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/scrape');
+  });
+});
+
+describe('AssemblyAIProvider', () => {
+  test('connector ID', () => {
+    expect(AssemblyAIProvider.CONNECTOR_ID).toBe('assemblyai.stt.v1');
+  });
+  test('default base URL', () => {
+    const cfg = createAssemblyAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.baseUrl).toBe('https://api.assemblyai.com');
+  });
+  test('RUNTIME is NODE_ONLY', () => {
+    expect(AssemblyAIProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+  test('has default models', () => {
+    const cfg = createAssemblyAIProviderConfig({ apiKey: 'k' });
+    expect(cfg.models.length).toBeGreaterThan(0);
+  });
+  test('endpoint', () => {
+    const p = new AssemblyAIProvider(createAssemblyAIProviderConfig({ apiKey: 'k' }));
+    expect((p as any)._getCompletionEndpoint()).toContain('/v2/transcript');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CONNECTOR_REGISTRY count
+// ---------------------------------------------------------------------------
+
+describe('CONNECTOR_REGISTRY', () => {
+  test('should have 42 registered connectors', () => {
+    expect(Object.keys(CONNECTOR_REGISTRY).length).toBe(42);
+  });
+
+  test('should include all cloud providers', () => {
+    expect(CONNECTOR_REGISTRY['openai.llm.v1']).toBe(OpenAIProvider);
+    expect(CONNECTOR_REGISTRY['anthropic.claude.v1']).toBe(AnthropicProvider);
+    expect(CONNECTOR_REGISTRY['google.gemini.v1']).toBe(GeminiProvider);
+    expect(CONNECTOR_REGISTRY['groq.api.v1']).toBe(GroqProvider);
+    expect(CONNECTOR_REGISTRY['deepseek.api.v1']).toBe(DeepSeekProvider);
+    expect(CONNECTOR_REGISTRY['mistral.api.v1']).toBe(MistralProvider);
+    expect(CONNECTOR_REGISTRY['together.api.v1']).toBe(TogetherProvider);
+    expect(CONNECTOR_REGISTRY['openrouter.gateway.v1']).toBe(OpenRouterProvider);
+    expect(CONNECTOR_REGISTRY['xai.grok.v1']).toBe(XAIProvider);
+    expect(CONNECTOR_REGISTRY['cohere.nlp.v1']).toBe(CohereProvider);
+    expect(CONNECTOR_REGISTRY['perplexity.search.v1']).toBe(PerplexityProvider);
+    expect(CONNECTOR_REGISTRY['elevenlabs.tts.v1']).toBe(ElevenLabsProvider);
+    expect(CONNECTOR_REGISTRY['tavily.search.v1']).toBe(TavilyProvider);
+    expect(CONNECTOR_REGISTRY['serper.search.v1']).toBe(SerperProvider);
+    expect(CONNECTOR_REGISTRY['jina.ai.v1']).toBe(JinaProvider);
+    expect(CONNECTOR_REGISTRY['firecrawl.scrape.v1']).toBe(FirecrawlProvider);
+    expect(CONNECTOR_REGISTRY['assemblyai.stt.v1']).toBe(AssemblyAIProvider);
+    expect(CONNECTOR_REGISTRY['azure.tts.v1']).toBe(AzureSpeechProvider);
+  });
+
+  test('should include all local providers', () => {
+    expect(CONNECTOR_REGISTRY['ollama.local.v1']).toBe(OllamaProvider);
+    expect(CONNECTOR_REGISTRY['lmstudio.local.v1']).toBe(LMStudioProvider);
+    expect(CONNECTOR_REGISTRY['vllm.local.v1']).toBe(VLLMProvider);
+    expect(CONNECTOR_REGISTRY['localai.local.v1']).toBe(LocalAIProvider);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Runtime Guard
+// ---------------------------------------------------------------------------
+
+describe('Runtime Guard', () => {
+  test('detectRuntime returns NODE_ONLY in Node.js', () => {
+    expect(detectRuntime()).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+
+  test('assertRuntimeCompatible passes for NODE_ONLY in Node.js', () => {
+    expect(() => assertRuntimeCompatible('test.node', RuntimeEnvironment.NODE_ONLY)).not.toThrow();
+  });
+
+  test('assertRuntimeCompatible passes for UNIVERSAL', () => {
+    expect(() => assertRuntimeCompatible('test.universal', RuntimeEnvironment.UNIVERSAL)).not.toThrow();
+  });
+
+  test('assertRuntimeCompatible throws for BROWSER_ONLY in Node.js', () => {
+    expect(() => assertRuntimeCompatible('test.browser', RuntimeEnvironment.BROWSER_ONLY)).toThrow();
+  });
+});

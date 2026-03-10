@@ -98,14 +98,6 @@ export const PROVIDER_REGISTRY: Record<string, ProviderRegistryEntry> = {
       m('openrouter.auto', 'OpenRouter Auto', ['generation.text-generation.chat-completion'], 128000, 4096),
     ],
   },
-  HF_TOKEN: {
-    name: 'huggingface',
-    connector: 'huggingface.inference.v1',
-    baseUrl: 'https://api-inference.huggingface.co',
-    defaultModels: [
-      m('huggingface.meta-llama-3.1-8b-instruct', 'Llama 3.1 8B Instruct', ['generation.text-generation.chat-completion'], 131072, 4096),
-    ],
-  },
   DEEPSEEK_API_KEY: {
     name: 'deepseek',
     connector: 'deepseek.api.v1',

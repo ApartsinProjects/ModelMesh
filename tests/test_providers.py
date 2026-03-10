@@ -951,7 +951,6 @@ class TestProviderRegistryPerProvider(unittest.TestCase):
         "MISTRAL_API_KEY": ("mistral", "mistral.api.v1"),
         "TOGETHER_API_KEY": ("together", "together.api.v1"),
         "OPENROUTER_API_KEY": ("openrouter", "openrouter.gateway.v1"),
-        "HF_TOKEN": ("huggingface", "huggingface.inference.v1"),
         "DEEPSEEK_API_KEY": ("deepseek", "deepseek.api.v1"),
         "XAI_API_KEY": ("xai", "xai.grok.v1"),
         "COHERE_API_KEY": ("cohere", "cohere.nlp.v1"),

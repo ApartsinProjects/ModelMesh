@@ -5,7 +5,7 @@ title: "Mistral AI"
 
 # Mistral AI
 
-**ID:** `provider.mistral.llm.v1`
+**ID:** `provider.mistral.api.v1`
 **Type:** Provider
 
 Mistral AI is a European AI lab producing efficient open-weight and proprietary language models. The platform offers a range of models from the compact Mistral Nemo to the powerful Mistral Large, along with the specialized Codestral model for code generation. Mistral provides embedding capabilities and supports fine-tuning for model customization. All models are available through a rate-limited free tier with no credit card required.
@@ -85,7 +85,7 @@ export enum MistralCapability {
 
 ```yaml
 providers:
-  mistral.llm.v1:
+  mistral.api.v1:
     api_key: ${secrets:MISTRAL_API_KEY}
     timeout: 60s
     max_retries: 3

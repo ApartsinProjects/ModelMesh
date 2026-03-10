@@ -30,7 +30,7 @@ async function main(): Promise<void> {
         enabled: true,
         api_key: "${secrets:OPENAI_API_KEY}",
       },
-      "anthropic.llm.v1": {
+      "anthropic.claude.v1": {
         enabled: true,
         api_key: "${secrets:ANTHROPIC_API_KEY}",
       },

@@ -8,6 +8,7 @@
 
 import * as fs from 'fs';
 import { BaseSecretStore, BaseSecretStoreConfig } from '../base-secret-store';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export interface FileSecretStoreConfig extends BaseSecretStoreConfig {
   filePath?: string;
@@ -25,6 +26,7 @@ export interface FileSecretStoreConfig extends BaseSecretStoreConfig {
  * const key = store.get('OPENAI_API_KEY');
  */
 export class FileSecretStore extends BaseSecretStore {
+  static override readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _fileConfig: { filePath: string; format: 'env' | 'json' };
   private _secrets = new Map<string, string>();
 

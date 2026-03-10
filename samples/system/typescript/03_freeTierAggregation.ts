@@ -27,7 +27,7 @@ async function main(): Promise<void> {
   const config = new MeshConfig({
     providers: {
       // Groq: rate-limited free tier, ultra-fast inference
-      "groq.inference.v1": {
+      "groq.api.v1": {
         enabled: true,
         api_key: "${secrets:GROQ_API_KEY}",
         quota: {

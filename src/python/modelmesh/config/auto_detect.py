@@ -153,20 +153,6 @@ PROVIDER_REGISTRY: dict[str, dict] = {
             ),
         ],
     },
-    "HF_TOKEN": {
-        "name": "huggingface",
-        "connector": "huggingface.inference.v1",
-        "base_url": "https://api-inference.huggingface.co",
-        "default_models": [
-            ModelInfo(
-                id="huggingface.meta-llama-3.1-8b-instruct",
-                name="Llama 3.1 8B Instruct",
-                capabilities=["generation.text-generation.chat-completion"],
-                context_window=131072,
-                max_output_tokens=4096,
-            ),
-        ],
-    },
     "DEEPSEEK_API_KEY": {
         "name": "deepseek",
         "connector": "deepseek.api.v1",

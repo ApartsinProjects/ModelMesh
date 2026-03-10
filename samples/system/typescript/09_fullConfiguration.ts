@@ -41,7 +41,7 @@ async function main(): Promise<void> {
         budget: { daily_limit: 5.00, monthly_limit: 50.00 },
         discovery: { enumerate_models: true, model_details: true },
       },
-      "anthropic.llm.v1": {
+      "anthropic.claude.v1": {
         enabled: true,
         api_key: "${secrets:ANTHROPIC_API_KEY}",
         budget: { daily_limit: 5.00, monthly_limit: 50.00 },
@@ -52,7 +52,7 @@ async function main(): Promise<void> {
         quota: { query_remaining: true, reset_schedule: "daily" },
         discovery: { enumerate_models: true, capability_query: true },
       },
-      "deepseek.llm.v1": {
+      "deepseek.api.v1": {
         enabled: true,
         api_key: "${secrets:DEEPSEEK_API_KEY}",
         budget: { daily_limit: 1.00, monthly_limit: 10.00 },
@@ -83,7 +83,7 @@ async function main(): Promise<void> {
         capabilities: ["representation.embeddings.text-embeddings"],
       },
       "claude-sonnet-4": {
-        provider: "anthropic.llm.v1",
+        provider: "anthropic.claude.v1",
         capabilities: [
           "generation.text-generation.chat-completion",
           "generation.text-generation.code-generation",
@@ -100,7 +100,7 @@ async function main(): Promise<void> {
         ],
       },
       "deepseek-chat": {
-        provider: "deepseek.llm.v1",
+        provider: "deepseek.api.v1",
         capabilities: [
           "generation.text-generation.chat-completion",
           "generation.text-generation.code-generation",

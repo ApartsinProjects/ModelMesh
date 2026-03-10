@@ -5,7 +5,7 @@ title: "Groq"
 
 # Groq
 
-**ID:** `provider.groq.inference.v1`
+**ID:** `provider.groq.api.v1`
 **Type:** Provider
 
 Groq delivers ultra-fast AI inference powered by custom Language Processing Units (LPUs). Purpose-built silicon enables industry-leading throughput and latency for large language models, making Groq ideal for real-time applications that require sub-second response times. It supports text generation and speech-to-text workloads.
@@ -78,6 +78,6 @@ export enum GroqCapability {
 
 ```yaml
 providers:
-  groq.inference.v1:
+  groq.api.v1:
     api_key: ${secrets:GROQ_API_KEY}
 ```

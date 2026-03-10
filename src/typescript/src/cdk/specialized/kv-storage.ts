@@ -9,6 +9,7 @@
 import * as fs from 'fs';
 import { BaseStorage, BaseStorageConfig } from '../base-storage';
 import { StorageEntry } from '../../interfaces/storage';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export interface KeyValueStorageConfig extends BaseStorageConfig {
   backend?: 'memory' | 'file';
@@ -29,6 +30,7 @@ export interface KeyValueStorageConfig extends BaseStorageConfig {
  * });
  */
 export class KeyValueStorage extends BaseStorage {
+  static override readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _kvConfig: Required<KeyValueStorageConfig>;
 
   constructor(config?: KeyValueStorageConfig) {

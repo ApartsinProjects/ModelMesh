@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-808%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C241%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -197,11 +197,11 @@ client = modelmesh.create(config="modelmesh.yaml")
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
 
-# Run Python tests (640 tests)
+# Run Python tests (775 tests)
 pip install pytest
 cd src/python && python -m pytest ../../tests/ -v
 
-# Run TypeScript tests (168 tests)
+# Run TypeScript tests (466 tests)
 cd src/typescript && npm install && npm test
 ```
 

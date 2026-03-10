@@ -2,7 +2,7 @@
  * Tests for MeshConfig and auto-detect modules.
  */
 import { MeshConfig } from '@/config/mesh-config';
-import { detectProviders, PROVIDER_REGISTRY } from '@/config/auto-detect';
+import { detectProviders, PROVIDER_REGISTRY, LOCAL_PROVIDER_REGISTRY } from '@/config/auto-detect';
 import type { DetectedProvider } from '@/config/auto-detect';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -225,8 +225,8 @@ describe('detectProviders', () => {
 // ---------------------------------------------------------------------------
 
 describe('PROVIDER_REGISTRY', () => {
-  it('should have 18 entries', () => {
-    expect(Object.keys(PROVIDER_REGISTRY).length).toBe(18);
+  it('should have 17 entries', () => {
+    expect(Object.keys(PROVIDER_REGISTRY).length).toBe(17);
   });
 
   it('should map env var names to provider entries', () => {
@@ -258,12 +258,43 @@ describe('PROVIDER_REGISTRY', () => {
     expect(names).toContain('xai');
     expect(names).toContain('cohere');
     expect(names).toContain('perplexity');
-    expect(names).toContain('huggingface');
     expect(names).toContain('elevenlabs');
     expect(names).toContain('tavily');
     expect(names).toContain('serper');
     expect(names).toContain('jina');
     expect(names).toContain('firecrawl');
     expect(names).toContain('assemblyai');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LOCAL_PROVIDER_REGISTRY
+// ---------------------------------------------------------------------------
+
+describe('LOCAL_PROVIDER_REGISTRY', () => {
+  it('should have 4 entries', () => {
+    expect(Object.keys(LOCAL_PROVIDER_REGISTRY).length).toBe(4);
+  });
+
+  it('should contain all local provider env vars', () => {
+    expect(LOCAL_PROVIDER_REGISTRY.OLLAMA_HOST).toBeDefined();
+    expect(LOCAL_PROVIDER_REGISTRY.LMSTUDIO_HOST).toBeDefined();
+    expect(LOCAL_PROVIDER_REGISTRY.VLLM_HOST).toBeDefined();
+    expect(LOCAL_PROVIDER_REGISTRY.LOCALAI_HOST).toBeDefined();
+  });
+
+  it('should have correct connector IDs', () => {
+    expect(LOCAL_PROVIDER_REGISTRY.OLLAMA_HOST.connector).toBe('ollama.local.v1');
+    expect(LOCAL_PROVIDER_REGISTRY.LMSTUDIO_HOST.connector).toBe('lmstudio.local.v1');
+    expect(LOCAL_PROVIDER_REGISTRY.VLLM_HOST.connector).toBe('vllm.local.v1');
+    expect(LOCAL_PROVIDER_REGISTRY.LOCALAI_HOST.connector).toBe('localai.local.v1');
+  });
+
+  it('should detect providers when env var is set', () => {
+    process.env.OLLAMA_HOST = 'http://localhost:11434';
+    const detected = detectProviders();
+    const names = detected.map((d: DetectedProvider) => d.name);
+    expect(names).toContain('ollama');
+    delete process.env.OLLAMA_HOST;
   });
 });

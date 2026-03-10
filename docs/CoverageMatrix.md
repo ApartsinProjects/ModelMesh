@@ -5,7 +5,7 @@ title: "Test Coverage Matrix"
 
 # Test Coverage Matrix
 
-Correlates documented features with test coverage. The project includes 775 Python tests across 14 test files and 370 TypeScript tests across 13 test files, for a total of 1,145 tests.
+Correlates documented features with test coverage. The project includes 775 Python tests across 14 test files and 466 TypeScript tests across 13 test files, for a total of 1,241 tests.
 
 ---
 
@@ -39,12 +39,12 @@ Correlates documented features with test coverage. The project includes 775 Pyth
 | CapabilityPool | 15 | `pool.test.ts` | Covered |
 | ModelMesh facade | 16 | `mesh.test.ts` | Covered |
 | Router | 5 | `router.test.ts` | Covered |
-| Pre-shipped Connectors + Local Providers + RuntimeEnvironment | 102 | `connectors.test.ts` | Covered |
-| MeshConfig + Auto-detect | 22 | `config.test.ts` | Covered |
+| Pre-shipped Connectors + Cloud/Local Providers + RuntimeEnvironment + Registry + Runtime Guard | 185 | `connectors.test.ts` | Covered |
+| MeshConfig + Auto-detect + LOCAL_PROVIDER_REGISTRY | 30 | `config.test.ts` | Covered |
 | MeshClient (OpenAI compat) | 16 | `client.test.ts` | Covered |
 | Secret Stores (env, dotenv, json, memory, encrypted, keyring) | 55 | `secret-stores.test.ts` | Covered |
 | CORS Proxy | 12 | `proxy.test.ts` | Covered |
-| **Total** | **370** | **13 files** | |
+| **Total** | **466** | **13 files** | |
 
 ---
 

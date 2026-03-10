@@ -1,9 +1,10 @@
 """Pre-shipped provider connectors for ModelMesh Lite.
 
 Exports LLM providers (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek,
-Mistral, Together, OpenRouter, xAI, Cohere, Perplexity, ElevenLabs) and
-non-LLM utility providers (Tavily, Serper, Jina, Firecrawl, AssemblyAI)
-with their configuration classes.
+Mistral, Together, OpenRouter, xAI, Cohere, Perplexity), media providers
+(ElevenLabs, Azure Speech, AssemblyAI), and non-LLM utility providers
+(Tavily, Serper, Jina, Firecrawl) with their configuration classes.
+Also exports local/self-hosted providers (Ollama, LM Studio, vLLM, LocalAI).
 """
 from __future__ import annotations
 
@@ -75,6 +76,26 @@ from modelmesh.connectors.providers.xai_provider import (
     XAIProvider,
     XAIProviderConfig,
 )
+from modelmesh.connectors.providers.azure_speech_provider import (
+    AzureSpeechProvider,
+    AzureSpeechProviderConfig,
+)
+from modelmesh.connectors.providers.ollama_provider import (
+    OllamaProvider,
+    OllamaProviderConfig,
+)
+from modelmesh.connectors.providers.lmstudio_provider import (
+    LMStudioProvider,
+    LMStudioProviderConfig,
+)
+from modelmesh.connectors.providers.vllm_provider import (
+    VLLMProvider,
+    VLLMProviderConfig,
+)
+from modelmesh.connectors.providers.localai_provider import (
+    LocalAIProvider,
+    LocalAIProviderConfig,
+)
 
 __all__ = [
     # LLM providers
@@ -114,4 +135,16 @@ __all__ = [
     "FirecrawlProviderConfig",
     "AssemblyAIProvider",
     "AssemblyAIProviderConfig",
+    # Azure Speech TTS
+    "AzureSpeechProvider",
+    "AzureSpeechProviderConfig",
+    # Local / self-hosted providers
+    "OllamaProvider",
+    "OllamaProviderConfig",
+    "LMStudioProvider",
+    "LMStudioProviderConfig",
+    "VLLMProvider",
+    "VLLMProviderConfig",
+    "LocalAIProvider",
+    "LocalAIProviderConfig",
 ]

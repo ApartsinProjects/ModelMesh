@@ -9,6 +9,7 @@ import * as http from 'http';
 import * as https from 'https';
 import { BaseDiscovery, BaseDiscoveryConfig } from '../base-discovery';
 import { ProbeResult } from '../../interfaces/discovery';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export interface HttpHealthDiscoveryConfig extends BaseDiscoveryConfig {
   /** Map of provider IDs to their health check URLs. */
@@ -30,6 +31,7 @@ export interface HttpHealthDiscoveryConfig extends BaseDiscoveryConfig {
  * const result = await discovery.probe('openai.v1');
  */
 export class HttpHealthDiscovery extends BaseDiscovery {
+  static override readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _httpConfig: { endpoints: Record<string, string>; timeoutMs: number };
 
   constructor(config?: HttpHealthDiscoveryConfig) {

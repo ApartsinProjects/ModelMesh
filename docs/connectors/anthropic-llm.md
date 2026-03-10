@@ -5,7 +5,7 @@ title: "Anthropic"
 
 # Anthropic
 
-**ID:** `provider.anthropic.llm.v1`
+**ID:** `provider.anthropic.claude.v1`
 **Type:** Provider
 
 Anthropic is a safety-focused AI lab producing the Claude family of large language models. Claude models excel at reasoning, code generation, analysis, and long-context tasks. Anthropic emphasizes responsible AI development, and its models are known for following nuanced instructions and producing well-structured outputs. The API supports batch processing for high-volume workloads with significant cost savings.
@@ -83,7 +83,7 @@ export enum AnthropicCapability {
 
 ```yaml
 providers:
-  anthropic.llm.v1:
+  anthropic.claude.v1:
     api_key: ${secrets:ANTHROPIC_API_KEY}
     timeout: 120s
     max_tokens: 8192

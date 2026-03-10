@@ -64,7 +64,7 @@ providers:
   - connector: openai.llm.v1
     auth:
       api_key: ${secrets:OPENAI-API-KEY}
-  - connector: anthropic.llm.v1
+  - connector: anthropic.claude.v1
     auth:
       api_key: ${secrets:ANTHROPIC-API-KEY}
 ```

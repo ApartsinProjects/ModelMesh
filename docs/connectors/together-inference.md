@@ -5,7 +5,7 @@ title: "Together AI"
 
 # Together AI
 
-**ID:** `provider.together.inference.v1`
+**ID:** `provider.together.api.v1`
 **Type:** Provider
 
 Together AI provides access to 200+ open-source models with optimized inference, fine-tuning, and batch processing capabilities. The platform specializes in running leading open-source models with high throughput and competitive pricing, supporting text generation, image generation, and embeddings workloads.
@@ -84,6 +84,6 @@ export enum TogetherCapability {
 
 ```yaml
 providers:
-  together.inference.v1:
+  together.api.v1:
     api_key: ${secrets:TOGETHER_API_KEY}
 ```

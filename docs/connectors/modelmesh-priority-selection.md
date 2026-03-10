@@ -65,7 +65,7 @@ pools:
           - gemini-2.5-pro
         provider_priority:
           - openai.llm.v1
-          - anthropic.llm.v1
+          - anthropic.claude.v1
           - google.gemini.v1
         fallback_strategy: round-robin
       deactivation:

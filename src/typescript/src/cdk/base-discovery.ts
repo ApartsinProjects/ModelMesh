@@ -14,6 +14,7 @@ import {
   SyncStatus,
 } from '../interfaces/discovery';
 import { createDefaultHealthReport } from '../interfaces/provider';
+import { RuntimeEnvironment } from '../interfaces/runtime';
 
 export interface BaseDiscoveryConfig {
   syncIntervalSeconds?: number;
@@ -23,6 +24,7 @@ export interface BaseDiscoveryConfig {
 }
 
 export class BaseDiscovery implements DiscoveryConnector {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
   protected readonly _config: Required<BaseDiscoveryConfig>;
   protected _knownModels = new Map<string, string[]>();
   protected _healthReports = new Map<string, HealthReport>();

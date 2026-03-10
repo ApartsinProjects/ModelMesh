@@ -30,7 +30,7 @@ async function main(): Promise<void> {
         enabled: true,
         api_key: "${secrets:OPENAI_API_KEY}",
       },
-      "anthropic.llm.v1": {
+      "anthropic.claude.v1": {
         enabled: true,
         api_key: "${secrets:ANTHROPIC_API_KEY}",
       },
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
         // first provider fails beyond the retry limit, it moves to standby
         // and the next provider takes over.
         strategy: "modelmesh.priority-selection.v1",
-        provider_priority: ["openai.llm.v1", "anthropic.llm.v1"],
+        provider_priority: ["openai.llm.v1", "anthropic.claude.v1"],
 
         // Deactivation: move a model to standby after 3 consecutive failures
         deactivation: {

@@ -31,7 +31,7 @@ async function main(): Promise<void> {
         enabled: true,
         api_key: "${secrets:OPENAI_API_KEY}",
       },
-      "anthropic.llm.v1": {
+      "anthropic.claude.v1": {
         enabled: true,
         api_key: "${secrets:ANTHROPIC_API_KEY}",
       },
@@ -62,7 +62,7 @@ async function main(): Promise<void> {
         },
       },
       "claude-sonnet-4": {
-        provider: "anthropic.llm.v1",
+        provider: "anthropic.claude.v1",
         capabilities: [
           "generation.text-generation.chat-completion",
           "interaction.tool-calling",
