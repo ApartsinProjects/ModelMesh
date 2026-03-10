@@ -1,6 +1,6 @@
 {
   "name": "@nistrapa/modelmesh-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One integration point for all your AI providers. Automatic failover, free-tier aggregation, and capability-based routing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
