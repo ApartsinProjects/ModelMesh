@@ -83,7 +83,7 @@ export class HttpError extends Error {
  * APIs without reimplementing transport, retries, or error handling.
  */
 export class BaseProvider {
-  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.NODE_ONLY;
 
   protected _config: BaseProviderConfig;
   protected _requestCount: number = 0;

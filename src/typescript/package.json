@@ -4,11 +4,23 @@
   "description": "One integration point for all your AI providers. Automatic failover, free-tier aggregation, and capability-based routing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/cdk/browser-provider.d.ts",
+      "require": "./dist/cdk/browser-provider.js",
+      "default": "./dist/cdk/browser-provider.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest --verbose",
     "test:watch": "jest --watch",
-    "lint": "eslint src/",
+    "lint": "tsc --noEmit",
     "clean": "rimraf dist"
   },
   "keywords": [

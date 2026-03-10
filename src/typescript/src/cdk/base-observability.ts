@@ -25,7 +25,7 @@ export interface BaseObservabilityConfig {
 }
 
 export class BaseObservability implements ObservabilityConnector {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected readonly _config: Required<BaseObservabilityConfig>;
 

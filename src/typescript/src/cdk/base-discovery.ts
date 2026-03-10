@@ -24,7 +24,7 @@ export interface BaseDiscoveryConfig {
 }
 
 export class BaseDiscovery implements DiscoveryConnector {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
   protected readonly _config: Required<BaseDiscoveryConfig>;
   protected _knownModels = new Map<string, string[]>();
   protected _healthReports = new Map<string, HealthReport>();

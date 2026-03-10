@@ -24,12 +24,20 @@ Your application requests a **capability** (e.g. "chat completion"). ModelMesh p
 
 **Python:**
 ```bash
-pip install modelmesh-lite
+pip install modelmesh-lite                # core (zero dependencies)
+pip install modelmesh-lite[yaml]          # + YAML config support
 ```
 
 **TypeScript / Node.js:**
 ```bash
 npm install @modelmesh/core
+```
+
+**Docker Proxy (any language):**
+```bash
+cp .env.example .env   # add your API keys
+docker compose up --build
+# Proxy at http://localhost:8080 — speaks the OpenAI REST API
 ```
 
 ## Quick Start
@@ -171,6 +179,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 | **[Connector Interfaces](docs/ConnectorInterfaces.md)** | Interface definitions for all connector types |
 | **[System Services](docs/SystemServices.md)** | Runtime objects: Router, Pool, Model, State |
 | **[Proxy Guide](docs/guides/ProxyGuide.md)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
+| **[AI Agent Integration](docs/ForAIAgent.md)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
 
 ### CDK (Connector Development Kit)
 

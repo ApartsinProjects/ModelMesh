@@ -301,3 +301,4 @@ Correlates documented features with test coverage. The project includes 855 Pyth
 | `guides/BrowserUsage.md` | BrowserBaseProvider, CORS proxy, createBrowser() | Browser provider tests | Direct |
 | `ConnectorInterfaces.md` (Audio) | AudioRequest, AudioResponse, audio namespace | Audio interface tests | Direct |
 | `guides/ProxyGuide.md` | Proxy server, Docker, CLI, REST API, browser access | `test_docker.py` (80 tests) + `test_proxy.py` (26 tests) + `connectors.test.ts` Docker section | Direct |
+| `ForAIAgent.md` | AI agent integration guide: install, configure, integrate all 4 variants | All integration tests | Indirect |

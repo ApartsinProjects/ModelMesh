@@ -29,12 +29,20 @@ Your application requests a **capability** (e.g. "chat completion"). ModelMesh p
 
 **Python:**
 ```bash
-pip install modelmesh-lite
+pip install modelmesh-lite                # core (zero dependencies)
+pip install modelmesh-lite[yaml]          # + YAML config support
 ```
 
 **TypeScript / Node.js:**
 ```bash
 npm install @modelmesh/core
+```
+
+**Docker Proxy (any language):**
+```bash
+cp .env.example .env   # add your API keys
+docker compose up --build
+# Proxy at http://localhost:8080 — speaks the OpenAI REST API
 ```
 
 ## Quick Start
@@ -181,6 +189,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 | Document | Description |
 |---|---|
 | **[Proxy Guide](guides/ProxyGuide.html)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
+| **[AI Agent Integration](ForAIAgent.html)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
 | **[Browser Usage](guides/BrowserUsage.html)** | BrowserBaseProvider, CORS proxy setup, and browser-specific patterns |
 | **[Audio (TTS/STT)](ConnectorInterfaces.html#audio)** | AudioRequest/AudioResponse types, `client.audio` namespace |
 

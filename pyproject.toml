@@ -41,6 +41,9 @@ Issues = "https://github.com/ApartsinProjects/ModelMesh/issues"
 where = ["src/python"]
 include = ["modelmesh*"]
 
+[tool.setuptools.package-data]
+modelmesh = ["py.typed"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py311"

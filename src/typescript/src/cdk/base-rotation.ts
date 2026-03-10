@@ -57,7 +57,7 @@ function resolveConfig(config?: BaseRotationConfig): ResolvedRotationConfig {
 // -- Deactivation -----------------------------------------------------------
 
 export class BaseDeactivationPolicy implements DeactivationPolicy {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected readonly _config: ResolvedRotationConfig;
 
@@ -106,7 +106,7 @@ export class BaseDeactivationPolicy implements DeactivationPolicy {
 // -- Recovery ---------------------------------------------------------------
 
 export class BaseRecoveryPolicy implements RecoveryPolicy {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected readonly _config: ResolvedRotationConfig;
 
@@ -128,7 +128,7 @@ export class BaseRecoveryPolicy implements RecoveryPolicy {
 // -- Selection --------------------------------------------------------------
 
 export class BaseSelectionStrategy implements SelectionStrategy {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected readonly _config: ResolvedRotationConfig;
 
@@ -174,7 +174,7 @@ export class BaseSelectionStrategy implements SelectionStrategy {
 export class BaseRotationPolicy
   implements DeactivationPolicy, RecoveryPolicy, SelectionStrategy
 {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected readonly _config: ResolvedRotationConfig;
 

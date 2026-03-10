@@ -94,7 +94,7 @@ export class BrowserHttpError extends Error {
  * }));
  */
 export class BrowserBaseProvider {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected _config: BrowserProviderConfig;
   protected _requestCount: number = 0;

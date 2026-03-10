@@ -24,7 +24,7 @@ export interface BaseStorageConfig {
 }
 
 export class BaseStorage implements StorageConnector, Locking {
-  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+  static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected readonly _config: Required<BaseStorageConfig>;
   protected _store = new Map<string, StorageEntry>();
