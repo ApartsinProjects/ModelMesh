@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelMesh Proxy — Browser Test</title>
+<style>
+  :root { --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --accent: #6c5ce7; --text: #e0e0e8; --dim: #8888a0; --ok: #00d68f; --err: #ff6b6b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem; }
+  h1 { font-size: 1.5rem; margin-bottom: .25rem; }
+  .sub { color: var(--dim); font-size: .85rem; margin-bottom: 1.5rem; }
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .panel h2 { font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+  .panel h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  label { display: block; font-size: .8rem; color: var(--dim); margin-bottom: .3rem; margin-top: .75rem; }
+  input, textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: .5rem .75rem; font-size: .85rem; font-family: inherit; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+  button { cursor: pointer; border: none; border-radius: 6px; padding: .55rem 1.1rem; font-size: .85rem; font-weight: 600; transition: opacity .15s; }
+  button:hover { opacity: .85; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-row { display: flex; gap: .5rem; margin-top: 1rem; }
+  .toggle { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; font-size: .85rem; }
+  .toggle input[type=checkbox] { width: auto; accent-color: var(--accent); }
+  .status { font-size: .8rem; padding: .35rem .65rem; border-radius: 4px; margin-top: .75rem; }
+  .status.ok { background: rgba(0,214,143,.12); color: var(--ok); }
+  .status.err { background: rgba(255,107,107,.12); color: var(--err); }
+  .status.info { background: rgba(108,92,231,.12); color: var(--accent); }
+  #response-area { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: .82rem; white-space: pre-wrap; word-break: break-word; min-height: 200px; max-height: 600px; overflow-y: auto; line-height: 1.6; }
+  .meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .75rem; color: var(--dim); margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); }
+  .meta span { background: var(--bg); padding: .2rem .5rem; border-radius: 4px; }
+  .model-list { list-style: none; }
+  .model-list li { padding: .4rem .6rem; border-radius: 4px; margin-bottom: .25rem; font-size: .83rem; background: var(--bg); display: flex; justify-content: space-between; }
+  .model-list li .id { color: var(--accent); font-weight: 600; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>ModelMesh Proxy — Browser Test</h1>
+<p class="sub">Vanilla JavaScript &middot; OpenAI-compatible REST &middot; No dependencies</p>
+
+<div class="grid">
+  <!-- Left panel: config + controls -->
+  <div>
+    <div class="panel">
+      <h2><span class="dot"></span> Connection</h2>
+      <label for="proxy-url">Proxy URL</label>
+      <input id="proxy-url" type="text" value="http://localhost:8080" />
+      <label for="bearer-token">Bearer Token <span style="color:var(--dim)">(optional)</span></label>
+      <input id="bearer-token" type="password" placeholder="Leave empty if none" />
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="listModels()">List Models</button>
+        <button class="btn-secondary" onclick="healthCheck()">Health</button>
+      </div>
+      <div id="conn-status"></div>
+    </div>
+
+    <div class="panel" style="margin-top:1rem">
+      <h2><span class="dot"></span> Models</h2>
+      <ul id="model-list" class="model-list">
+        <li style="color:var(--dim)">Click "List Models" to populate</li>
+      </ul>
+    </div>
+
+    <div class="panel" style="margin-top:1rem">
+      <h2><span class="dot"></span> Chat</h2>
+      <label for="model-select">Model / Pool</label>
+      <select id="model-select"><option value="text-generation">text-generation</option></select>
+
+      <label for="system-prompt">System Prompt <span style="color:var(--dim)">(optional)</span></label>
+      <input id="system-prompt" type="text" placeholder="You are a helpful assistant." />
+
+      <label for="user-message">Message</label>
+      <textarea id="user-message" placeholder="Hello! Tell me about yourself.">Hello! Tell me about yourself.</textarea>
+
+      <label for="temperature">Temperature</label>
+      <input id="temperature" type="number" value="0.7" min="0" max="2" step="0.1" />
+
+      <label for="max-tokens">Max Tokens <span style="color:var(--dim)">(optional)</span></label>
+      <input id="max-tokens" type="number" value="512" min="1" />
+
+      <div class="toggle">
+        <input type="checkbox" id="stream-toggle" checked />
+        <label for="stream-toggle" style="margin:0">Enable streaming</label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" id="send-btn" onclick="sendChat()">Send</button>
+        <button class="btn-secondary" onclick="clearResponse()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel: response -->
+  <div>
+    <div class="panel" style="height:100%">
+      <h2><span class="dot"></span> Response</h2>
+      <div id="response-area">Waiting for a request&hellip;</div>
+      <div id="response-meta" class="meta" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────
+
+function baseUrl() {
+  return document.getElementById('proxy-url').value.replace(/\/+$/, '');
+}
+
+function headers() {
+  const h = { 'Content-Type': 'application/json' };
+  const token = document.getElementById('bearer-token').value.trim();
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  return h;
+}
+
+function setStatus(id, msg, cls) {
+  const el = document.getElementById(id);
+  el.className = 'status ' + cls;
+  el.textContent = msg;
+}
+
+function clearResponse() {
+  document.getElementById('response-area').textContent = 'Waiting for a request\u2026';
+  document.getElementById('response-meta').style.display = 'none';
+  document.getElementById('response-meta').innerHTML = '';
+}
+
+// ── Health check ─────────────────────────────────────────────────────────
+
+async function healthCheck() {
+  try {
+    const res = await fetch(baseUrl() + '/health', { headers: headers() });
+    const data = await res.json();
+    if (res.ok) {
+      setStatus('conn-status',
+        `OK — uptime ${data.uptime_seconds}s, ${data.total_requests} requests served`,
+        'ok');
+    } else {
+      setStatus('conn-status', `Error ${res.status}: ${JSON.stringify(data)}`, 'err');
+    }
+  } catch (e) {
+    setStatus('conn-status', 'Connection failed: ' + e.message, 'err');
+  }
+}
+
+// ── List models ──────────────────────────────────────────────────────────
+
+async function listModels() {
+  const list = document.getElementById('model-list');
+  const select = document.getElementById('model-select');
+  try {
+    const res = await fetch(baseUrl() + '/v1/models', { headers: headers() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    list.innerHTML = '';
+    select.innerHTML = '';
+
+    if (!data.data || data.data.length === 0) {
+      list.innerHTML = '<li style="color:var(--dim)">No models available</li>';
+      return;
+    }
+
+    data.data.forEach(m => {
+      // list
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="id">${m.id}</span><span>${m.owned_by}</span>`;
+      list.appendChild(li);
+      // dropdown
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.id;
+      select.appendChild(opt);
+    });
+
+    setStatus('conn-status', `Found ${data.data.length} model(s)`, 'ok');
+  } catch (e) {
+    list.innerHTML = '<li style="color:var(--err)">Error: ' + e.message + '</li>';
+    setStatus('conn-status', 'Failed to list models: ' + e.message, 'err');
+  }
+}
+
+// ── Send chat ────────────────────────────────────────────────────────────
+
+async function sendChat() {
+  const btn = document.getElementById('send-btn');
+  const area = document.getElementById('response-area');
+  const meta = document.getElementById('response-meta');
+  const stream = document.getElementById('stream-toggle').checked;
+
+  btn.disabled = true;
+  area.textContent = '';
+  meta.style.display = 'none';
+  meta.innerHTML = '';
+
+  const messages = [];
+  const sys = document.getElementById('system-prompt').value.trim();
+  if (sys) messages.push({ role: 'system', content: sys });
+  messages.push({ role: 'user', content: document.getElementById('user-message').value });
+
+  const body = {
+    model: document.getElementById('model-select').value,
+    messages: messages,
+    temperature: parseFloat(document.getElementById('temperature').value) || 0.7,
+    stream: stream,
+  };
+  const maxTok = parseInt(document.getElementById('max-tokens').value);
+  if (maxTok > 0) body.max_tokens = maxTok;
+
+  const t0 = performance.now();
+
+  try {
+    if (stream) {
+      await sendStreaming(body, area, meta, t0);
+    } else {
+      await sendNonStreaming(body, area, meta, t0);
+    }
+  } catch (e) {
+    area.textContent += '\n\n[ERROR] ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Non-streaming request ────────────────────────────────────────────────
+
+async function sendNonStreaming(body, area, meta, t0) {
+  const res = await fetch(baseUrl() + '/v1/chat/completions', {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+
+  if (!res.ok) {
+    area.textContent = '[ERROR ' + res.status + '] ' + (data.error?.message || JSON.stringify(data));
+    return;
+  }
+
+  const content = data.choices?.[0]?.message?.content || '(empty response)';
+  area.textContent = content;
+
+  meta.style.display = 'flex';
+  meta.innerHTML = [
+    `<span>Model: ${data.model}</span>`,
+    `<span>Prompt: ${data.usage?.prompt_tokens ?? '?'} tok</span>`,
+    `<span>Completion: ${data.usage?.completion_tokens ?? '?'} tok</span>`,
+    `<span>Total: ${data.usage?.total_tokens ?? '?'} tok</span>`,
+    `<span>Time: ${elapsed}s</span>`,
+    `<span>ID: ${data.id}</span>`,
+  ].join('');
+}
+
+// ── Streaming request (SSE via ReadableStream) ───────────────────────────
+
+async function sendStreaming(body, area, meta, t0) {
+  const res = await fetch(baseUrl() + '/v1/chat/completions', {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    area.textContent = '[ERROR ' + res.status + '] ' + (errData.error?.message || res.statusText);
+    return;
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let model = '';
+  let lastId = '';
+  let totalTokens = 0;
+  let firstChunk = true;
+  let ttft = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    // Process SSE lines
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // keep incomplete line
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith(':')) continue;
+      if (trimmed === 'data: [DONE]') continue;
+      if (!trimmed.startsWith('data: ')) continue;
+
+      try {
+        const chunk = JSON.parse(trimmed.slice(6));
+        if (firstChunk) {
+          ttft = ((performance.now() - t0) / 1000).toFixed(2);
+          firstChunk = false;
+        }
+        model = chunk.model || model;
+        lastId = chunk.id || lastId;
+
+        const delta = chunk.choices?.[0]?.delta?.content;
+        if (delta) area.textContent += delta;
+
+        if (chunk.usage) totalTokens = chunk.usage.total_tokens || totalTokens;
+      } catch {
+        // skip malformed chunks
+      }
+    }
+  }
+
+  const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+
+  meta.style.display = 'flex';
+  meta.innerHTML = [
+    `<span>Model: ${model || '?'}</span>`,
+    `<span>TTFT: ${ttft}s</span>`,
+    `<span>Total: ${elapsed}s</span>`,
+    `<span>ID: ${lastId}</span>`,
+    `<span>Streamed</span>`,
+  ].join('');
+}
+</script>
+</body>
+</html>

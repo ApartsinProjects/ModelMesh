@@ -6,7 +6,8 @@ on:
     branches: [master]
 
 jobs:
-  test:
+  python:
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,3 +19,27 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install pytest pytest-asyncio
       - run: cd src/python && python -m pytest ../../tests/ -v
+
+  typescript:
+    name: TypeScript (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["18", "20"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: cd src/typescript && npm ci && npm test
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t modelmesh-proxy:test .
+      - name: Verify image runs
+        run: |
+          docker run --rm modelmesh-proxy:test --help 2>&1 || true

@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C241%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C366%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -170,6 +170,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 | **[Connector Catalogue](docs/ConnectorCatalogue.md)** | All pre-shipped connectors with config schemas |
 | **[Connector Interfaces](docs/ConnectorInterfaces.md)** | Interface definitions for all connector types |
 | **[System Services](docs/SystemServices.md)** | Runtime objects: Router, Pool, Model, State |
+| **[Proxy Guide](docs/guides/ProxyGuide.md)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
 
 ### CDK (Connector Development Kit)
 
@@ -189,6 +190,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 | **[System Integration](samples/system/)** | Multi-provider, streaming, embeddings, cost optimization |
 | **[CDK Tutorials](samples/cdk/)** | Build providers, rotation policies, and more |
 | **[Custom Connectors](samples/connectors/)** | Full custom connector examples for all 6 types |
+| **[Proxy Test](samples/proxy-test/)** | Vanilla JS browser test page for the OpenAI proxy |
 
 ## Development
 
@@ -197,19 +199,47 @@ client = modelmesh.create(config="modelmesh.yaml")
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
 
-# Run Python tests (775 tests)
+# Run Python tests (855 tests)
 pip install pytest
 cd src/python && python -m pytest ../../tests/ -v
 
-# Run TypeScript tests (466 tests)
+# Run TypeScript tests (511 tests)
 cd src/typescript && npm install && npm test
+
+# Or use the automation script
+./scripts/test-all.sh
 ```
 
 ## Docker
 
 ```bash
-docker run -e OPENAI_API_KEY="sk-..." ghcr.io/apartsinprojects/modelmesh
+# Quick start with Docker Compose
+cp .env.example .env    # then add your API keys
+docker compose up --build
+
+# Or use the automation script
+./scripts/proxy-up.sh
+
+# Test the running proxy
+curl http://localhost:8080/v1/models
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"text-generation","messages":[{"role":"user","content":"Hello!"}]}'
 ```
+
+See the **[Proxy Guide](docs/guides/ProxyGuide.md)** for full configuration, CLI reference, and browser access.
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `scripts/proxy-up.sh` | Build and start the Docker proxy |
+| `scripts/proxy-down.sh` | Stop the Docker proxy |
+| `scripts/proxy-test.sh` | Smoke-test a running proxy |
+| `scripts/docker-build.sh` | Build the Docker image |
+| `scripts/install-python.sh` | Install Python package (dev or prod) |
+| `scripts/install-typescript.sh` | Install TypeScript package |
+| `scripts/test-all.sh` | Run full test suite (Python + TypeScript) |
 
 ## License
 

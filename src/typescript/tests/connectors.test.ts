@@ -1250,3 +1250,247 @@ describe('Runtime Guard', () => {
     expect(() => assertRuntimeCompatible('test.browser', RuntimeEnvironment.BROWSER_ONLY)).toThrow();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Docker & Proxy Infrastructure Tests
+// ---------------------------------------------------------------------------
+
+import * as fs from 'fs';
+import * as path from 'path';
+
+const ROOT = path.resolve(__dirname, '..', '..', '..');
+
+describe('Docker Infrastructure', () => {
+  const readFile = (p: string) => fs.readFileSync(path.join(ROOT, p), 'utf-8');
+
+  describe('Dockerfile', () => {
+    let content: string;
+    beforeAll(() => { content = readFile('Dockerfile'); });
+
+    test('exists', () => {
+      expect(fs.existsSync(path.join(ROOT, 'Dockerfile'))).toBe(true);
+    });
+
+    test('uses Python base image', () => {
+      expect(content).toMatch(/^FROM python:/m);
+    });
+
+    test('copies source and pyproject', () => {
+      expect(content).toContain('src/python');
+      expect(content).toContain('pyproject.toml');
+    });
+
+    test('installs pyyaml', () => {
+      expect(content.toLowerCase()).toContain('pyyaml');
+    });
+
+    test('exposes port 8080', () => {
+      expect(content).toContain('EXPOSE 8080');
+    });
+
+    test('entrypoint runs modelmesh.proxy', () => {
+      expect(content).toContain('modelmesh.proxy');
+    });
+  });
+
+  describe('docker-compose.yaml', () => {
+    let content: string;
+    beforeAll(() => { content = readFile('docker-compose.yaml'); });
+
+    test('exists', () => {
+      expect(fs.existsSync(path.join(ROOT, 'docker-compose.yaml'))).toBe(true);
+    });
+
+    test('defines modelmesh-proxy service', () => {
+      expect(content).toContain('modelmesh-proxy:');
+    });
+
+    test('maps port 8080', () => {
+      expect(content).toContain('8080:8080');
+    });
+
+    test('loads .env file', () => {
+      expect(content).toContain('env_file:');
+      expect(content).toContain('.env');
+    });
+
+    test('mounts config read-only', () => {
+      expect(content).toContain('modelmesh.yaml');
+      expect(content).toContain(':ro');
+    });
+  });
+
+  describe('modelmesh.yaml', () => {
+    let content: string;
+    beforeAll(() => { content = readFile('modelmesh.yaml'); });
+
+    test('exists', () => {
+      expect(fs.existsSync(path.join(ROOT, 'modelmesh.yaml'))).toBe(true);
+    });
+
+    test('has secrets section', () => {
+      expect(content).toContain('secrets:');
+    });
+
+    test('has providers section', () => {
+      expect(content).toContain('providers:');
+    });
+
+    test('has models section', () => {
+      expect(content).toContain('models:');
+    });
+
+    test('has pools section', () => {
+      expect(content).toContain('pools:');
+    });
+
+    test('uses secret references for API keys', () => {
+      const keyLines = content.split('\n').filter(l => l.trim().startsWith('api_key:'));
+      expect(keyLines.length).toBeGreaterThan(0);
+      keyLines.forEach(line => {
+        expect(line).toContain('${secrets:');
+      });
+    });
+
+    test('no hardcoded API keys', () => {
+      expect(content).not.toMatch(/sk-[A-Za-z0-9]{20,}/);
+      expect(content).not.toMatch(/gsk_[A-Za-z0-9]{20,}/);
+    });
+  });
+
+  describe('.env.example', () => {
+    let content: string;
+    beforeAll(() => { content = readFile('.env.example'); });
+
+    test('exists', () => {
+      expect(fs.existsSync(path.join(ROOT, '.env.example'))).toBe(true);
+    });
+
+    test('has OPENAI_API_KEY', () => {
+      expect(content).toContain('OPENAI_API_KEY');
+    });
+
+    test('has ANTHROPIC_API_KEY', () => {
+      expect(content).toContain('ANTHROPIC_API_KEY');
+    });
+
+    test('has GROQ_API_KEY', () => {
+      expect(content).toContain('GROQ_API_KEY');
+    });
+
+    test('keys are empty (template)', () => {
+      const dataLines = content.split('\n')
+        .filter(l => l.includes('=') && !l.trim().startsWith('#'))
+        .map(l => l.split('=')[1]?.trim());
+      dataLines.forEach(v => {
+        expect(v).toBe('');
+      });
+    });
+  });
+
+  describe('.gitignore protects secrets', () => {
+    let content: string;
+    beforeAll(() => { content = readFile('.gitignore'); });
+
+    test('.env is ignored', () => {
+      expect(content).toContain('.env');
+    });
+
+    test('.env.* variants are ignored', () => {
+      expect(content).toContain('.env.*');
+    });
+  });
+
+  describe('Automation scripts', () => {
+    const scripts = [
+      'scripts/proxy-up.sh',
+      'scripts/proxy-down.sh',
+      'scripts/proxy-test.sh',
+      'scripts/docker-build.sh',
+      'scripts/install-python.sh',
+      'scripts/install-typescript.sh',
+      'scripts/test-all.sh',
+    ];
+
+    test.each(scripts)('%s exists', (script) => {
+      expect(fs.existsSync(path.join(ROOT, script))).toBe(true);
+    });
+
+    test('proxy-up.sh uses docker compose', () => {
+      const content = readFile('scripts/proxy-up.sh');
+      expect(content).toContain('docker compose');
+    });
+
+    test('proxy-test.sh checks all endpoints', () => {
+      const content = readFile('scripts/proxy-test.sh');
+      expect(content).toContain('/health');
+      expect(content).toContain('/v1/models');
+      expect(content).toContain('/v1/chat/completions');
+      expect(content).toContain('stream');
+      expect(content).toContain('CORS');
+    });
+
+    test('test-all.sh runs both Python and TypeScript', () => {
+      const content = readFile('scripts/test-all.sh');
+      expect(content).toContain('pytest');
+      expect(content).toContain('npm test');
+    });
+  });
+
+  describe('Browser test page', () => {
+    let content: string;
+    beforeAll(() => { content = readFile('samples/proxy-test/index.html'); });
+
+    test('exists', () => {
+      expect(fs.existsSync(path.join(ROOT, 'samples', 'proxy-test', 'index.html'))).toBe(true);
+    });
+
+    test('is valid HTML', () => {
+      expect(content).toContain('<!DOCTYPE html>');
+      expect(content).toContain('</html>');
+    });
+
+    test('no external dependencies', () => {
+      const scripts = content.match(/<script\s+src=["']([^"']+)/g);
+      expect(scripts).toBeNull();
+    });
+
+    test('uses fetch API', () => {
+      expect(content).toContain('fetch(');
+    });
+
+    test('supports streaming', () => {
+      expect(content).toContain('getReader');
+      expect(content).toContain('[DONE]');
+    });
+
+    test('calls /v1/models', () => {
+      expect(content).toContain('/v1/models');
+    });
+
+    test('calls /v1/chat/completions', () => {
+      expect(content).toContain('/v1/chat/completions');
+    });
+
+    test('has health check', () => {
+      expect(content).toContain('/health');
+    });
+  });
+
+  describe('Proxy documentation', () => {
+    test('ProxyGuide.md exists', () => {
+      expect(fs.existsSync(path.join(ROOT, 'docs', 'guides', 'ProxyGuide.md'))).toBe(true);
+    });
+
+    test('ProxyGuide covers key sections', () => {
+      const content = readFile('docs/guides/ProxyGuide.md');
+      expect(content).toContain('## Quick Start');
+      expect(content).toContain('## Configuration');
+      expect(content).toContain('## CLI Reference');
+      expect(content).toContain('## REST API Endpoints');
+      expect(content).toContain('## Docker Deployment');
+      expect(content).toContain('## Browser Usage');
+      expect(content).toContain('## Troubleshooting');
+    });
+  });
+});

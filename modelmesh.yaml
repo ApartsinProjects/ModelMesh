@@ -1,0 +1,72 @@
+# ModelMesh proxy configuration — multi-provider pool with auto-failover
+#
+# The proxy exposes a standard OpenAI REST API on port 8080.
+# Internally, ModelMesh routes to the best available provider in the pool,
+# automatically failing over when a provider is down or rate-limited.
+
+secrets:
+  store: modelmesh.env.v1
+
+providers:
+  openai.llm.v1:
+    api_key: ${secrets:OPENAI_API_KEY}
+    budget:
+      daily_limit: 5.00
+
+  anthropic.claude.v1:
+    api_key: ${secrets:ANTHROPIC_API_KEY}
+    budget:
+      daily_limit: 5.00
+
+  groq.api.v1:
+    api_key: ${secrets:GROQ_API_KEY}
+
+models:
+  gpt-4o-mini:
+    provider: openai.llm.v1
+    capabilities:
+      - generation.text-generation.chat-completion
+    delivery:
+      synchronous: true
+      streaming: true
+    features:
+      tool_calling: true
+      structured_output: true
+      json_mode: true
+      system_prompt: true
+    constraints:
+      context_window: 128000
+      max_output_tokens: 16384
+
+  claude-3-5-haiku:
+    provider: anthropic.claude.v1
+    capabilities:
+      - generation.text-generation.chat-completion
+    delivery:
+      synchronous: true
+      streaming: true
+    features:
+      tool_calling: true
+      system_prompt: true
+    constraints:
+      context_window: 200000
+      max_output_tokens: 8192
+
+  llama-3.3-70b:
+    provider: groq.api.v1
+    capabilities:
+      - generation.text-generation.chat-completion
+    delivery:
+      synchronous: true
+      streaming: true
+    features:
+      tool_calling: true
+      system_prompt: true
+    constraints:
+      context_window: 131072
+      max_output_tokens: 32768
+
+pools:
+  text-generation:
+    strategy: modelmesh.stick-until-failure.v1
+    capability: generation.text-generation

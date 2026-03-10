@@ -17,7 +17,7 @@ title: ModelMesh Lite
   <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="https://github.com/ApartsinProjects/ModelMesh/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C241%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C366%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -180,6 +180,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 
 | Document | Description |
 |---|---|
+| **[Proxy Guide](guides/ProxyGuide.html)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
 | **[Browser Usage](guides/BrowserUsage.html)** | BrowserBaseProvider, CORS proxy setup, and browser-specific patterns |
 | **[Audio (TTS/STT)](ConnectorInterfaces.html#audio)** | AudioRequest/AudioResponse types, `client.audio` namespace |
 
@@ -201,6 +202,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 | **[System Integration](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/system/)** | Multi-provider, streaming, embeddings, cost optimization |
 | **[CDK Tutorials](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/cdk/)** | Build providers, rotation policies, and more |
 | **[Custom Connectors](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/connectors/)** | Full custom connector examples for all 6 types |
+| **[Proxy Test](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/proxy-test/)** | Vanilla JS browser test page for the OpenAI proxy |
 
 ## Development
 

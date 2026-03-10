@@ -5,7 +5,7 @@ title: "Test Coverage Matrix"
 
 # Test Coverage Matrix
 
-Correlates documented features with test coverage. The project includes 775 Python tests across 14 test files and 466 TypeScript tests across 13 test files, for a total of 1,241 tests.
+Correlates documented features with test coverage. The project includes 855 Python tests across 15 test files and 511 TypeScript tests across 13 test files, for a total of 1,366 tests.
 
 ---
 
@@ -26,7 +26,8 @@ Correlates documented features with test coverage. The project includes 775 Pyth
 | New Connectors (local providers, browser) | 93 | `test_new_connectors.py` | Covered |
 | CDK Specialized + Mixins + Helpers | 97 | `test_specialized.py` | Covered |
 | Local Provider Connectors | 28 | `test_providers.py` | Covered |
-| **Total** | **775** | **14 files** | |
+| Proxy Server + Docker Infrastructure | 80 | `test_docker.py` | Covered |
+| **Total** | **855** | **15 files** | |
 
 ### TypeScript Test Suite
 
@@ -39,12 +40,12 @@ Correlates documented features with test coverage. The project includes 775 Pyth
 | CapabilityPool | 15 | `pool.test.ts` | Covered |
 | ModelMesh facade | 16 | `mesh.test.ts` | Covered |
 | Router | 5 | `router.test.ts` | Covered |
-| Pre-shipped Connectors + Cloud/Local Providers + RuntimeEnvironment + Registry + Runtime Guard | 185 | `connectors.test.ts` | Covered |
+| Pre-shipped Connectors + Cloud/Local Providers + RuntimeEnvironment + Registry + Runtime Guard + Docker Infrastructure | 230 | `connectors.test.ts` | Covered |
 | MeshConfig + Auto-detect + LOCAL_PROVIDER_REGISTRY | 30 | `config.test.ts` | Covered |
 | MeshClient (OpenAI compat) | 16 | `client.test.ts` | Covered |
 | Secret Stores (env, dotenv, json, memory, encrypted, keyring) | 55 | `secret-stores.test.ts` | Covered |
 | CORS Proxy | 12 | `proxy.test.ts` | Covered |
-| **Total** | **466** | **13 files** | |
+| **Total** | **511** | **13 files** | |
 
 ---
 
@@ -235,6 +236,28 @@ Correlates documented features with test coverage. The project includes 775 Pyth
 | HttpHealthDiscovery | `BaseClasses.md` | -- | Requires HTTP mock; coverage gap |
 | CDK test helpers | `Helpers.md` | `TestConnectorTestHarness`, `TestMockHttpClient` (in `test_specialized.py`) | mockCompletionRequest, mockModelSnapshot, MockHttpClient, ConnectorTestHarness |
 
+### 15. Proxy Server & Docker Deployment (`docs/guides/ProxyGuide.md`)
+
+| Feature | Doc Reference | Test(s) | Notes |
+| --- | --- | --- | --- |
+| Dockerfile structure | `ProxyGuide.md` | `TestDockerfile` (10 tests) | Base image, COPY, pip install, pyyaml, EXPOSE, ENTRYPOINT |
+| docker-compose.yaml | `ProxyGuide.md` | `TestDockerCompose` (7 tests) | Service, port mapping, env_file, config mount |
+| modelmesh.yaml config | `ProxyGuide.md` | `TestModelMeshConfig` (10 tests) | Sections, secret refs, no hardcoded keys |
+| .env.example template | `ProxyGuide.md` | `TestEnvExample` (5 tests) | Key presence, empty values |
+| .gitignore protects secrets | -- | `TestGitignore` (2 tests) | .env and .env.* ignored |
+| Automation scripts | `ProxyGuide.md` | `TestScripts` (15 tests) | Existence, content, shebang, strict mode |
+| Browser test page | `ProxyGuide.md` | `TestBrowserTestPage` (10 tests) | HTML validity, no deps, fetch API, streaming, SSE |
+| Proxy module structure | -- | `TestProxyModuleStructure` (7 tests) | Package, __init__, __main__, server, cli |
+| Proxy CLI argument parsing | -- | `TestProxyCLI` (2 tests) | Default and custom args |
+| Live proxy HTTP integration | `ProxyGuide.md` | `TestProxyLiveHTTP` (10 tests) | Health, models, chat, streaming, CORS, 400, 404, usage, status tracking |
+| ServerStatus dataclass | -- | `TestServerStatus` (3 tests in `test_proxy.py`) | Defaults, custom values, asdict |
+| ProxyState status reporting | -- | `TestProxyState` (3 tests in `test_proxy.py`) | Not running, running, counters |
+| Bearer token auth | -- | `TestAuthTokenValidation` (4 tests in `test_proxy.py`) | No token, token configured, server stores token |
+| /v1/models response shape | -- | `TestModelsEndpoint` (2 tests in `test_proxy.py`) | Pool IDs as models, OpenAI list format |
+| Request parsing | -- | `TestRequestParsing` (4 tests in `test_proxy.py`) | Chat completion, streaming, tools, defaults |
+| Response serialization | -- | `TestCompletionResponseSerialization` (5 tests in `test_proxy.py`) | Basic, streaming chunk, UUID gen, JSON serializable, tool calls |
+| ProxyServer initialization | -- | `TestProxyServerInit` (5 tests in `test_proxy.py`) | MeshConfig, dict, invalid type, status, mesh property |
+
 ---
 
 ## Coverage Gaps
@@ -277,3 +300,4 @@ Correlates documented features with test coverage. The project includes 775 Pyth
 | `interfaces/Discovery.md` | Discovery ABC | *(no dedicated tests)* | Gap |
 | `guides/BrowserUsage.md` | BrowserBaseProvider, CORS proxy, createBrowser() | Browser provider tests | Direct |
 | `ConnectorInterfaces.md` (Audio) | AudioRequest, AudioResponse, audio namespace | Audio interface tests | Direct |
+| `guides/ProxyGuide.md` | Proxy server, Docker, CLI, REST API, browser access | `test_docker.py` (80 tests) + `test_proxy.py` (26 tests) + `connectors.test.ts` Docker section | Direct |

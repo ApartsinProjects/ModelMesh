@@ -27,6 +27,7 @@ Thumbs.db
 # Environment
 .env
 .env.*
+!.env.example
 
 # Logs
 *.log
@@ -34,6 +35,9 @@ Thumbs.db
 # Node.js
 node_modules/
 *.tgz
+
+# Test output
+jest-out.json
 
 # Package
 *.whl
