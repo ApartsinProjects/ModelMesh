@@ -21,7 +21,7 @@ from typing import Optional
 
 from modelmesh.interfaces.provider import ModelInfo
 
-__all__ = ["detect_providers", "PROVIDER_REGISTRY"]
+__all__ = ["detect_providers", "PROVIDER_REGISTRY", "LOCAL_PROVIDER_REGISTRY"]
 
 PROVIDER_REGISTRY: dict[str, dict] = {
     "OPENAI_API_KEY": {
@@ -317,6 +317,42 @@ PROVIDER_REGISTRY: dict[str, dict] = {
 }
 
 
+LOCAL_PROVIDER_REGISTRY: dict[str, dict] = {
+    "OLLAMA_HOST": {
+        "name": "ollama",
+        "connector": "ollama.local.v1",
+        "base_url": "http://localhost:11434",
+        "default_models": [
+            ModelInfo(
+                id="ollama.llama3",
+                name="Llama 3",
+                capabilities=["generation.text-generation.chat-completion"],
+                context_window=8192,
+                max_output_tokens=4096,
+            ),
+        ],
+    },
+    "LMSTUDIO_HOST": {
+        "name": "lmstudio",
+        "connector": "lmstudio.local.v1",
+        "base_url": "http://localhost:1234",
+        "default_models": [],
+    },
+    "VLLM_HOST": {
+        "name": "vllm",
+        "connector": "vllm.local.v1",
+        "base_url": "http://localhost:8000",
+        "default_models": [],
+    },
+    "LOCALAI_HOST": {
+        "name": "localai",
+        "connector": "localai.local.v1",
+        "base_url": "http://localhost:8080",
+        "default_models": [],
+    },
+}
+
+
 def detect_providers(
     names: Optional[list[str]] = None,
     api_keys: Optional[dict[str, str]] = None,
@@ -361,5 +397,25 @@ def detect_providers(
 
         if key:
             detected.append({**info, "env_var": env_var, "api_key": key})
+
+    # Detect local providers (host-based, not API-key-based)
+    for env_var, info in LOCAL_PROVIDER_REGISTRY.items():
+        provider_name = info["name"]
+        if names and provider_name not in names:
+            continue
+
+        host: Optional[str] = None
+        if api_keys is not None:
+            host = api_keys.get(env_var) or api_keys.get(provider_name)
+        if host is None:
+            host = os.environ.get(env_var)
+
+        if host:
+            detected.append({
+                **info,
+                "base_url": host,
+                "env_var": env_var,
+                "api_key": "",
+            })
 
     return detected

@@ -12,6 +12,7 @@ import {
   RoutingEvent,
   TraceEntry,
 } from '../../interfaces/observability';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export interface FileConnectorConfig {
   filePath?: string;
@@ -21,6 +22,7 @@ export interface FileConnectorConfig {
 
 export class FileObservabilityConnector implements ObservabilityConnector {
   static readonly CONNECTOR_ID = 'modelmesh.file.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _config: Required<FileConnectorConfig>;
   private fd: number | null = null;
 

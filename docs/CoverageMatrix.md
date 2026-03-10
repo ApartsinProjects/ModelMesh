@@ -5,7 +5,7 @@ title: "Test Coverage Matrix"
 
 # Test Coverage Matrix
 
-Correlates documented features with test coverage. The project includes 640 Python tests across 14 test files and 168 TypeScript tests across 10 test files, for a total of 808 tests.
+Correlates documented features with test coverage. The project includes 775 Python tests across 14 test files and 370 TypeScript tests across 13 test files, for a total of 1,145 tests.
 
 ---
 
@@ -23,8 +23,10 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 | CDK Base Classes | 50 | `test_cdk.py` | Covered |
 | Observability Stack | 26 | `test_observability.py` | Covered |
 | Pre-shipped Connectors | 32 | `test_connectors.py` | Covered |
+| New Connectors (local providers, browser) | 93 | `test_new_connectors.py` | Covered |
 | CDK Specialized + Mixins + Helpers | 97 | `test_specialized.py` | Covered |
-| **Total** | **640** | **14 files** | |
+| Local Provider Connectors | 28 | `test_providers.py` | Covered |
+| **Total** | **775** | **14 files** | |
 
 ### TypeScript Test Suite
 
@@ -37,10 +39,12 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 | CapabilityPool | 15 | `pool.test.ts` | Covered |
 | ModelMesh facade | 16 | `mesh.test.ts` | Covered |
 | Router | 5 | `router.test.ts` | Covered |
-| Pre-shipped Connectors | 47 | `connectors.test.ts` | Covered |
+| Pre-shipped Connectors + Local Providers + RuntimeEnvironment | 102 | `connectors.test.ts` | Covered |
 | MeshConfig + Auto-detect | 22 | `config.test.ts` | Covered |
 | MeshClient (OpenAI compat) | 16 | `client.test.ts` | Covered |
-| **Total** | **168** | **10 files** | |
+| Secret Stores (env, dotenv, json, memory, encrypted, keyring) | 55 | `secret-stores.test.ts` | Covered |
+| CORS Proxy | 12 | `proxy.test.ts` | Covered |
+| **Total** | **370** | **13 files** | |
 
 ---
 
@@ -172,7 +176,7 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 
 | Feature | Doc Reference | Test(s) | Notes |
 | --- | --- | --- | --- |
-| CONNECTOR_REGISTRY (8 entries) | `ConnectorCatalogue.md` | `test_has_8_connectors`, `test_all_have_connector_id` | Registry completeness |
+| CONNECTOR_REGISTRY (38 Python / 42 TS entries) | `ConnectorCatalogue.md` | `test_has_expected_connectors`, `test_all_have_connector_id` | Registry completeness |
 | OpenAI Provider | `connectors/openai-llm.md` | `TestOpenAIProvider` (7 tests) | ID, URL, headers, models, endpoint |
 | Anthropic Provider | `connectors/anthropic-llm.md` | `TestAnthropicProvider` (10 tests) | ID, headers, payload, response parsing |
 | Env Secret Store | `connectors/modelmesh-env.md` | `TestEnvSecretStoreComprehensive` (7 tests) | ID, resolve, prefix, missing, interface |
@@ -182,6 +186,11 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 | Encrypted File Store | `guides/SecretStores.md` | `TestEncryptedFileSecretStore` (12 tests) | Save/load, passphrase, hex key, round-trip, plaintext check |
 | Keyring Secret Store | `ConnectorCatalogue.md` | `TestKeyringSecretStoreComprehensive` (6 tests) | ID, service name, availability, fallback |
 | Azure Speech TTS | `ConnectorCatalogue.md` | `TestAzureSpeechProvider` (14 tests) | ID, region, URL, headers, SSML, models, XML escape |
+| Ollama Provider | `ConnectorCatalogue.md` | `TestOllamaProvider` (8 tests) | ID, URL, empty API key, 4 default models, capabilities, endpoint, runtime |
+| LM Studio Provider | `ConnectorCatalogue.md` | `TestLMStudioProvider` (8 tests) | ID, URL, empty API key, empty models, capabilities, endpoint, runtime |
+| vLLM Provider | `ConnectorCatalogue.md` | `TestVLLMProvider` (8 tests) | ID, URL, empty API key, empty models, capabilities, endpoint, runtime |
+| LocalAI Provider | `ConnectorCatalogue.md` | `TestLocalAIProvider` (8 tests) | ID, URL, empty API key, empty models, capabilities, endpoint, runtime |
+| RuntimeEnvironment metadata | `ConnectorCatalogue.md` | `TestRuntimeEnvironment` (6 tests) | Enum values, classification of BaseProvider, MemoryStorage, MemorySecretStore |
 | Stick-Until-Failure | `connectors/modelmesh-stick-until-failure.md` | (via `TestBaseRotation`) | Tested through base rotation tests |
 | Local File Storage | `connectors/modelmesh-local-file.md` | (via `TestBaseStorage`) | Tested through base storage tests |
 
@@ -195,7 +204,18 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 | CORS proxy URL prefixing | `BrowserUsage.md` | `test_browser_proxy_url_prefix` | proxyUrl prepended to API URL |
 | createBrowser() convenience | `BrowserUsage.md` | `test_create_browser` | Browser-optimized create() |
 
-### 12. Audio Interfaces (`docs/ConnectorInterfaces.md`)
+### 12. Browser Storage & Secret Stores (`docs/ConnectorCatalogue.md`, `docs/guides/BrowserUsage.md`)
+
+| Feature | Doc Reference | Test(s) | Notes |
+| --- | --- | --- | --- |
+| LocalStorageStorage connector ID | `ConnectorCatalogue.md` | `connectors.test.ts` | `modelmesh.localstorage.v1` |
+| SessionStorageStorage connector ID | `ConnectorCatalogue.md` | `connectors.test.ts` | `modelmesh.sessionstorage.v1` |
+| IndexedDBStorage connector ID | `ConnectorCatalogue.md` | `connectors.test.ts` | `modelmesh.indexeddb.v1` |
+| BrowserSecretStore connector ID | `ConnectorCatalogue.md` | `connectors.test.ts` | `modelmesh.browser-secrets.v1` |
+| Browser storage RuntimeEnvironment | `ConnectorCatalogue.md` | `connectors.test.ts` | BROWSER_ONLY classification |
+| Browser exports (browser.ts) | `BrowserUsage.md` | `browser-provider.test.ts` | All browser connectors exported |
+
+### 13. Audio Interfaces (`docs/ConnectorInterfaces.md`)
 
 | Feature | Doc Reference | Test(s) | Notes |
 | --- | --- | --- | --- |
@@ -204,7 +224,7 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 | client.audio.speech.create() | `ConnectorCatalogue.md` | `test_audio_speech_create` | TTS routing through pool |
 | client.audio.transcriptions.create() | `ConnectorCatalogue.md` | `test_audio_transcriptions_create` | STT routing through pool |
 
-### 13. CDK Specialized Classes (`docs/cdk/BaseClasses.md`)
+### 14. CDK Specialized Classes (`docs/cdk/BaseClasses.md`)
 
 | Feature | Doc Reference | Test(s) | Notes |
 | --- | --- | --- | --- |
@@ -237,7 +257,7 @@ Correlates documented features with test coverage. The project includes 640 Pyth
 | Document | Features Documented | Tests Covering | Coverage |
 | --- | --- | --- | --- |
 | `SystemConcept.md` | Architecture overview | All tests collectively | Indirect |
-| `ConnectorCatalogue.md` | 8 connectors, IDs, configs | `test_connectors.py` (32 tests) | Direct |
+| `ConnectorCatalogue.md` | 42 connectors, IDs, configs | `test_connectors.py` + `test_new_connectors.py` + `test_providers.py` + `connectors.test.ts` | Direct |
 | `ConnectorInterfaces.md` | 6 interface ABCs | `test_interfaces.py` (22 tests) | Direct |
 | `SystemConfiguration.md` | MeshConfig, auto-detect | `test_config.py` (19 tests) | Direct |
 | `ModelCapabilities.md` | Capability tree hierarchy | `TestCapabilityTree` (9 tests) | Direct |

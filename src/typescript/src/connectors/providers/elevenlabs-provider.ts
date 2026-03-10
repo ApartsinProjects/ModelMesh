@@ -31,6 +31,7 @@ import {
   createDefaultCompletionResponse as createCompletionResponse,
   createDefaultTokenUsage as createTokenUsage,
 } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel
 
@@ -82,6 +83,7 @@ export function createElevenLabsProviderConfig(
 
 export class ElevenLabsProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'elevenlabs.tts.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _elevenlabsConfig: ElevenLabsProviderConfig;
 
   constructor(config?: Partial<ElevenLabsProviderConfig>) {

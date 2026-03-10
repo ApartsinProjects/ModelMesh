@@ -14,6 +14,7 @@ import {
   BaseProviderConfig,
   createBaseProviderConfig,
 } from '../../cdk/base-provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   ChatMessage,
   CompletionChoice,
@@ -83,6 +84,7 @@ const STOP_REASON_MAP: Record<string, string> = {
 
 export class AnthropicProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'anthropic.claude.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _anthropicConfig: AnthropicProviderConfig;
 
   constructor(config?: Partial<AnthropicProviderConfig>) {

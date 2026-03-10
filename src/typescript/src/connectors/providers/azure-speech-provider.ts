@@ -35,6 +35,7 @@ import {
   createDefaultCompletionResponse as createCompletionResponse,
   createDefaultTokenUsage as createTokenUsage,
 } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 // -- Defaults ----------------------------------------------------------------
 
@@ -115,6 +116,7 @@ function xmlEscape(text: string): string {
 
 export class AzureSpeechProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'azure.tts.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _azureConfig: AzureSpeechProviderConfig;
 
   constructor(config?: Partial<AzureSpeechProviderConfig>) {

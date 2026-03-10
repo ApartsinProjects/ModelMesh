@@ -52,6 +52,10 @@ from modelmesh.connectors.providers.serper_provider import SerperProvider
 from modelmesh.connectors.providers.tavily_provider import TavilyProvider
 from modelmesh.connectors.providers.together_provider import TogetherProvider
 from modelmesh.connectors.providers.xai_provider import XAIProvider
+from modelmesh.connectors.providers.ollama_provider import OllamaProvider
+from modelmesh.connectors.providers.lmstudio_provider import LMStudioProvider
+from modelmesh.connectors.providers.vllm_provider import VLLMProvider
+from modelmesh.connectors.providers.localai_provider import LocalAIProvider
 from modelmesh.connectors.rotation.stick_until_failure import (
     StickUntilFailurePolicy,
 )
@@ -87,6 +91,11 @@ CONNECTOR_REGISTRY: dict[str, type] = {
     FirecrawlProvider.CONNECTOR_ID: FirecrawlProvider,
     AssemblyAIProvider.CONNECTOR_ID: AssemblyAIProvider,
     AzureSpeechProvider.CONNECTOR_ID: AzureSpeechProvider,
+    # Local / self-hosted providers
+    OllamaProvider.CONNECTOR_ID: OllamaProvider,
+    LMStudioProvider.CONNECTOR_ID: LMStudioProvider,
+    VLLMProvider.CONNECTOR_ID: VLLMProvider,
+    LocalAIProvider.CONNECTOR_ID: LocalAIProvider,
     # Secret stores
     EnvSecretStore.CONNECTOR_ID: EnvSecretStore,
     DotenvSecretStore.CONNECTOR_ID: DotenvSecretStore,
@@ -129,6 +138,10 @@ __all__ = [
     "FirecrawlProvider",
     "AssemblyAIProvider",
     "AzureSpeechProvider",
+    "OllamaProvider",
+    "LMStudioProvider",
+    "VLLMProvider",
+    "LocalAIProvider",
     "EnvSecretStore",
     "DotenvSecretStore",
     "EncryptedFileSecretStore",

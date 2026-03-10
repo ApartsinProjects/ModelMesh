@@ -8,6 +8,7 @@
  * Connector ID: modelmesh.keyring.v1
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { SecretStoreConnector } from '../../interfaces/secret-store';
 
 export interface KeyringSecretStoreConfig {
@@ -62,6 +63,7 @@ try {
  */
 export class KeyringSecretStore implements SecretStoreConnector {
   static readonly CONNECTOR_ID = 'modelmesh.keyring.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _serviceName: string;
   private readonly _failOnMissing: boolean;
   private _cache: Record<string, string> = {};

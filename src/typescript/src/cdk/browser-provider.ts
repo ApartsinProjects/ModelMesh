@@ -9,6 +9,7 @@
  * When set, all API URLs are prefixed with the proxy URL.
  */
 
+import { RuntimeEnvironment } from '../interfaces/runtime';
 import {
   ChatMessage,
   CompletionChoice,
@@ -93,6 +94,8 @@ export class BrowserHttpError extends Error {
  * }));
  */
 export class BrowserBaseProvider {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected _config: BrowserProviderConfig;
   protected _requestCount: number = 0;
   protected _tokensUsed: number = 0;

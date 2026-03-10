@@ -8,10 +8,12 @@
  * Connector ID: modelmesh.memory.v1
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { EntryMetadata, StorageConnector, StorageEntry } from '../../interfaces/storage';
 
 export class MemoryStorage implements StorageConnector {
   static readonly CONNECTOR_ID = 'modelmesh.memory.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
 
   private _store = new Map<string, StorageEntry>();
   private _timestamps = new Map<string, Date>();

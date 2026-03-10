@@ -200,6 +200,35 @@ export const PROVIDER_REGISTRY: Record<string, ProviderRegistryEntry> = {
  * @param options.apiKeys - Use these keys instead of environment variables.
  *     Keys can be environment variable names or provider names.
  */
+export const LOCAL_PROVIDER_REGISTRY: Record<string, ProviderRegistryEntry> = {
+  OLLAMA_HOST: {
+    name: 'ollama',
+    connector: 'ollama.local.v1',
+    baseUrl: 'http://localhost:11434',
+    defaultModels: [
+      m('ollama.llama3', 'Llama 3', ['generation.text-generation.chat-completion'], 8192, 4096),
+    ],
+  },
+  LMSTUDIO_HOST: {
+    name: 'lmstudio',
+    connector: 'lmstudio.local.v1',
+    baseUrl: 'http://localhost:1234',
+    defaultModels: [],
+  },
+  VLLM_HOST: {
+    name: 'vllm',
+    connector: 'vllm.local.v1',
+    baseUrl: 'http://localhost:8000',
+    defaultModels: [],
+  },
+  LOCALAI_HOST: {
+    name: 'localai',
+    connector: 'localai.local.v1',
+    baseUrl: 'http://localhost:8080',
+    defaultModels: [],
+  },
+};
+
 export function detectProviders(options?: {
   names?: string[];
   apiKeys?: Record<string, string>;
@@ -228,6 +257,28 @@ export function detectProviders(options?: {
         ...info,
         envVar,
         apiKey: key,
+      });
+    }
+  }
+
+  // Detect local providers (host-based, not API-key-based)
+  for (const [envVar, info] of Object.entries(LOCAL_PROVIDER_REGISTRY)) {
+    const providerName = info.name;
+    if (names && !names.includes(providerName)) continue;
+
+    let host: string | undefined;
+    if (apiKeys) {
+      host = apiKeys[envVar] ?? apiKeys[providerName];
+    }
+    if (!host) {
+      host = process.env[envVar];
+    }
+    if (host) {
+      detected.push({
+        ...info,
+        baseUrl: host,
+        envVar,
+        apiKey: '',
       });
     }
   }

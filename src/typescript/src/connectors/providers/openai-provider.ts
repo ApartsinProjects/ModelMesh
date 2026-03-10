@@ -12,6 +12,7 @@ import {
   createOpenAICompatibleConfig,
 } from '../../cdk/specialized/openai-compatible';
 import { ModelInfo, createDefaultModelInfo as createModelInfo, createDefaultModelPricing as createModelPricing } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -79,6 +80,7 @@ export function createOpenAIProviderConfig(
 
 export class OpenAIProvider extends OpenAICompatibleProvider {
   static readonly CONNECTOR_ID = 'openai.llm.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<OpenAIProviderConfig>) {
     super(createOpenAIProviderConfig(config));

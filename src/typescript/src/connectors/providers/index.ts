@@ -24,6 +24,12 @@ export { PerplexityProvider, PerplexityProviderConfig, createPerplexityProviderC
 export { ElevenLabsProvider, ElevenLabsProviderConfig, createElevenLabsProviderConfig } from './elevenlabs-provider';
 export { AzureSpeechProvider, AzureSpeechProviderConfig, createAzureSpeechProviderConfig } from './azure-speech-provider';
 
+// Local / self-hosted providers
+export { OllamaProvider, OllamaProviderConfig, createOllamaProviderConfig } from './ollama-provider';
+export { LMStudioProvider, LMStudioProviderConfig, createLMStudioProviderConfig } from './lmstudio-provider';
+export { VLLMProvider, VLLMProviderConfig, createVLLMProviderConfig } from './vllm-provider';
+export { LocalAIProvider, LocalAIProviderConfig, createLocalAIProviderConfig } from './localai-provider';
+
 // Search & utility providers
 export { TavilyProvider, TavilyProviderConfig, createTavilyProviderConfig } from './tavily-provider';
 export { SerperProvider, SerperProviderConfig, createSerperProviderConfig } from './serper-provider';

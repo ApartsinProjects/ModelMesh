@@ -10,3 +10,5 @@ export { EncryptedFileSecretStore } from './encrypted-file-store';
 export type { EncryptedFileSecretStoreConfig } from './encrypted-file-store';
 export { KeyringSecretStore } from './keyring-store';
 export type { KeyringSecretStoreConfig } from './keyring-store';
+export { BrowserSecretStore } from './browser-store';
+export type { BrowserSecretStoreConfig } from './browser-store';

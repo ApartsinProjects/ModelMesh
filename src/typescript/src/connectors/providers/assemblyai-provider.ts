@@ -16,6 +16,7 @@ import {
   BaseProviderConfig,
   createBaseProviderConfig,
 } from '../../cdk/base-provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   CompletionChoice,
   CompletionRequest,
@@ -70,6 +71,7 @@ export function createAssemblyAIProviderConfig(
 
 export class AssemblyAIProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'assemblyai.stt.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _assemblyaiConfig: AssemblyAIProviderConfig;
 
   constructor(config?: Partial<AssemblyAIProviderConfig>) {

@@ -10,6 +10,7 @@
  * modelmesh.cdk.specialized.threshold_rotation.
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   BaseRotationPolicy,
   BaseRotationConfig,
@@ -46,6 +47,8 @@ export interface ThresholdRotationConfig extends BaseRotationConfig {
  * console.log(policy.shouldDeactivate(state)); // true
  */
 export class ThresholdRotationPolicy extends BaseRotationPolicy {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   constructor(config?: ThresholdRotationConfig) {
     // Map failureCountThreshold to failureThreshold for base class
     const resolvedConfig: BaseRotationConfig = {

@@ -67,6 +67,24 @@ from modelmesh.connectors.providers.azure_speech_provider import (
     AzureSpeechProvider, AzureSpeechProviderConfig,
 )
 
+# ---- Local Model Providers ----
+from modelmesh.connectors.providers.ollama_provider import (
+    OllamaProvider,
+    OllamaProviderConfig,
+)
+from modelmesh.connectors.providers.lmstudio_provider import (
+    LMStudioProvider,
+    LMStudioProviderConfig,
+)
+from modelmesh.connectors.providers.vllm_provider import (
+    VLLMProvider,
+    VLLMProviderConfig,
+)
+from modelmesh.connectors.providers.localai_provider import (
+    LocalAIProvider,
+    LocalAIProviderConfig,
+)
+
 
 # ========================================================================
 # Groq
@@ -791,6 +809,128 @@ class TestAzureSpeechProvider(unittest.TestCase):
 
     def test_default_language(self):
         self.assertEqual(self.config.language, "en-US")
+
+
+# ========================================================================
+# Ollama (Local)
+# ========================================================================
+
+class TestOllamaProvider(unittest.TestCase):
+    def setUp(self):
+        self.config = OllamaProviderConfig()
+        self.provider = OllamaProvider(self.config)
+
+    def test_connector_id(self):
+        self.assertEqual(OllamaProvider.CONNECTOR_ID, "ollama.local.v1")
+
+    def test_default_base_url(self):
+        self.assertEqual(self.config.base_url, "http://localhost:11434")
+
+    def test_empty_api_key(self):
+        self.assertEqual(self.config.api_key, "")
+
+    def test_default_models_count(self):
+        models = self.provider.list_models()
+        self.assertEqual(len(models), 4)
+        ids = [m.id for m in models]
+        self.assertIn("llama3", ids)
+        self.assertIn("codellama", ids)
+        self.assertIn("mistral", ids)
+        self.assertIn("gemma2", ids)
+
+    def test_capabilities(self):
+        self.assertTrue(
+            self.provider.supports("generation.text-generation.chat-completion")
+        )
+
+    def test_endpoint(self):
+        endpoint = self.provider._get_completion_endpoint()
+        self.assertIn("/v1/chat/completions", endpoint)
+
+    def test_headers_no_auth_when_empty(self):
+        headers = self.provider._build_headers()
+        self.assertNotIn("Authorization", headers)
+
+    def test_runtime_metadata(self):
+        self.assertEqual(OllamaProvider.RUNTIME, "node")
+
+
+# ========================================================================
+# LM Studio (Local)
+# ========================================================================
+
+class TestLMStudioProvider(unittest.TestCase):
+    def setUp(self):
+        self.config = LMStudioProviderConfig()
+        self.provider = LMStudioProvider(self.config)
+
+    def test_connector_id(self):
+        self.assertEqual(LMStudioProvider.CONNECTOR_ID, "lmstudio.local.v1")
+
+    def test_default_base_url(self):
+        self.assertEqual(self.config.base_url, "http://localhost:1234")
+
+    def test_empty_api_key(self):
+        self.assertEqual(self.config.api_key, "")
+
+    def test_empty_default_models(self):
+        models = self.provider.list_models()
+        self.assertEqual(len(models), 0)
+
+    def test_runtime_metadata(self):
+        self.assertEqual(LMStudioProvider.RUNTIME, "node")
+
+
+# ========================================================================
+# vLLM (Local)
+# ========================================================================
+
+class TestVLLMProvider(unittest.TestCase):
+    def setUp(self):
+        self.config = VLLMProviderConfig()
+        self.provider = VLLMProvider(self.config)
+
+    def test_connector_id(self):
+        self.assertEqual(VLLMProvider.CONNECTOR_ID, "vllm.local.v1")
+
+    def test_default_base_url(self):
+        self.assertEqual(self.config.base_url, "http://localhost:8000")
+
+    def test_empty_api_key(self):
+        self.assertEqual(self.config.api_key, "")
+
+    def test_empty_default_models(self):
+        models = self.provider.list_models()
+        self.assertEqual(len(models), 0)
+
+    def test_runtime_metadata(self):
+        self.assertEqual(VLLMProvider.RUNTIME, "node")
+
+
+# ========================================================================
+# LocalAI (Local)
+# ========================================================================
+
+class TestLocalAIProvider(unittest.TestCase):
+    def setUp(self):
+        self.config = LocalAIProviderConfig()
+        self.provider = LocalAIProvider(self.config)
+
+    def test_connector_id(self):
+        self.assertEqual(LocalAIProvider.CONNECTOR_ID, "localai.local.v1")
+
+    def test_default_base_url(self):
+        self.assertEqual(self.config.base_url, "http://localhost:8080")
+
+    def test_empty_api_key(self):
+        self.assertEqual(self.config.api_key, "")
+
+    def test_empty_default_models(self):
+        models = self.provider.list_models()
+        self.assertEqual(len(models), 0)
+
+    def test_runtime_metadata(self):
+        self.assertEqual(LocalAIProvider.RUNTIME, "node")
 
 
 # ========================================================================

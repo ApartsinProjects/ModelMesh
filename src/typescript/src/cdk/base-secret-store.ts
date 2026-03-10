@@ -7,6 +7,7 @@
  * cloud services.
  */
 
+import { RuntimeEnvironment } from '../interfaces/runtime';
 import { SecretStoreConnector } from '../interfaces/secret-store';
 
 export interface BaseSecretStoreConfig {
@@ -17,6 +18,8 @@ export interface BaseSecretStoreConfig {
 }
 
 export class BaseSecretStore implements SecretStoreConnector {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: Required<BaseSecretStoreConfig>;
   private readonly _cache = new Map<string, { value: string; expiresAt: number }>();
 

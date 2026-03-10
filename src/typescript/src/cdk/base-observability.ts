@@ -7,6 +7,7 @@
  * files, webhooks, etc.
  */
 
+import { RuntimeEnvironment } from '../interfaces/runtime';
 import {
   AggregateStats,
   ObservabilityConnector,
@@ -24,6 +25,8 @@ export interface BaseObservabilityConfig {
 }
 
 export class BaseObservability implements ObservabilityConnector {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: Required<BaseObservabilityConfig>;
 
   static readonly SEVERITY_ORDER: Record<string, number> = {

@@ -15,6 +15,7 @@ import {
   BaseProviderConfig,
   createBaseProviderConfig,
 } from '../../cdk/base-provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   CompletionChoice,
   CompletionRequest,
@@ -53,6 +54,7 @@ export function createSerperProviderConfig(
 
 export class SerperProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'serper.search.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<SerperProviderConfig>) {
     super(createSerperProviderConfig(config));

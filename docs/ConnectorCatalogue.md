@@ -137,6 +137,52 @@ pools:
 | **AWS Bedrock** | `provider.aws.bedrock.v1` | Managed AI service with access to multiple foundation model providers. | Claude Sonnet 4, Claude 3.5 Haiku, Llama 3.1, Mistral Large, Amazon Nova Pro/Lite, Titan Embed, Stable Diffusion XL | No free tier; $200 new-account credit (all AWS, 6-month expiry) | [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock) |
 | **Google Cloud AI APIs** | `provider.google.cloud-ai.v1` | Individual AI services for speech, vision, translation, and NLU. | Speech-to-Text (Chirp), TTS (WaveNet, Neural2), Vision, Translation, NL | 60 min/mo STT; 1M chars/mo TTS; 1,000 images/mo Vision; $300 credit | [cloud.google.com/apis](https://cloud.google.com/apis) |
 
+### Local / Self-Hosted Providers
+
+Local model servers expose OpenAI-compatible REST APIs, so each connector extends `OpenAICompatibleProvider` with different defaults. No API key is required — authentication is disabled by default. All local providers are **Node.js only** (`RuntimeEnvironment.NODE_ONLY`).
+
+| Provider | ID | Default URL | Env Var | Default Models | Description |
+| --- | --- | --- | --- | --- | --- |
+| **Ollama** | `ollama.local.v1` | `http://localhost:11434` | `OLLAMA_HOST` | llama3, codellama, mistral, gemma2 | Run open-source LLMs locally. Simple install, model library, GPU acceleration. |
+| **LM Studio** | `lmstudio.local.v1` | `http://localhost:1234` | `LMSTUDIO_HOST` | *(user-loaded)* | Desktop app for running local models. GUI model browser and chat. |
+| **vLLM** | `vllm.local.v1` | `http://localhost:8000` | `VLLM_HOST` | *(user-loaded)* | High-throughput serving engine. PagedAttention, continuous batching. |
+| **LocalAI** | `localai.local.v1` | `http://localhost:8080` | `LOCALAI_HOST` | *(user-loaded)* | Drop-in OpenAI replacement. Supports LLMs, image gen, audio, embeddings. |
+
+**Auto-detection:** Local providers are detected via host environment variables (e.g., `OLLAMA_HOST=http://myserver:11434`). Unlike cloud providers, no API key env var is needed — the presence of the host variable alone enables the provider.
+
+**Configuration:**
+
+All local providers share the same configuration parameters inherited from `OpenAICompatibleProvider`:
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `base_url` | string | Server URL. Defaults to localhost (see table above). |
+| `api_key` | string | API key for authentication. Default: `""` (no auth). |
+| `models` | list | Model catalogue. Ollama ships defaults; others are empty (user-loaded). |
+| `capabilities` | list | Capability paths. Default: `["generation.text-generation.chat-completion"]`. |
+| `timeout` | integer | Request timeout in seconds. Default: `60`. |
+
+**Example configuration:**
+
+```yaml
+providers:
+  ollama.local.v1:
+    connector: ollama.local.v1
+    config:
+      base_url: http://gpu-server:11434
+      models:
+        - id: deepseek-r1
+          capabilities: [generation.text-generation.chat-completion]
+
+  vllm.local.v1:
+    connector: vllm.local.v1
+    config:
+      base_url: http://inference-server:8000
+      models:
+        - id: meta-llama/Llama-3-70B-Instruct
+          capabilities: [generation.text-generation.chat-completion]
+```
+
 ### Web API Services
 
 Non-AI web services can be wrapped as provider connectors using the same interface, gaining rotation, quota management, and failover. These services are accessed through virtual model names and routed through capability pools like any other model.
@@ -189,6 +235,10 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 | **Perplexity**        | yes      | -         | -     | -          | yes    | yes      | -     | -         | Pro only      |
 | **AWS Bedrock**       | yes      | yes       | -     | yes        | -      | yes      | yes   | yes       | AWS credits   |
 | **Google Cloud APIs** | -        | -         | yes   | -          | -      | -        | -     | -         | generous      |
+| **Ollama**            | yes      | -         | -     | yes        | -      | yes      | -     | -         | free (local)  |
+| **LM Studio**         | yes      | -         | -     | yes        | -      | yes      | -     | -         | free (local)  |
+| **vLLM**              | yes      | -         | -     | yes        | -      | yes      | yes   | -         | free (local)  |
+| **LocalAI**           | yes      | yes       | yes   | yes        | -      | yes      | -     | -         | free (local)  |
 
 ### CDK Base Classes for Providers
 
@@ -198,6 +248,35 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 | **BrowserBaseProvider** | Browser, Deno, Bun, Workers | Fetch API | `ReadableStream` | Single-page apps, browser extensions, edge runtimes |
 
 Both classes expose the same provider interface and the same protected hooks for subclassing. See [cdk/BaseClasses.md](cdk/BaseClasses.html#browserbAseprovider) for details and [guides/BrowserUsage.md](guides/BrowserUsage.html) for browser setup.
+
+### Runtime Environment Metadata
+
+Every TypeScript connector class declares a `static readonly RUNTIME` property indicating browser/Node.js compatibility. This enables build-time tree-shaking and runtime compatibility checks.
+
+```typescript
+import { RuntimeEnvironment } from '@modelmesh/core';
+
+// Check a connector's runtime requirement
+console.log(OllamaProvider.RUNTIME);        // 'node'
+console.log(LocalStorageStorage.RUNTIME);    // 'browser'
+console.log(MemoryStorage.RUNTIME);          // 'universal'
+```
+
+| Value | Constant | Environment | Examples |
+| --- | --- | --- | --- |
+| `'node'` | `RuntimeEnvironment.NODE_ONLY` | Node.js, Bun, Deno (server) | All cloud/local providers, file storage, env/dotenv/json/encrypted/keyring secret stores |
+| `'browser'` | `RuntimeEnvironment.BROWSER_ONLY` | Browser (window + document) | localStorage/sessionStorage/IndexedDB storage, BrowserSecretStore |
+| `'universal'` | `RuntimeEnvironment.UNIVERSAL` | Any JavaScript runtime | MemoryStorage, MemorySecretStore, BrowserBaseProvider, all rotation policies, ConsoleObservability |
+
+**Runtime Guard** (`detectRuntime()`, `assertRuntimeCompatible()`): Detects the current environment at runtime and throws a descriptive error if a connector is used in an incompatible environment. Available from `@modelmesh/core`:
+
+```typescript
+import { detectRuntime, assertRuntimeCompatible } from '@modelmesh/core';
+
+const runtime = detectRuntime(); // 'node' or 'browser'
+assertRuntimeCompatible('modelmesh.localstorage.v1', RuntimeEnvironment.BROWSER_ONLY);
+// Throws: "Connector modelmesh.localstorage.v1 requires browser environment but running in node"
+```
 
 ### Audio Namespace
 
@@ -255,6 +334,7 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | **`secret-store.modelmesh.memory-secrets.v1`** | Holds secrets in an in-memory dictionary. Ideal for testing, scripting, and user-provided keys. Supports runtime add/remove via SecretManagement interface. | Built-in | - |
 | **`secret-store.modelmesh.encrypted-file.v1`** | AES-256-GCM encrypted JSON file. Secrets are decrypted at initialization using a passphrase (PBKDF2) or raw key. Supports save/load round-trips. | Built-in | - |
 | **`secret-store.modelmesh.keyring.v1`** | Resolves secrets from the OS keyring (macOS Keychain, Windows Credential Locker, Linux Secret Service). | Built-in | - |
+| **`secret-store.modelmesh.browser-secrets.v1`** | Browser localStorage-backed secret store. Persists secrets across page reloads. TypeScript / browser only. | Built-in (TS only) | - |
 
 ### Connector-Specific Configuration
 
@@ -328,6 +408,15 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | `service_name` | string | Keyring service/application name. Default: `modelmesh`. |
 | `fail_on_missing` | boolean | Throw on missing keys. Default: `true`. |
 
+**`secret-store.modelmesh.browser-secrets.v1`:** *(TypeScript / Browser only)*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `prefix` | string | Key namespace prefix in localStorage. Default: `modelmesh-secret:`. |
+| `failOnMissing` | boolean | Throw on missing keys. Default: `true`. |
+
+Stores secrets in the browser's localStorage. Supports the full `SecretManagement` interface (`set`, `delete`, `list`). Secrets persist across page reloads and browser restarts. **Warning:** localStorage is not encrypted — secrets are visible in browser DevTools. Suitable for user-provided API keys in personal tools; not recommended for shared production deployments.
+
 ### Deployment Patterns
 
 | Environment | Recommended Store | Reason |
@@ -337,6 +426,8 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | Scripts | `modelmesh.memory-secrets.v1` | pass keys from user input at runtime |
 | Shared config | `modelmesh.encrypted-file.v1` | keys encrypted at rest, safe to commit |
 | Desktop apps | `modelmesh.keyring.v1` | OS-native secure storage |
+| Browser apps | `modelmesh.browser-secrets.v1` | persistent, user-provided keys |
+| Browser testing | `modelmesh.memory-secrets.v1` | no browser APIs needed |
 | AWS / GCP | native secret manager | IAM integration |
 | Serverless | cloud secret manager | runtime injection |
 | Client-side | server proxy | keys never reach client |
@@ -356,6 +447,9 @@ Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage
 | **`storage.redis.redis.v1`** | Redis | atomic operations | Redis Cloud 30 MB free; self-hosted open-source | low-latency multi-instance sync | [redis.io](https://redis.io) |
 | **`storage.modelmesh.sqlite.v1`** | SQLite | single-process only | Built-in | structured local storage, queryable state | - |
 | **`storage.modelmesh.memory.v1`** | in-memory | single-process only | Built-in | testing, ephemeral workloads, no persistence | - |
+| **`storage.modelmesh.localstorage.v1`** | browser localStorage | single-tab | Built-in (TS only) | browser apps, small state (~5-10 MB) | - |
+| **`storage.modelmesh.sessionstorage.v1`** | browser sessionStorage | single-tab | Built-in (TS only) | browser apps, session-scoped state | - |
+| **`storage.modelmesh.indexeddb.v1`** | browser IndexedDB | single-origin | Built-in (TS only) | browser apps, large state, no size limit | - |
 
 ### Connector-Specific Configuration
 
@@ -405,6 +499,43 @@ Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage
 **`storage.modelmesh.memory.v1`:**
 
 No configuration parameters. All data is held in-memory and lost on process exit. Useful for testing and ephemeral workloads.
+
+**`storage.modelmesh.localstorage.v1`:** *(TypeScript / Browser only)*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `prefix` | string | Key namespace prefix in localStorage. Default: `modelmesh:`. |
+
+Data is serialized as base64-encoded JSON. Persists across page reloads and browser restarts. Subject to the browser's localStorage quota (~5-10 MB per origin). Requires `RuntimeEnvironment.BROWSER_ONLY`.
+
+**`storage.modelmesh.sessionstorage.v1`:** *(TypeScript / Browser only)*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `prefix` | string | Key namespace prefix in sessionStorage. Default: `modelmesh:`. |
+
+Identical to localStorage storage, but data is cleared when the browser tab closes. Useful for ephemeral browser-session state.
+
+**`storage.modelmesh.indexeddb.v1`:** *(TypeScript / Browser only)*
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `dbName` | string | IndexedDB database name. Default: `modelmesh`. |
+| `storeName` | string | Object store name. Default: `storage`. |
+| `version` | number | Database schema version. Default: `1`. |
+
+Natively async storage using the browser's IndexedDB API. Stores binary data directly as `Uint8Array` (no base64 overhead). No practical size limit. Recommended for browser apps with large state. Connection is lazily initialized on first use; call `close()` to release the connection.
+
+---
+
+### Browser Storage Deployment Patterns
+
+| Scenario | Recommended Store | Reason |
+| --- | --- | --- |
+| Browser SPA, small state | `modelmesh.localstorage.v1` | Persistent, simple, synchronous-feel API |
+| Browser SPA, large state | `modelmesh.indexeddb.v1` | No size limit, native binary support |
+| Tab-scoped state | `modelmesh.sessionstorage.v1` | Auto-cleared on tab close |
+| Browser testing | `modelmesh.memory.v1` | No browser APIs needed |
 
 ---
 

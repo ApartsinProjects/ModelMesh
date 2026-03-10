@@ -18,6 +18,7 @@ import {
   Severity,
   TraceEntry,
 } from '../../interfaces/observability';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export interface JsonLogConnectorConfig {
   filePath?: string;
@@ -27,6 +28,7 @@ export interface JsonLogConnectorConfig {
 
 export class JsonLogConnector implements ObservabilityConnector {
   static readonly CONNECTOR_ID = 'modelmesh.jsonlog.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _config: Required<JsonLogConnectorConfig>;
   private _fd: number | null = null;
 

@@ -39,12 +39,29 @@ export * from './interfaces/observability';
 export * from './interfaces/storage';
 export * from './interfaces/secret-store';
 export * from './interfaces/discovery';
+export * from './interfaces/runtime';
 
 // ---------------------------------------------------------------------------
 // Client (browser-safe: pure logic)
 // ---------------------------------------------------------------------------
 
 export { MeshClient } from './client/mesh-client';
+
+// ---------------------------------------------------------------------------
+// Connectors -- Browser-compatible storage & secret stores
+// ---------------------------------------------------------------------------
+
+export { MemoryStorage } from './connectors/storage/memory-storage';
+export { LocalStorageStorage } from './connectors/storage/localstorage-storage';
+export type { LocalStorageStorageConfig } from './connectors/storage/localstorage-storage';
+export { SessionStorageStorage } from './connectors/storage/sessionstorage-storage';
+export type { SessionStorageStorageConfig } from './connectors/storage/sessionstorage-storage';
+export { IndexedDBStorage } from './connectors/storage/indexeddb-storage';
+export type { IndexedDBStorageConfig } from './connectors/storage/indexeddb-storage';
+export { MemorySecretStore } from './connectors/secret-stores/memory-store';
+export type { MemorySecretStoreConfig } from './connectors/secret-stores/memory-store';
+export { BrowserSecretStore } from './connectors/secret-stores/browser-store';
+export type { BrowserSecretStoreConfig } from './connectors/secret-stores/browser-store';
 
 // ---------------------------------------------------------------------------
 // CDK -- Browser-compatible base classes

@@ -9,6 +9,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { EntryMetadata, StorageConnector, StorageEntry } from '../../interfaces/storage';
 
 export interface LocalFileStorageConfig {
@@ -17,6 +18,7 @@ export interface LocalFileStorageConfig {
 
 export class LocalFileStorage implements StorageConnector {
   static readonly CONNECTOR_ID = 'modelmesh.local-file.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _filePath: string;
   private _data: Record<string, { key: string; data: string; metadata: Record<string, unknown>; lastModified: string }> = {};
 

@@ -7,6 +7,7 @@
  * Connector ID: modelmesh.env.v1
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { SecretStoreConnector } from '../../interfaces/secret-store';
 
 export interface EnvSecretStoreConfig {
@@ -16,6 +17,7 @@ export interface EnvSecretStoreConfig {
 
 export class EnvSecretStore implements SecretStoreConnector {
   static readonly CONNECTOR_ID = 'modelmesh.env.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _prefix: string;
   private readonly _failOnMissing: boolean;
 

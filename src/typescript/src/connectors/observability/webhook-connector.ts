@@ -20,6 +20,7 @@ import {
   Severity,
   TraceEntry,
 } from '../../interfaces/observability';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const SEVERITY_ORDER: Record<string, number> = {
   [Severity.DEBUG]: 0,
@@ -40,6 +41,7 @@ export interface WebhookConnectorConfig {
 
 export class WebhookConnector implements ObservabilityConnector {
   static readonly CONNECTOR_ID = 'modelmesh.webhook.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
   private readonly _config: Required<WebhookConnectorConfig>;
   private _batch: Record<string, unknown>[] = [];
 

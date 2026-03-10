@@ -6,6 +6,7 @@
  * to stdout with color coding by type.
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import { BaseObservability, BaseObservabilityConfig } from '../base-observability';
 import {
   AggregateStats,
@@ -69,6 +70,8 @@ export interface ConsoleObservabilityConfig extends BaseObservabilityConfig {
  * });
  */
 export class ConsoleObservability extends BaseObservability {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   private readonly _consoleConfig: Required<ConsoleObservabilityConfig>;
 
   constructor(config?: ConsoleObservabilityConfig) {

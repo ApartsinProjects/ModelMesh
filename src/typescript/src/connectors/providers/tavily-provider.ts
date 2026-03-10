@@ -15,6 +15,7 @@ import {
   BaseProviderConfig,
   createBaseProviderConfig,
 } from '../../cdk/base-provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   CompletionChoice,
   CompletionRequest,
@@ -67,6 +68,7 @@ export function createTavilyProviderConfig(
 
 export class TavilyProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'tavily.search.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _tavilyConfig: TavilyProviderConfig;
 
   constructor(config?: Partial<TavilyProviderConfig>) {

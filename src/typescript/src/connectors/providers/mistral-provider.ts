@@ -12,6 +12,7 @@ import {
   createOpenAICompatibleConfig,
 } from '../../cdk/specialized/openai-compatible';
 import { ModelInfo, createDefaultModelInfo as createModelInfo } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -69,6 +70,7 @@ export function createMistralProviderConfig(
 
 export class MistralProvider extends OpenAICompatibleProvider {
   static readonly CONNECTOR_ID = 'mistral.api.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<MistralProviderConfig>) {
     super(createMistralProviderConfig(config));

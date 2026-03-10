@@ -11,6 +11,7 @@
 
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { SecretStoreConnector, SecretManagement } from '../../interfaces/secret-store';
 
 export interface EncryptedFileSecretStoreConfig {
@@ -86,6 +87,7 @@ function decryptAesGcm(data: Buffer, key: Buffer): Buffer {
  */
 export class EncryptedFileSecretStore implements SecretStoreConnector, SecretManagement {
   static readonly CONNECTOR_ID = 'modelmesh.encrypted-file.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   private readonly _config: Required<{
     filePath: string;

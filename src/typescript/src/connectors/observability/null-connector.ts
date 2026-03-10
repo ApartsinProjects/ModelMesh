@@ -15,9 +15,11 @@ import {
   RoutingEvent,
   TraceEntry,
 } from '../../interfaces/observability';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export class NullObservabilityConnector implements ObservabilityConnector {
   static readonly CONNECTOR_ID = 'modelmesh.null.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
 
   emit(_event: RoutingEvent): void {
     // no-op

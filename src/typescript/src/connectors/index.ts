@@ -33,6 +33,12 @@ import { FirecrawlProvider } from './providers/firecrawl-provider';
 import { AssemblyAIProvider } from './providers/assemblyai-provider';
 import { AzureSpeechProvider } from './providers/azure-speech-provider';
 
+// Local / self-hosted providers
+import { OllamaProvider } from './providers/ollama-provider';
+import { LMStudioProvider } from './providers/lmstudio-provider';
+import { VLLMProvider } from './providers/vllm-provider';
+import { LocalAIProvider } from './providers/localai-provider';
+
 // Secret stores
 import { EnvSecretStore } from './secret-stores/env-store';
 import { DotenvSecretStore } from './secret-stores/dotenv-store';
@@ -57,6 +63,14 @@ import { MemoryStorage } from './storage/memory-storage';
 import { LocalFileStorage } from './storage/local-file-storage';
 import { SqliteStorage } from './storage/sqlite-storage';
 
+// Browser storage
+import { LocalStorageStorage } from './storage/localstorage-storage';
+import { SessionStorageStorage } from './storage/sessionstorage-storage';
+import { IndexedDBStorage } from './storage/indexeddb-storage';
+
+// Browser secret store
+import { BrowserSecretStore } from './secret-stores/browser-store';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CONNECTOR_REGISTRY: Record<string, any> = {
   // Providers
@@ -78,6 +92,12 @@ export const CONNECTOR_REGISTRY: Record<string, any> = {
   [FirecrawlProvider.CONNECTOR_ID]: FirecrawlProvider,
   [AssemblyAIProvider.CONNECTOR_ID]: AssemblyAIProvider,
   [AzureSpeechProvider.CONNECTOR_ID]: AzureSpeechProvider,
+
+  // Local / self-hosted providers
+  [OllamaProvider.CONNECTOR_ID]: OllamaProvider,
+  [LMStudioProvider.CONNECTOR_ID]: LMStudioProvider,
+  [VLLMProvider.CONNECTOR_ID]: VLLMProvider,
+  [LocalAIProvider.CONNECTOR_ID]: LocalAIProvider,
 
   // Secret stores
   [EnvSecretStore.CONNECTOR_ID]: EnvSecretStore,
@@ -102,6 +122,14 @@ export const CONNECTOR_REGISTRY: Record<string, any> = {
   [MemoryStorage.CONNECTOR_ID]: MemoryStorage,
   [LocalFileStorage.CONNECTOR_ID]: LocalFileStorage,
   [SqliteStorage.CONNECTOR_ID]: SqliteStorage,
+
+  // Browser storage
+  [LocalStorageStorage.CONNECTOR_ID]: LocalStorageStorage,
+  [SessionStorageStorage.CONNECTOR_ID]: SessionStorageStorage,
+  [IndexedDBStorage.CONNECTOR_ID]: IndexedDBStorage,
+
+  // Browser secret store
+  [BrowserSecretStore.CONNECTOR_ID]: BrowserSecretStore,
 };
 
 // Re-export all connector modules

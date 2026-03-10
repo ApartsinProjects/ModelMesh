@@ -8,6 +8,7 @@
  */
 
 import * as fs from 'fs';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { SecretStoreConnector } from '../../interfaces/secret-store';
 
 export interface JsonSecretStoreConfig {
@@ -18,6 +19,7 @@ export interface JsonSecretStoreConfig {
 
 export class JsonSecretStore implements SecretStoreConnector {
   static readonly CONNECTOR_ID = 'modelmesh.json-secrets.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _failOnMissing: boolean;
   private _data: Record<string, unknown> = {};
 

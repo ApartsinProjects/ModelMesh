@@ -8,6 +8,7 @@
  * and sets appropriate defaults.
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import { BaseProvider, BaseProviderConfig, createBaseProviderConfig } from '../base-provider';
 
 export interface OpenAICompatibleConfig extends BaseProviderConfig {
@@ -35,6 +36,8 @@ export function createOpenAICompatibleConfig(
  * the configuration.
  */
 export class OpenAICompatibleProvider extends BaseProvider {
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
+
   protected _oaiConfig: OpenAICompatibleConfig;
 
   constructor(config: OpenAICompatibleConfig) {

@@ -12,6 +12,7 @@ import {
   createOpenAICompatibleConfig,
 } from '../../cdk/specialized/openai-compatible';
 import { ModelInfo, createDefaultModelInfo as createModelInfo } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -83,6 +84,7 @@ export function createTogetherProviderConfig(
 
 export class TogetherProvider extends OpenAICompatibleProvider {
   static readonly CONNECTOR_ID = 'together.api.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<TogetherProviderConfig>) {
     super(createTogetherProviderConfig(config));

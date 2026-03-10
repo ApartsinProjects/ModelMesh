@@ -10,3 +10,4 @@ export * from './storage';
 export * from './secret-store';
 export * from './rotation';
 export * from './discovery';
+export * from './runtime';

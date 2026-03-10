@@ -20,6 +20,7 @@ import {
   BaseProviderConfig,
   createBaseProviderConfig,
 } from '../../cdk/base-provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   CompletionChoice,
   CompletionRequest,
@@ -99,6 +100,7 @@ const FINISH_REASON_MAP: Record<string, string> = {
 
 export class GeminiProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'google.gemini.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _currentModel: string = '';
 
   constructor(config?: Partial<GeminiProviderConfig>) {

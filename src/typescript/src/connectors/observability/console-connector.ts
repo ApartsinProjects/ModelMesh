@@ -12,6 +12,7 @@ import {
   Severity,
   TraceEntry,
 } from '../../interfaces/observability';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const Colors = {
   RESET: '[0m',
@@ -64,6 +65,7 @@ export interface ConsoleConnectorConfig {
 
 export class ConsoleObservabilityConnector implements ObservabilityConnector {
   static readonly CONNECTOR_ID = 'modelmesh.console.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
   private readonly _config: Required<ConsoleConnectorConfig>;
 
   constructor(config?: ConsoleConnectorConfig) {

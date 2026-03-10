@@ -7,6 +7,7 @@
  * cloud storage.
  */
 
+import { RuntimeEnvironment } from '../interfaces/runtime';
 import {
   EntryMetadata,
   LockHandle,
@@ -23,6 +24,8 @@ export interface BaseStorageConfig {
 }
 
 export class BaseStorage implements StorageConnector, Locking {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: Required<BaseStorageConfig>;
   protected _store = new Map<string, StorageEntry>();
   protected _timestamps = new Map<string, Date>();

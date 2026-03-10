@@ -14,6 +14,7 @@ import {
   RoutingEvent,
   TraceEntry,
 } from '../../interfaces/observability';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 export interface CallbackConnectorConfig {
   onTrace?: (entry: TraceEntry) => void;
@@ -24,6 +25,7 @@ export interface CallbackConnectorConfig {
 
 export class CallbackConnector implements ObservabilityConnector {
   static readonly CONNECTOR_ID = 'modelmesh.callback.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
   private readonly _config: CallbackConnectorConfig;
 
   constructor(config?: CallbackConnectorConfig) {

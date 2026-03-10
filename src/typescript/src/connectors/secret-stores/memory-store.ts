@@ -7,6 +7,7 @@
  * Connector ID: modelmesh.memory.v1
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { SecretStoreConnector, SecretManagement } from '../../interfaces/secret-store';
 
 export interface MemorySecretStoreConfig {
@@ -44,6 +45,7 @@ export interface MemorySecretStoreConfig {
  */
 export class MemorySecretStore implements SecretStoreConnector, SecretManagement {
   static readonly CONNECTOR_ID = 'modelmesh.memory-secrets.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
   private readonly _secrets: Record<string, string>;
   private readonly _failOnMissing: boolean;
 

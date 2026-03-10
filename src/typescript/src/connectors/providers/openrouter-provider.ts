@@ -12,6 +12,7 @@ import {
   createOpenAICompatibleConfig,
 } from '../../cdk/specialized/openai-compatible';
 import { ModelInfo, createDefaultModelInfo as createModelInfo } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -78,6 +79,7 @@ export function createOpenRouterProviderConfig(
 
 export class OpenRouterProvider extends OpenAICompatibleProvider {
   static readonly CONNECTOR_ID = 'openrouter.gateway.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _orConfig: OpenRouterProviderConfig;
 
   constructor(config?: Partial<OpenRouterProviderConfig>) {

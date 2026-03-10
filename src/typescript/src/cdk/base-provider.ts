@@ -13,6 +13,7 @@ import * as http from 'http';
 import * as https from 'https';
 import { URL } from 'url';
 
+import { RuntimeEnvironment } from '../interfaces/runtime';
 import {
   ChatMessage,
   CompletionChoice,
@@ -82,6 +83,8 @@ export class HttpError extends Error {
  * APIs without reimplementing transport, retries, or error handling.
  */
 export class BaseProvider {
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
+
   protected _config: BaseProviderConfig;
   protected _requestCount: number = 0;
   protected _tokensUsed: number = 0;

@@ -32,6 +32,7 @@ import {
   createDefaultCompletionResponse as createCompletionResponse,
   createDefaultTokenUsage as createTokenUsage,
 } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -100,6 +101,7 @@ export function createCohereProviderConfig(
 
 export class CohereProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'cohere.nlp.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<CohereProviderConfig>) {
     super(createCohereProviderConfig(config));

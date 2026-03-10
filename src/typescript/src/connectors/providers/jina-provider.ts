@@ -15,6 +15,7 @@ import {
   BaseProviderConfig,
   createBaseProviderConfig,
 } from '../../cdk/base-provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import {
   CompletionChoice,
   CompletionRequest,
@@ -93,6 +94,7 @@ export function createJinaProviderConfig(
 
 export class JinaProvider extends BaseProvider {
   static readonly CONNECTOR_ID = 'jina.ai.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private _jinaConfig: JinaProviderConfig;
   private _currentModel: string = '';
 

@@ -95,6 +95,20 @@ export type { ServerStatus } from './proxy/server';
 // Connectors
 export { CONNECTOR_REGISTRY } from './connectors';
 
+// Runtime environment metadata
+export { RuntimeEnvironment } from './interfaces/runtime';
+export { detectRuntime, assertRuntimeCompatible } from './core/runtime-guard';
+
+// Connectors -- Local / self-hosted providers
+export { OllamaProvider, createOllamaProviderConfig } from './connectors/providers/ollama-provider';
+export type { OllamaProviderConfig } from './connectors/providers/ollama-provider';
+export { LMStudioProvider, createLMStudioProviderConfig } from './connectors/providers/lmstudio-provider';
+export type { LMStudioProviderConfig } from './connectors/providers/lmstudio-provider';
+export { VLLMProvider, createVLLMProviderConfig } from './connectors/providers/vllm-provider';
+export type { VLLMProviderConfig } from './connectors/providers/vllm-provider';
+export { LocalAIProvider, createLocalAIProviderConfig } from './connectors/providers/localai-provider';
+export type { LocalAIProviderConfig } from './connectors/providers/localai-provider';
+
 // Connectors -- Azure Speech TTS
 export { AzureSpeechProvider, createAzureSpeechProviderConfig } from './connectors/providers/azure-speech-provider';
 export type { AzureSpeechProviderConfig } from './connectors/providers/azure-speech-provider';
@@ -112,6 +126,16 @@ export { EncryptedFileSecretStore } from './connectors/secret-stores/encrypted-f
 export type { EncryptedFileSecretStoreConfig } from './connectors/secret-stores/encrypted-file-store';
 export { KeyringSecretStore } from './connectors/secret-stores/keyring-store';
 export type { KeyringSecretStoreConfig } from './connectors/secret-stores/keyring-store';
+
+// Connectors -- Browser storage & secret stores
+export { LocalStorageStorage } from './connectors/storage/localstorage-storage';
+export type { LocalStorageStorageConfig } from './connectors/storage/localstorage-storage';
+export { SessionStorageStorage } from './connectors/storage/sessionstorage-storage';
+export type { SessionStorageStorageConfig } from './connectors/storage/sessionstorage-storage';
+export { IndexedDBStorage } from './connectors/storage/indexeddb-storage';
+export type { IndexedDBStorageConfig } from './connectors/storage/indexeddb-storage';
+export { BrowserSecretStore } from './connectors/secret-stores/browser-store';
+export type { BrowserSecretStoreConfig } from './connectors/secret-stores/browser-store';
 
 // ---------------------------------------------------------------------------
 // Convenience layer: create()

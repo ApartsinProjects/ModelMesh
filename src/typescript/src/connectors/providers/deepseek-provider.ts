@@ -12,6 +12,7 @@ import {
   createOpenAICompatibleConfig,
 } from '../../cdk/specialized/openai-compatible';
 import { ModelInfo, createDefaultModelInfo as createModelInfo, createDefaultModelPricing as createModelPricing } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -51,6 +52,7 @@ export function createDeepSeekProviderConfig(
 
 export class DeepSeekProvider extends OpenAICompatibleProvider {
   static readonly CONNECTOR_ID = 'deepseek.api.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<DeepSeekProviderConfig>) {
     super(createDeepSeekProviderConfig(config));

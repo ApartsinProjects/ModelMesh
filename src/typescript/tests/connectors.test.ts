@@ -485,6 +485,12 @@ import {
   AzureSpeechProvider,
   createAzureSpeechProviderConfig,
 } from '@/connectors/providers/azure-speech-provider';
+import { OllamaProvider, createOllamaProviderConfig } from '@/connectors/providers/ollama-provider';
+import { LMStudioProvider, createLMStudioProviderConfig } from '@/connectors/providers/lmstudio-provider';
+import { VLLMProvider, createVLLMProviderConfig } from '@/connectors/providers/vllm-provider';
+import { LocalAIProvider, createLocalAIProviderConfig } from '@/connectors/providers/localai-provider';
+import { RuntimeEnvironment } from '@/interfaces/runtime';
+import { MemorySecretStore } from '@/connectors/secret-stores/memory-store';
 
 describe('AzureSpeechProvider', () => {
   it('should have correct connector ID', () => {
@@ -595,5 +601,211 @@ describe('AzureSpeechProvider', () => {
   it('should default language to en-US', () => {
     const config = createAzureSpeechProviderConfig({ apiKey: 'key' });
     expect(config.language).toBe('en-US');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// OllamaProvider
+// ---------------------------------------------------------------------------
+
+describe('OllamaProvider', () => {
+  test('connector ID', () => {
+    expect(OllamaProvider.CONNECTOR_ID).toBe('ollama.local.v1');
+  });
+
+  test('default base URL', () => {
+    const cfg = createOllamaProviderConfig();
+    expect(cfg.baseUrl).toBe('http://localhost:11434');
+  });
+
+  test('empty API key', () => {
+    const cfg = createOllamaProviderConfig();
+    expect(cfg.apiKey).toBe('');
+  });
+
+  test('default models', () => {
+    const cfg = createOllamaProviderConfig();
+    expect(cfg.models.length).toBe(4);
+  });
+
+  test('chat-completion capability', () => {
+    const cfg = createOllamaProviderConfig();
+    expect(cfg.capabilities).toContain('generation.text-generation.chat-completion');
+  });
+
+  test('endpoint', () => {
+    const p = new OllamaProvider();
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+
+  test('runtime metadata', () => {
+    expect(OllamaProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+
+  test('custom host override', () => {
+    const cfg = createOllamaProviderConfig({ baseUrl: 'http://myhost:9999' });
+    expect(cfg.baseUrl).toBe('http://myhost:9999');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LMStudioProvider
+// ---------------------------------------------------------------------------
+
+describe('LMStudioProvider', () => {
+  test('connector ID', () => {
+    expect(LMStudioProvider.CONNECTOR_ID).toBe('lmstudio.local.v1');
+  });
+
+  test('default base URL', () => {
+    const cfg = createLMStudioProviderConfig();
+    expect(cfg.baseUrl).toBe('http://localhost:1234');
+  });
+
+  test('empty API key', () => {
+    const cfg = createLMStudioProviderConfig();
+    expect(cfg.apiKey).toBe('');
+  });
+
+  test('default models (empty)', () => {
+    const cfg = createLMStudioProviderConfig();
+    expect(cfg.models.length).toBe(0);
+  });
+
+  test('chat-completion capability', () => {
+    const cfg = createLMStudioProviderConfig();
+    expect(cfg.capabilities).toContain('generation.text-generation.chat-completion');
+  });
+
+  test('endpoint', () => {
+    const p = new LMStudioProvider();
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+
+  test('runtime metadata', () => {
+    expect(LMStudioProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+
+  test('custom host override', () => {
+    const cfg = createLMStudioProviderConfig({ baseUrl: 'http://myhost:5555' });
+    expect(cfg.baseUrl).toBe('http://myhost:5555');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// VLLMProvider
+// ---------------------------------------------------------------------------
+
+describe('VLLMProvider', () => {
+  test('connector ID', () => {
+    expect(VLLMProvider.CONNECTOR_ID).toBe('vllm.local.v1');
+  });
+
+  test('default base URL', () => {
+    const cfg = createVLLMProviderConfig();
+    expect(cfg.baseUrl).toBe('http://localhost:8000');
+  });
+
+  test('empty API key', () => {
+    const cfg = createVLLMProviderConfig();
+    expect(cfg.apiKey).toBe('');
+  });
+
+  test('default models (empty)', () => {
+    const cfg = createVLLMProviderConfig();
+    expect(cfg.models.length).toBe(0);
+  });
+
+  test('chat-completion capability', () => {
+    const cfg = createVLLMProviderConfig();
+    expect(cfg.capabilities).toContain('generation.text-generation.chat-completion');
+  });
+
+  test('endpoint', () => {
+    const p = new VLLMProvider();
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+
+  test('runtime metadata', () => {
+    expect(VLLMProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+
+  test('custom host override', () => {
+    const cfg = createVLLMProviderConfig({ baseUrl: 'http://myhost:7777' });
+    expect(cfg.baseUrl).toBe('http://myhost:7777');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LocalAIProvider
+// ---------------------------------------------------------------------------
+
+describe('LocalAIProvider', () => {
+  test('connector ID', () => {
+    expect(LocalAIProvider.CONNECTOR_ID).toBe('localai.local.v1');
+  });
+
+  test('default base URL', () => {
+    const cfg = createLocalAIProviderConfig();
+    expect(cfg.baseUrl).toBe('http://localhost:8080');
+  });
+
+  test('empty API key', () => {
+    const cfg = createLocalAIProviderConfig();
+    expect(cfg.apiKey).toBe('');
+  });
+
+  test('default models (empty)', () => {
+    const cfg = createLocalAIProviderConfig();
+    expect(cfg.models.length).toBe(0);
+  });
+
+  test('chat-completion capability', () => {
+    const cfg = createLocalAIProviderConfig();
+    expect(cfg.capabilities).toContain('generation.text-generation.chat-completion');
+  });
+
+  test('endpoint', () => {
+    const p = new LocalAIProvider();
+    expect((p as any)._getCompletionEndpoint()).toContain('/v1/chat/completions');
+  });
+
+  test('runtime metadata', () => {
+    expect(LocalAIProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+
+  test('custom host override', () => {
+    const cfg = createLocalAIProviderConfig({ baseUrl: 'http://myhost:3000' });
+    expect(cfg.baseUrl).toBe('http://myhost:3000');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RuntimeEnvironment
+// ---------------------------------------------------------------------------
+
+describe('RuntimeEnvironment', () => {
+  test('NODE_ONLY value', () => {
+    expect(RuntimeEnvironment.NODE_ONLY).toBe('node');
+  });
+
+  test('BROWSER_ONLY value', () => {
+    expect(RuntimeEnvironment.BROWSER_ONLY).toBe('browser');
+  });
+
+  test('UNIVERSAL value', () => {
+    expect(RuntimeEnvironment.UNIVERSAL).toBe('universal');
+  });
+
+  test('BaseProvider is NODE_ONLY', () => {
+    expect(BaseProvider.RUNTIME).toBe(RuntimeEnvironment.NODE_ONLY);
+  });
+
+  test('MemoryStorage is UNIVERSAL', () => {
+    expect(MemoryStorage.RUNTIME).toBe(RuntimeEnvironment.UNIVERSAL);
+  });
+
+  test('MemorySecretStore is UNIVERSAL', () => {
+    expect(MemorySecretStore.RUNTIME).toBe(RuntimeEnvironment.UNIVERSAL);
   });
 });

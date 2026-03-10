@@ -8,6 +8,7 @@
  */
 
 import * as fs from 'fs';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { SecretStoreConnector } from '../../interfaces/secret-store';
 
 export interface DotenvSecretStoreConfig {
@@ -18,6 +19,7 @@ export interface DotenvSecretStoreConfig {
 
 export class DotenvSecretStore implements SecretStoreConnector {
   static readonly CONNECTOR_ID = 'modelmesh.dotenv.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _overrideEnv: boolean;
   private readonly _failOnMissing: boolean;
   private _values: Record<string, string> = {};

@@ -10,6 +10,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 import type { EntryMetadata, StorageConnector, StorageEntry } from '../../interfaces/storage';
 
 export interface SqliteStorageConfig {
@@ -19,6 +20,7 @@ export interface SqliteStorageConfig {
 
 export class SqliteStorage implements StorageConnector {
   static readonly CONNECTOR_ID = 'modelmesh.sqlite.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
   private readonly _config: Required<SqliteStorageConfig>;
   private _data: Record<string, { data: string; metadata: string; lastModified: string }> = {};
 

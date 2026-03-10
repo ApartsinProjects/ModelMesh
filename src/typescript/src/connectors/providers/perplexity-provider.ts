@@ -15,6 +15,7 @@ import {
   createOpenAICompatibleConfig,
 } from '../../cdk/specialized/openai-compatible';
 import { ModelInfo, createDefaultModelInfo as createModelInfo } from '../../interfaces/provider';
+import { RuntimeEnvironment } from '../../interfaces/runtime';
 
 const DEFAULT_MODELS: ModelInfo[] = [
   createModelInfo({
@@ -58,6 +59,7 @@ export function createPerplexityProviderConfig(
 
 export class PerplexityProvider extends OpenAICompatibleProvider {
   static readonly CONNECTOR_ID = 'perplexity.search.v1';
+  static readonly RUNTIME = RuntimeEnvironment.NODE_ONLY;
 
   constructor(config?: Partial<PerplexityProviderConfig>) {
     super(createPerplexityProviderConfig(config));

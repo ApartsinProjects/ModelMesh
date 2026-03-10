@@ -117,10 +117,20 @@ import {
   ModelMesh,
   MeshClient,
   createBrowser,
+  // Storage connectors
+  MemoryStorage,
+  LocalStorageStorage,
+  SessionStorageStorage,
+  IndexedDBStorage,
+  // Secret stores
+  MemorySecretStore,
+  BrowserSecretStore,
+  // Runtime metadata
+  RuntimeEnvironment,
 } from '@modelmesh/core/browser';
 ```
 
-The browser entry point excludes: `ProxyServer`, `MeshConfig.fromFile()`, `FileSecretStore`, `HttpHealthDiscovery`, `KeyValueStorage` (file backend), and all Node.js-dependent connectors.
+The browser entry point excludes: `ProxyServer`, `MeshConfig.fromFile()`, `FileSecretStore`, `HttpHealthDiscovery`, `KeyValueStorage` (file backend), and all Node.js-dependent connectors (providers using `http`/`https`, file-based storage, env/dotenv/json/encrypted/keyring secret stores).
 
 ## Security Considerations
 
@@ -212,6 +222,116 @@ console.log(transcript.text);
 ### CORS Proxy for Audio
 
 Audio API endpoints require the same CORS proxy as text endpoints. The proxy handles binary response bodies transparently. Ensure the proxy does not set a response size limit that would truncate large audio files.
+
+## Browser Storage Connectors
+
+ModelMesh provides three persistent storage connectors for browser environments, plus a browser-compatible secret store. All use the standard `StorageConnector` interface.
+
+### localStorage Storage
+
+Persists state across page reloads and browser restarts. Subject to ~5-10 MB limit per origin.
+
+```typescript
+import { LocalStorageStorage } from '@modelmesh/core/browser';
+
+const storage = new LocalStorageStorage({ prefix: 'myapp:' });
+await storage.save('model-state', {
+  key: 'model-state',
+  data: new Uint8Array([1, 2, 3]),
+  metadata: { version: 1 },
+});
+const entry = await storage.load('model-state');
+```
+
+### sessionStorage Storage
+
+Identical API to localStorage, but data is cleared when the browser tab closes. Useful for ephemeral per-session state.
+
+```typescript
+import { SessionStorageStorage } from '@modelmesh/core/browser';
+
+const storage = new SessionStorageStorage({ prefix: 'session:' });
+```
+
+### IndexedDB Storage
+
+Natively async storage with no practical size limit. Stores binary data directly (no base64 overhead). Recommended for apps with large state.
+
+```typescript
+import { IndexedDBStorage } from '@modelmesh/core/browser';
+
+const storage = new IndexedDBStorage({
+  dbName: 'myapp',
+  storeName: 'mesh-state',
+  version: 1,
+});
+await storage.save('large-data', {
+  key: 'large-data',
+  data: new Uint8Array(1024 * 1024), // 1 MB
+  metadata: {},
+});
+// When done, release the connection
+storage.close();
+```
+
+### Browser Secret Store
+
+Persists API keys and secrets in localStorage. Supports the full `SecretManagement` interface.
+
+```typescript
+import { BrowserSecretStore } from '@modelmesh/core/browser';
+
+const secrets = new BrowserSecretStore({
+  prefix: 'myapp-secrets:',
+  failOnMissing: false,
+});
+secrets.set('OPENAI_API_KEY', userProvidedKey);
+const key = secrets.get('OPENAI_API_KEY');
+```
+
+> **Security note:** localStorage is not encrypted. Secrets are visible in browser DevTools. This is suitable for user-provided API keys in personal tools, not for shared production deployments with server-managed keys.
+
+### Choosing a Browser Storage Backend
+
+| Requirement | Use |
+|-------------|-----|
+| Small state, simple persistence | `LocalStorageStorage` |
+| Large binary data, no size limit | `IndexedDBStorage` |
+| State that expires with the tab | `SessionStorageStorage` |
+| Testing without browser APIs | `MemoryStorage` (universal) |
+| Storing API keys in browser | `BrowserSecretStore` |
+
+## Runtime Environment Metadata
+
+Every TypeScript connector class declares a `static readonly RUNTIME` property using the `RuntimeEnvironment` enum. This metadata enables:
+
+- **Build-time tree-shaking**: Bundlers can exclude Node.js-only connectors from browser builds
+- **Runtime compatibility checks**: `assertRuntimeCompatible()` throws a clear error if a connector is used in the wrong environment
+- **Discoverability**: Inspect any connector's runtime requirement programmatically
+
+### RuntimeEnvironment Values
+
+| Value | Constant | Runs In | Connector Examples |
+|-------|----------|---------|-------------------|
+| `'node'` | `RuntimeEnvironment.NODE_ONLY` | Node.js, Bun, Deno (server) | All providers (OpenAI, Anthropic, Ollama, etc.), file storage, env/dotenv/json secret stores |
+| `'browser'` | `RuntimeEnvironment.BROWSER_ONLY` | Browsers | LocalStorageStorage, SessionStorageStorage, IndexedDBStorage, BrowserSecretStore |
+| `'universal'` | `RuntimeEnvironment.UNIVERSAL` | Anywhere | MemoryStorage, MemorySecretStore, BrowserBaseProvider, rotation policies, ConsoleObservability |
+
+### Runtime Guard
+
+Use `detectRuntime()` and `assertRuntimeCompatible()` to validate connector compatibility:
+
+```typescript
+import { detectRuntime, assertRuntimeCompatible, RuntimeEnvironment } from '@modelmesh/core';
+
+// Check current environment
+const env = detectRuntime(); // 'node' or 'browser'
+
+// Guard against incompatible usage (throws on mismatch)
+assertRuntimeCompatible('modelmesh.localstorage.v1', RuntimeEnvironment.BROWSER_ONLY);
+```
+
+The runtime guard checks `typeof window !== 'undefined'` and `typeof document !== 'undefined'` to distinguish browser from Node.js environments.
 
 ## CORS Proxy Advanced Configuration
 

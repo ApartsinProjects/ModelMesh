@@ -7,6 +7,8 @@
  * Connector ID: modelmesh.stick-until-failure.v1
  */
 
+import { RuntimeEnvironment } from '../../interfaces/runtime';
+
 export interface StickUntilFailureConfig {
   failureThreshold?: number;
   cooldownSeconds?: number;
@@ -19,6 +21,7 @@ export interface StickUntilFailureConfig {
 
 export class StickUntilFailurePolicy {
   static readonly CONNECTOR_ID = 'modelmesh.stick-until-failure.v1';
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
   readonly config: Required<StickUntilFailureConfig>;
 
   constructor(config?: StickUntilFailureConfig) {

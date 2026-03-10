@@ -9,6 +9,7 @@
  */
 
 import { CompletionRequest } from '../interfaces/provider';
+import { RuntimeEnvironment } from '../interfaces/runtime';
 import {
   DeactivationPolicy,
   DeactivationReason,
@@ -56,6 +57,8 @@ function resolveConfig(config?: BaseRotationConfig): ResolvedRotationConfig {
 // -- Deactivation -----------------------------------------------------------
 
 export class BaseDeactivationPolicy implements DeactivationPolicy {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: ResolvedRotationConfig;
 
   constructor(config?: BaseRotationConfig) {
@@ -103,6 +106,8 @@ export class BaseDeactivationPolicy implements DeactivationPolicy {
 // -- Recovery ---------------------------------------------------------------
 
 export class BaseRecoveryPolicy implements RecoveryPolicy {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: ResolvedRotationConfig;
 
   constructor(config?: BaseRotationConfig) {
@@ -123,6 +128,8 @@ export class BaseRecoveryPolicy implements RecoveryPolicy {
 // -- Selection --------------------------------------------------------------
 
 export class BaseSelectionStrategy implements SelectionStrategy {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: ResolvedRotationConfig;
 
   constructor(config?: BaseRotationConfig) {
@@ -167,6 +174,8 @@ export class BaseSelectionStrategy implements SelectionStrategy {
 export class BaseRotationPolicy
   implements DeactivationPolicy, RecoveryPolicy, SelectionStrategy
 {
+  static readonly RUNTIME = RuntimeEnvironment.UNIVERSAL;
+
   protected readonly _config: ResolvedRotationConfig;
 
   constructor(config?: BaseRotationConfig) {
