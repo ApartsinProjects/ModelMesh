@@ -12,7 +12,7 @@ from modelmesh.cdk import BaseProvider, BaseProviderConfig
 from modelmesh.interfaces.provider import (
     CompletionRequest,
     CompletionResponse,
-    ErrorClassificationResult,
+    ErrorClassification,
     ModelInfo,
     TokenUsage,
 )
@@ -27,32 +27,30 @@ class CustomErrorProvider(BaseProvider):
     - 529: Treated as an overloaded signal (retryable)
     """
 
-    def classify_error(self, error: Exception) -> ErrorClassificationResult:
+    def classify_error(self, error: Exception) -> ErrorClassification:
         status_code = getattr(
             getattr(error, "response", None), "status_code", None
         )
 
         if status_code == 418:
             # This provider uses 418 to signal rate limiting
-            return ErrorClassificationResult(
+            return ErrorClassification(
                 retryable=True,
                 category="rate_limit",
-                retry_after=5.0,
             )
 
         if status_code == 422:
             # Validation errors should not be retried
-            return ErrorClassificationResult(
+            return ErrorClassification(
                 retryable=False,
                 category="client_error",
             )
 
         if status_code == 529:
             # Provider-specific "overloaded" code
-            return ErrorClassificationResult(
+            return ErrorClassification(
                 retryable=True,
                 category="server_error",
-                retry_after=10.0,
             )
 
         # Fall back to default classification for all other codes
@@ -86,8 +84,7 @@ async def main() -> None:
         err = FakeError(code)
         result = provider.classify_error(err)
         print(f"HTTP {code}: retryable={result.retryable}, "
-              f"category={result.category}, "
-              f"retry_after={result.retry_after}")
+              f"category={result.category}")
 
     print(f"\nIs HTTP 418 retryable? {provider.is_retryable(FakeError(418))}")
     print(f"Is HTTP 422 retryable? {provider.is_retryable(FakeError(422))}")

@@ -104,7 +104,7 @@ async def main() -> None:
 
     text = "ModelMesh routes AI requests to the best available provider."
 
-    response = await client.embeddings.create(
+    response = client.embeddings.create(
         model="text-embeddings",          # virtual model name -> pool
         input=text,
         encoding_format="float",
@@ -128,7 +128,7 @@ async def main() -> None:
         "Quantum computing uses qubits for computation.",
     ]
 
-    response = await client.embeddings.create(
+    response = client.embeddings.create(
         model="text-embeddings",
         input=texts,
         encoding_format="float",
@@ -157,7 +157,7 @@ async def main() -> None:
     # -----------------------------------------------------------------------
     print("\n--- Example 3: Reduced dimensions ---\n")
 
-    response = await client.embeddings.create(
+    response = client.embeddings.create(
         model="text-embeddings",
         input="Dimensionality reduction test.",
         encoding_format="float",

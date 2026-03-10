@@ -140,7 +140,7 @@ class TestAutoDetect(unittest.TestCase):
         self.assertIn("openai", names)
 
     def test_provider_registry_has_expected_providers(self):
-        self.assertEqual(len(PROVIDER_REGISTRY), 19)
+        self.assertEqual(len(PROVIDER_REGISTRY), 18)
 
     def test_provider_registry_entries_have_required_fields(self):
         for env_var, info in PROVIDER_REGISTRY.items():

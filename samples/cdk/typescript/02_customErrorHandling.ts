@@ -12,7 +12,7 @@ import {
     BaseProviderConfig,
     CompletionRequest,
     CompletionResponse,
-    ErrorClassificationResult,
+    ErrorClassification,
     HttpError,
     ModelInfo,
 } from "@modelmesh/cdk";
@@ -26,7 +26,7 @@ import {
  * - 529: Treated as an overloaded signal (retryable)
  */
 class CustomErrorProvider extends BaseProvider {
-    classifyError(error: Error): ErrorClassificationResult {
+    classifyError(error: Error): ErrorClassification {
         const statusCode = (error as HttpError).statusCode;
 
         if (statusCode === 418) {
@@ -34,7 +34,6 @@ class CustomErrorProvider extends BaseProvider {
             return {
                 retryable: true,
                 category: "rate_limit",
-                retry_after: 5.0,
             };
         }
 
@@ -51,7 +50,6 @@ class CustomErrorProvider extends BaseProvider {
             return {
                 retryable: true,
                 category: "server_error",
-                retry_after: 10.0,
             };
         }
 
@@ -82,8 +80,7 @@ async function main(): Promise<void> {
         const result = provider.classifyError(err);
         console.log(
             `HTTP ${code}: retryable=${result.retryable}, ` +
-            `category=${result.category}, ` +
-            `retry_after=${result.retry_after}`
+            `category=${result.category}`
         );
     }
 

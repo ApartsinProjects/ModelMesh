@@ -76,7 +76,7 @@ def create_provider() -> OpenAICompatibleProvider:
 def create_rotation_policy() -> ThresholdRotationPolicy:
     """Create a threshold-based rotation policy with AcmeCorp priority."""
     return ThresholdRotationPolicy(BaseRotationPolicyConfig(
-        retry_limit=5,
+        failure_threshold=5,
         error_rate_threshold=0.3,
         cooldown_seconds=120,
         budget_limit=50.0,
@@ -148,7 +148,7 @@ async def main() -> None:
     print("=== AcmeCorp Connector Set ===\n")
 
     # Provider: list models
-    models = await provider.list_models()
+    models = provider.list_models()
     print(f"Provider models: {[m.id for m in models]}")
 
     # Rotation: test deactivation
@@ -156,7 +156,6 @@ async def main() -> None:
         model_id="acme-large",
         provider_id="acmecorp",
         failure_count=6,
-        error_rate=0.4,
     )
     print(f"Should deactivate acme-large? {policy.should_deactivate(snapshot)}")
 

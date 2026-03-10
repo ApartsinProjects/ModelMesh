@@ -86,7 +86,7 @@ function createProvider(): OpenAICompatibleProvider {
 function createRotationPolicy(): ThresholdRotationPolicy {
     /** Create a threshold-based rotation policy with AcmeCorp priority. */
     return new ThresholdRotationPolicy({
-        retryLimit: 5,
+        failureThreshold: 5,
         errorRateThreshold: 0.3,
         cooldownSeconds: 120,
         budgetLimit: 50.0,
@@ -166,7 +166,6 @@ async function main(): Promise<void> {
         modelId: "acme-large",
         providerId: "acmecorp",
         failureCount: 6,
-        errorRate: 0.4,
     });
     console.log(`Should deactivate acme-large? ${policy.shouldDeactivate(snapshot)}`);
 

@@ -106,10 +106,10 @@ import json
 from dataclasses import dataclass, field
 from typing import AsyncIterator, Optional
 
-import httpx
+import urllib.request
 
+from modelmesh.cdk.enums import AuthMethod
 from modelmesh.interfaces.provider import (
-    AuthMethod,
     CompletionRequest,
     CompletionResponse,
     ErrorClassification,
@@ -146,7 +146,7 @@ class BaseProvider(ProviderConnector):
 
     def __init__(self, config: BaseProviderConfig, observability=None) -> None:
         self._config = config
-        self._client = httpx.AsyncClient(timeout=config.timeout)
+        self._timeout = config.timeout
         self._request_count: int = 0
         self._tokens_used: int = 0
         self._models_by_id: dict[str, ModelInfo] = {
@@ -179,7 +179,7 @@ class BaseProvider(ProviderConnector):
                 result = self._parse_response(data)
                 self.report_usage(request.model, result.usage)
                 return result
-            except httpx.HTTPStatusError as exc:
+            except urllib.error.HTTPError as exc:
                 last_error = exc
                 classification = self.classify_error(exc)
                 if not classification.retryable or attempt == self._config.max_retries:
@@ -2609,7 +2609,8 @@ QuickProvider.__init__(config)
 ### Python
 
 ```python
-import httpx
+import json
+import urllib.request
 
 from modelmesh.cdk import BaseProvider, BaseProviderConfig
 from modelmesh.interfaces.provider import ModelInfo
@@ -2640,10 +2641,9 @@ class QuickProvider(BaseProvider):
         """Fetch available models from the /v1/models endpoint."""
         url = f"{self._base_url}/v1/models"
         headers = self._get_headers()
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read())
 
         models: list[ModelInfo] = []
         for entry in data.get("data", []):
@@ -3707,7 +3707,7 @@ class HttpHealthDiscoveryConfig(BaseDiscoveryConfig):
 import time
 from dataclasses import dataclass
 
-import httpx
+import urllib.request
 
 from modelmesh.interfaces.discovery import ProbeResult
 
@@ -3740,9 +3740,7 @@ class HttpHealthDiscovery(BaseDiscovery):
     def __init__(self, config: HttpHealthDiscoveryConfig) -> None:
         super().__init__(config)
         self._http_config = config
-        self._client = httpx.AsyncClient(
-            timeout=config.health_timeout_seconds
-        )
+        self._timeout = config.health_timeout_seconds
         self._provider_urls: dict[str, str] = {}
 
     def register_provider_url(self, provider_id: str, base_url: str) -> None:

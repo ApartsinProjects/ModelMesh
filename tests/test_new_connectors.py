@@ -1000,9 +1000,9 @@ class TestMemoryStorage(unittest.TestCase):
 class TestUpdatedConnectorRegistry(unittest.TestCase):
     """Verify all new connectors are registered in CONNECTOR_REGISTRY."""
 
-    def test_registry_has_16_connectors(self):
-        """8 original + 8 new = 16 total connectors."""
-        self.assertEqual(len(CONNECTOR_REGISTRY), 16)
+    def test_registry_has_31_connectors(self):
+        """16 original + 15 new providers = 31 total connectors."""
+        self.assertEqual(len(CONNECTOR_REGISTRY), 31)
 
     def test_all_have_matching_connector_id(self):
         for connector_id, cls in CONNECTOR_REGISTRY.items():

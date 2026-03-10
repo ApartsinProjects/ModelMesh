@@ -38,8 +38,8 @@ interface TokenUsage {
 
 /** Per-unit pricing for a model. */
 interface ModelPricing {
-    input_per_token: number;
-    output_per_token: number;
+    input_per_1k_tokens: number;
+    output_per_1k_tokens: number;
     per_request?: number;
 }
 
@@ -87,7 +87,7 @@ interface RateLimitStatus {
 }
 
 /** Result of classifying a provider error. */
-interface ErrorClassificationResult {
+interface ErrorClassification {
     retryable: boolean;
     category: string;
     retry_after?: number;
@@ -123,7 +123,7 @@ interface CostPricing {
 }
 
 interface ErrorClassification {
-    classifyError(error: Error): ErrorClassificationResult;
+    classifyError(error: Error): ErrorClassification;
     isRetryable(error: Error): boolean;
 }
 
@@ -241,9 +241,7 @@ class VllmProviderConnector implements ProviderConnector {
 
     /** Capabilities this connector supports. */
     private readonly supportedCapabilities: string[] = [
-        "chat",
-        "completion",
-        "streaming",
+        "generation.text-generation.chat-completion",
     ];
 
     /** Accumulated usage tracking for quota enforcement. */
@@ -522,8 +520,8 @@ class VllmProviderConnector implements ProviderConnector {
         const costPerToken = this.gpuHourCost / (tokensPerSecond * 3600);
 
         return {
-            input_per_token: costPerToken,
-            output_per_token: costPerToken * 1.5, // output is ~1.5x more expensive (decode vs prefill)
+            input_per_1k_tokens: costPerToken * 1000,
+            output_per_1k_tokens: costPerToken * 1500, // output is ~1.5x more expensive (decode vs prefill)
             per_request: 0, // no per-request overhead for self-hosted
         };
     }
@@ -550,7 +548,7 @@ class VllmProviderConnector implements ProviderConnector {
      * the HTTP status code (for VllmHttpError) and the error message to
      * produce a classification the router can act on.
      */
-    classifyError(error: Error): ErrorClassificationResult {
+    classifyError(error: Error): ErrorClassification {
         if (error instanceof VllmHttpError) {
             return this.classifyHttpError(error);
         }
@@ -667,8 +665,8 @@ class VllmProviderConnector implements ProviderConnector {
             context_window: def.contextWindow,
             max_output_tokens: def.maxOutputTokens,
             pricing: {
-                input_per_token: costPerToken,
-                output_per_token: costPerToken * 1.5,
+                input_per_1k_tokens: costPerToken * 1000,
+                output_per_1k_tokens: costPerToken * 1500,
                 per_request: 0,
             },
         };
@@ -698,7 +696,7 @@ class VllmProviderConnector implements ProviderConnector {
     }
 
     /** Classify an HTTP-level error from vLLM. */
-    private classifyHttpError(error: VllmHttpError): ErrorClassificationResult {
+    private classifyHttpError(error: VllmHttpError): ErrorClassification {
         switch (error.statusCode) {
             // Rate-limited (vLLM can return 429 when request queue is full).
             case 429:
@@ -775,12 +773,12 @@ class VllmProviderConnector implements ProviderConnector {
 #         name: "Llama 3.1 70B (self-hosted)"
 #         context_window: 131072
 #         max_output_tokens: 4096
-#         capabilities: [chat, completion, streaming]
+#         capabilities: [generation.text-generation.chat-completion]
 #       - id: "mistralai/Mistral-7B-Instruct-v0.3"
 #         name: "Mistral 7B (self-hosted)"
 #         context_window: 32768
 #         max_output_tokens: 4096
-#         capabilities: [chat, completion, streaming]
+#         capabilities: [generation.text-generation.chat-completion]
 #     budget:
 #       gpu_hour_cost: 2.50
 #       daily_request_limit: 50000
@@ -799,5 +797,5 @@ export type {
     ModelInfo,
     QuotaStatus,
     RateLimitStatus,
-    ErrorClassificationResult,
+    ErrorClassification,
 };

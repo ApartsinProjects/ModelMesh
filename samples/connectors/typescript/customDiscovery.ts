@@ -120,8 +120,8 @@ interface YamlModelEntry {
     status: "active" | "deprecated" | "preview";
     health_endpoint?: string;
     pricing?: {
-        input_per_token: number;
-        output_per_token: number;
+        input_per_1k_tokens: number;
+        output_per_1k_tokens: number;
         per_request?: number;
     };
     metadata?: Record<string, unknown>;
@@ -506,8 +506,8 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
         // Compare pricing if present.
         if (previous.pricing && current.pricing) {
             if (
-                previous.pricing.input_per_token !== current.pricing.input_per_token ||
-                previous.pricing.output_per_token !== current.pricing.output_per_token
+                previous.pricing.input_per_1k_tokens !== current.pricing.input_per_1k_tokens ||
+                previous.pricing.output_per_1k_tokens !== current.pricing.output_per_1k_tokens
             ) {
                 return true;
             }
@@ -686,40 +686,40 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 #   - id: gpt-4o
 #     name: GPT-4o
 #     provider: openai-primary
-#     capabilities: [chat, completion, streaming, vision, tool_use]
+#     capabilities: [generation.text-generation.chat-completion]
 #     context_window: 128000
 #     max_output_tokens: 16384
 #     status: active
 #     pricing:
-#       input_per_token: 0.0000025
-#       output_per_token: 0.00001
+#       input_per_1k_tokens: 0.0025
+#       output_per_1k_tokens: 0.01
 #
 #   - id: gpt-4o-mini
 #     name: GPT-4o Mini
 #     provider: openai-primary
-#     capabilities: [chat, completion, streaming, tool_use]
+#     capabilities: [generation.text-generation.chat-completion]
 #     context_window: 128000
 #     max_output_tokens: 16384
 #     status: active
 #     pricing:
-#       input_per_token: 0.00000015
-#       output_per_token: 0.0000006
+#       input_per_1k_tokens: 0.00015
+#       output_per_1k_tokens: 0.0006
 #
 #   - id: claude-sonnet-4-20250514
 #     name: Claude Sonnet 4
 #     provider: anthropic-primary
-#     capabilities: [chat, completion, streaming, vision, tool_use]
+#     capabilities: [generation.text-generation.chat-completion]
 #     context_window: 200000
 #     max_output_tokens: 16000
 #     status: active
 #     pricing:
-#       input_per_token: 0.000003
-#       output_per_token: 0.000015
+#       input_per_1k_tokens: 0.003
+#       output_per_1k_tokens: 0.015
 #
 #   - id: llama-3.1-70b
 #     name: Llama 3.1 70B (Self-Hosted)
 #     provider: vllm-internal
-#     capabilities: [chat, completion, streaming]
+#     capabilities: [generation.text-generation.chat-completion]
 #     context_window: 131072
 #     max_output_tokens: 4096
 #     status: active
@@ -727,7 +727,7 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 #   - id: gpt-4-turbo
 #     name: GPT-4 Turbo (Deprecated)
 #     provider: openai-primary
-#     capabilities: [chat, completion, streaming, vision, tool_use]
+#     capabilities: [generation.text-generation.chat-completion]
 #     context_window: 128000
 #     max_output_tokens: 4096
 #     status: deprecated

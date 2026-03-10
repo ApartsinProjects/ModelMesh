@@ -704,7 +704,6 @@ class TestProviderRegistryPerProvider(unittest.TestCase):
         "GROQ_API_KEY": ("groq", "groq.api.v1"),
         "MISTRAL_API_KEY": ("mistral", "mistral.api.v1"),
         "TOGETHER_API_KEY": ("together", "together.api.v1"),
-        "FIREWORKS_API_KEY": ("fireworks", "fireworks.api.v1"),
         "OPENROUTER_API_KEY": ("openrouter", "openrouter.gateway.v1"),
         "HF_TOKEN": ("huggingface", "huggingface.inference.v1"),
         "DEEPSEEK_API_KEY": ("deepseek", "deepseek.api.v1"),

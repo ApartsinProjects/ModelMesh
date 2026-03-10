@@ -163,8 +163,7 @@ async function main(): Promise<void> {
   // In a real application, you would query mesh.stats() here.
   // For this sample, the statistics are flushed to cost-stats.json
   // by the observability connector.
-  const router = mesh.getRouter();
-  const pools = router.listPools();
+  const pools = mesh.listPools();
   console.log(`Active pools: ${pools.length}`);
   console.log("Cost data written to ./cost-stats.json");
 

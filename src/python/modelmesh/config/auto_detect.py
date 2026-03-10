@@ -139,20 +139,6 @@ PROVIDER_REGISTRY: dict[str, dict] = {
             ),
         ],
     },
-    "FIREWORKS_API_KEY": {
-        "name": "fireworks",
-        "connector": "fireworks.api.v1",
-        "base_url": "https://api.fireworks.ai",
-        "default_models": [
-            ModelInfo(
-                id="fireworks.llama-v3p1-8b-instruct",
-                name="Llama 3.1 8B Instruct",
-                capabilities=["generation.text-generation.chat-completion"],
-                context_window=131072,
-                max_output_tokens=4096,
-            ),
-        ],
-    },
     "OPENROUTER_API_KEY": {
         "name": "openrouter",
         "connector": "openrouter.gateway.v1",

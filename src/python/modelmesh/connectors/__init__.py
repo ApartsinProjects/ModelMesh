@@ -35,7 +35,22 @@ from modelmesh.connectors.observability.webhook_connector import (
     WebhookConnector,
 )
 from modelmesh.connectors.providers.anthropic_provider import AnthropicProvider
+from modelmesh.connectors.providers.assemblyai_provider import AssemblyAIProvider
+from modelmesh.connectors.providers.cohere_provider import CohereProvider
+from modelmesh.connectors.providers.deepseek_provider import DeepSeekProvider
+from modelmesh.connectors.providers.elevenlabs_provider import ElevenLabsProvider
+from modelmesh.connectors.providers.firecrawl_provider import FirecrawlProvider
+from modelmesh.connectors.providers.gemini_provider import GeminiProvider
+from modelmesh.connectors.providers.groq_provider import GroqProvider
+from modelmesh.connectors.providers.jina_provider import JinaProvider
+from modelmesh.connectors.providers.mistral_provider import MistralProvider
 from modelmesh.connectors.providers.openai_provider import OpenAIProvider
+from modelmesh.connectors.providers.openrouter_provider import OpenRouterProvider
+from modelmesh.connectors.providers.perplexity_provider import PerplexityProvider
+from modelmesh.connectors.providers.serper_provider import SerperProvider
+from modelmesh.connectors.providers.tavily_provider import TavilyProvider
+from modelmesh.connectors.providers.together_provider import TogetherProvider
+from modelmesh.connectors.providers.xai_provider import XAIProvider
 from modelmesh.connectors.rotation.stick_until_failure import (
     StickUntilFailurePolicy,
 )
@@ -51,6 +66,21 @@ CONNECTOR_REGISTRY: dict[str, type] = {
     # Providers
     OpenAIProvider.CONNECTOR_ID: OpenAIProvider,
     AnthropicProvider.CONNECTOR_ID: AnthropicProvider,
+    GeminiProvider.CONNECTOR_ID: GeminiProvider,
+    GroqProvider.CONNECTOR_ID: GroqProvider,
+    DeepSeekProvider.CONNECTOR_ID: DeepSeekProvider,
+    MistralProvider.CONNECTOR_ID: MistralProvider,
+    TogetherProvider.CONNECTOR_ID: TogetherProvider,
+    OpenRouterProvider.CONNECTOR_ID: OpenRouterProvider,
+    XAIProvider.CONNECTOR_ID: XAIProvider,
+    CohereProvider.CONNECTOR_ID: CohereProvider,
+    PerplexityProvider.CONNECTOR_ID: PerplexityProvider,
+    ElevenLabsProvider.CONNECTOR_ID: ElevenLabsProvider,
+    TavilyProvider.CONNECTOR_ID: TavilyProvider,
+    SerperProvider.CONNECTOR_ID: SerperProvider,
+    JinaProvider.CONNECTOR_ID: JinaProvider,
+    FirecrawlProvider.CONNECTOR_ID: FirecrawlProvider,
+    AssemblyAIProvider.CONNECTOR_ID: AssemblyAIProvider,
     # Secret stores
     EnvSecretStore.CONNECTOR_ID: EnvSecretStore,
     DotenvSecretStore.CONNECTOR_ID: DotenvSecretStore,
@@ -75,6 +105,21 @@ __all__ = [
     "CONNECTOR_REGISTRY",
     "OpenAIProvider",
     "AnthropicProvider",
+    "GeminiProvider",
+    "GroqProvider",
+    "DeepSeekProvider",
+    "MistralProvider",
+    "TogetherProvider",
+    "OpenRouterProvider",
+    "XAIProvider",
+    "CohereProvider",
+    "PerplexityProvider",
+    "ElevenLabsProvider",
+    "TavilyProvider",
+    "SerperProvider",
+    "JinaProvider",
+    "FirecrawlProvider",
+    "AssemblyAIProvider",
     "EnvSecretStore",
     "DotenvSecretStore",
     "JsonSecretStore",

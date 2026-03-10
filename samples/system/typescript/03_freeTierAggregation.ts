@@ -143,8 +143,7 @@ async function main(): Promise<void> {
   // 4. Show aggregate statistics
   // -----------------------------------------------------------------------
   console.log("\n--- Request Distribution ---");
-  const router = mesh.getRouter();
-  const pools = router.listPools();
+  const pools = mesh.listPools();
   for (const pool of pools) {
     console.log(`Pool: ${pool}`);
   }

@@ -59,7 +59,7 @@ class TimeOfDayRotationPolicy extends BaseRotationPolicy {
         // During peak hours, enforce tighter budget on non-cheap models
         if (this.isPeakHours()) {
             if (!this.cheapModels.includes(snapshot.model_id)) {
-                if (snapshot.cost_accumulated >= this.peakBudget) {
+                if (snapshot.total_cost >= this.peakBudget) {
                     return true;
                 }
             }
@@ -84,7 +84,7 @@ class TimeOfDayRotationPolicy extends BaseRotationPolicy {
 function main(): void {
     const policy = new TimeOfDayRotationPolicy(
         {
-            retryLimit: 5,
+            failureThreshold: 5,
             errorRateThreshold: 0.5,
             cooldownSeconds: 60,
             modelPriority: ["gpt-4o", "gpt-3.5-turbo"],
@@ -97,14 +97,10 @@ function main(): void {
     const gpt4 = mockModelSnapshot({
         modelId: "gpt-4o",
         providerId: "openai",
-        errorRate: 0.02,
-        costAccumulated: 3.50,
     });
     const gpt35 = mockModelSnapshot({
         modelId: "gpt-3.5-turbo",
         providerId: "openai",
-        errorRate: 0.01,
-        costAccumulated: 0.50,
     });
 
     // Test deactivation
@@ -129,7 +125,6 @@ function main(): void {
     const standby = mockModelSnapshot({
         modelId: "gpt-4o",
         status: ModelStatus.STANDBY,
-        cooldownRemaining: 0.0,
         failureCount: 0,
     });
     console.log(`\nStandby model recover? ${policy.shouldRecover(standby)}`);

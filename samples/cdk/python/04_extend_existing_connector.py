@@ -83,9 +83,9 @@ async def main() -> None:
 
     # Verify inherited capabilities still work
     print(f"Capabilities: {provider.get_capabilities()}")
-    print(f"Supports tools? {provider.supports('tools')}")
+    print(f"Supports chat? {provider.supports('generation.text-generation.chat-completion')}")
 
-    models = await provider.list_models()
+    models = provider.list_models()
     print(f"Models: {[m.id for m in models]}")
 
     # The complete() call would work against a real Azure deployment:

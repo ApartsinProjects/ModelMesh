@@ -14,6 +14,7 @@ from modelmesh.interfaces.rotation_policy import (
     CompletionRequest,
     DeactivationReason,
     ModelSnapshot,
+    ModelStatus,
     SelectionResult,
 )
 
@@ -53,7 +54,7 @@ class TimeOfDayRotationPolicy(BaseRotationPolicy):
         # During peak hours, enforce tighter budget on non-cheap models
         if self._is_peak_hours():
             if snapshot.model_id not in self._cheap_models:
-                if snapshot.cost_accumulated >= self._peak_budget:
+                if snapshot.total_cost >= self._peak_budget:
                     return True
 
         return False
@@ -72,7 +73,7 @@ class TimeOfDayRotationPolicy(BaseRotationPolicy):
 def main() -> None:
     policy = TimeOfDayRotationPolicy(
         config=BaseRotationPolicyConfig(
-            retry_limit=5,
+            failure_threshold=5,
             error_rate_threshold=0.5,
             cooldown_seconds=60,
             model_priority=["gpt-4o", "gpt-3.5-turbo"],
@@ -85,14 +86,10 @@ def main() -> None:
     gpt4 = mock_model_snapshot(
         model_id="gpt-4o",
         provider_id="openai",
-        error_rate=0.02,
-        cost_accumulated=3.50,
     )
     gpt35 = mock_model_snapshot(
         model_id="gpt-3.5-turbo",
         provider_id="openai",
-        error_rate=0.01,
-        cost_accumulated=0.50,
     )
 
     # Test deactivation
@@ -113,8 +110,7 @@ def main() -> None:
     # Test recovery
     standby = mock_model_snapshot(
         model_id="gpt-4o",
-        status="standby",
-        cooldown_remaining=0.0,
+        status=ModelStatus.STANDBY,
         failure_count=0,
     )
     print(f"\nStandby model recover? {policy.should_recover(standby)}")

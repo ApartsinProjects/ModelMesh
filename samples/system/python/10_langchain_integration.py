@@ -150,7 +150,7 @@ async def main() -> None:
     chain = prompt | llm | StrOutputParser()
 
     # Invoke the chain.  Under the hood, LangChain calls
-    # client.chat.create() which ModelMesh intercepts,
+    # client.chat.completions.create() which ModelMesh intercepts,
     # routes to the cheapest active model, and handles failover.
     result = await chain.ainvoke({
         "domain": "distributed systems",

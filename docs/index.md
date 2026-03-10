@@ -100,7 +100,7 @@ Add more API keys -- ModelMesh chains them automatically:
 ```bash
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
-export GEMINI_API_KEY="AI..."
+export GOOGLE_API_KEY="AI..."
 ```
 
 ```python

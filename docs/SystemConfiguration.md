@@ -219,10 +219,12 @@ models:
 
 Defines capability pools and their per-pool rotation, selection, and retry configuration. Each pool targets a node in the [capability hierarchy](ModelCapabilities.html) and automatically includes all models registered at that node or its descendants.
 
+> **Note:** The current implementation supports `capability`, `models`, `providers`, and `strategy` pool fields. Additional fields shown below are reserved for future releases.
+
 | Attribute | Type | Description |
 | --- | --- | --- |
-| `hierarchy_node` | string | Capability node to target (e.g., `generation.text-generation`). Defaults to the pool name. |
-| `allowed_providers` | list | Restrict pool to specific providers. |
+| `capability` | string | Capability node to target (e.g., `generation.text-generation`). Defaults to the pool name. |
+| `providers` | list | Restrict pool to specific providers. |
 | `excluded_providers` | list | Exclude specific providers from pool. |
 | `model_priority` | list | Ordered model preference list. |
 | `provider_priority` | list | Ordered provider preference list. |
@@ -323,7 +325,7 @@ pools:
     provider_priority: [huggingface.inference.v1, openrouter.gateway.v1, openai.llm.v1]
 
   code-review:
-    hierarchy_node: generation.text-generation.code-generation
+    capability: generation.text-generation.code-generation
     strategy: modelmesh.priority-selection.v1
     model_priority: [gpt-4o, claude-sonnet-4]
     fallback_strategy: modelmesh.cost-first.v1
@@ -420,15 +422,9 @@ observability:
 
 Each routing decision records: requested capability, resolved pool, selected model/provider, delivery mode, replaced provider (if rotated), rotation reason, fallback chain, and routing latency.
 
-### Statistics API
+### Statistics API *(planned)*
 
-```python
-stats = mesh.stats()
-stats.provider("openai").requests_total   # 1,284
-stats.provider("openai").cost_total       # $4.27
-stats.model("gpt-4o").latency_p95         # 1.8s
-stats.pool("text-generation").rotation_events  # 7
-```
+> **Note:** The `mesh.stats()` API is planned for a future release. Statistics are currently available through the observability connector's raw output (JSONL records with `"type": "stats"`).
 
 See [ConnectorCatalogue.md — Observability](ConnectorCatalogue.html#observability-connectors) for pre-shipped connectors.
 
@@ -592,42 +588,44 @@ discovery:
 
 ## Runtime API
 
-Configuration can also be modified programmatically at runtime. The API mirrors the YAML structure.
+Configuration is loaded at initialization. The runtime API provides read-only introspection of the mesh state.
 
 ```python
-# Load from YAML
-mesh = ModelMesh.from_yaml("config.yaml")
+# Initialize with a configuration dict (typically loaded from YAML)
+import yaml
 
-# Runtime overrides
-mesh.pools["text-generation"].strategy = "modelmesh.latency-first.v1"
-mesh.add_provider("anthropic.llm.v1", api_key="${secrets:anthropic-key}")
+with open("config.yaml") as f:
+    config = yaml.safe_load(f)
 
-# Persist to storage
-mesh.save_config(connector="aws.s3.v1", bucket="my-configs", key="mesh.yaml")
+mesh.initialize(config)
 
-# Load from storage
-mesh = ModelMesh.from_storage(connector="aws.s3.v1", bucket="my-configs", key="mesh.yaml")
+# Introspect runtime state
+mesh.pool_status()       # Per-pool health and model counts
+mesh.active_providers()  # Currently active provider connectors
+mesh.list_pools()        # Configured pool names and capabilities
+mesh.list_models()       # All registered models with status
 ```
 
+> **Planned (not yet implemented):** `ModelMesh.from_yaml()`, `mesh.add_provider()`, `mesh.save_config()`, `ModelMesh.from_storage()`, `mesh.export_state()`, `mesh.import_state()`, `mesh.stats()`. These APIs are reserved for future releases.
+
 ### Custom Connectors
+
+Custom connectors are registered through the connector catalogue and referenced by ID in configuration. See [SystemConcept.md -- Connector-Based Extensibility](SystemConcept.html#connector-based-extensibility) and the [Connector Development Kit](cdk/Overview.html) for details.
 
 ```python
 # Provider
 class MyProvider(ProviderConnector):
     def complete(self, request): ...
     def check_quota(self): ...
-mesh.add_provider("my-provider", connector=MyProvider(...))
 
 # Secret store
 class VaultStore(SecretStore):
     def get(self, name): ...
-mesh = ModelMesh.from_yaml("config.yaml", secret_store=VaultStore(...))
 
 # Storage
 class PgStorage(StorageConnector):
     def load(self): ...
     def save(self, data): ...
-mesh.configure_state(connector=PgStorage(...), sync_policy="sync-on-boundary")
 ```
 
 ### Secrets CLI
@@ -638,13 +636,9 @@ modelmesh secrets import .env --store aws.secrets-manager.v1
 modelmesh secrets list --store aws.secrets-manager.v1
 ```
 
-### State Serialization
+### State Serialization *(planned)*
 
-```python
-snapshot = mesh.export_state()           # export
-save_to_database(snapshot)
-mesh.import_state(load_from_database())  # restore
-```
+> **Note:** `mesh.export_state()` and `mesh.import_state()` are planned for a future release. State persistence is currently handled automatically through the configured storage connector and sync policy.
 
 ### Routing Pipeline Example
 

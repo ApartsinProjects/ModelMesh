@@ -8,8 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/modelmesh-lite/"><img src="https://img.shields.io/pypi/v/modelmesh-lite?color=blue" alt="PyPI"></a>
-  <a href="https://pypi.org/project/modelmesh-lite/"><img src="https://img.shields.io/pypi/pyversions/modelmesh-lite" alt="Python"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-579%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
@@ -86,7 +85,7 @@ Add more API keys -- ModelMesh chains them automatically:
 ```bash
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
-export GEMINI_API_KEY="AI..."
+export GOOGLE_API_KEY="AI..."
 ```
 
 ```python

@@ -16,15 +16,15 @@ import {
 
 function main(): void {
     const policy = new ThresholdRotationPolicy({
-        retryLimit: 5,
+        failureThreshold: 5,
         errorRateThreshold: 0.3,
         cooldownSeconds: 120,
     });
 
-    const healthy = mockModelSnapshot({ failureCount: 0, errorRate: 0.0 });
+    const healthy = mockModelSnapshot({ failureCount: 0 });
     console.log(`Healthy model deactivate? ${policy.shouldDeactivate(healthy)}`);  // false
 
-    const failing = mockModelSnapshot({ failureCount: 6, errorRate: 0.8 });
+    const failing = mockModelSnapshot({ failureCount: 6 });
     console.log(`Failing model deactivate? ${policy.shouldDeactivate(failing)}`);  // true
     console.log(`Reason: ${policy.getReason(failing)}`);  // ERROR_THRESHOLD
 }

@@ -11,6 +11,8 @@ title: "Connector Catalogue"
 
 > Pricing and availability change frequently; consult each provider's documentation for current details.
 
+> **Connector ID format:** Connector IDs shown below use the short form used in YAML configuration. The fully-qualified form adds a type prefix (e.g., `provider.openai.llm.v1`) but this prefix is optional and typically omitted.
+
 ---
 
 ## Naming Convention
@@ -61,7 +63,7 @@ ModelInfo(
 )
 ```
 
-The provider-level `capabilities` config follows the same convention. For example, both `provider.openai.llm.v1` and `provider.anthropic.llm.v1` declare `capabilities=["generation.text-generation.chat-completion"]` instead of the former `["chat"]`.
+The provider-level `capabilities` config follows the same convention. For example, both `provider.openai.llm.v1` and `anthropic.claude.v1` declare `capabilities=["generation.text-generation.chat-completion"]` instead of the former `["chat"]`.
 
 > **Auto-discovery of model capabilities:** When a model defined in configuration does not declare `capabilities`, ModelMesh queries the provider connector's `list_models()` method to resolve them automatically. If the provider returns per-model capability information, those capabilities are used. Otherwise, the provider-level `get_capabilities()` is used as a fallback. This means most configurations only need to specify a provider and model ID; capabilities are inferred from the connector.
 
@@ -99,7 +101,7 @@ pools:
 | Provider | ID | Description | Key Models | Free Tier | Docs |
 | --- | --- | --- | --- | --- | --- |
 | **OpenAI** | `provider.openai.llm.v1` | Full-stack AI platform. Broadest capability set of any single provider. | GPT-4o, GPT-4.1, GPT-4.1 mini/nano, o3, o3-mini, o4-mini, DALL-E 3, Whisper, TTS-1, text-embedding-3-small/large, text-moderation-latest | Moderation API free; $5 initial credits | [developers.openai.com/api](https://developers.openai.com/api) |
-| **Anthropic** | `provider.anthropic.llm.v1` | Safety-focused LLM provider. Strong at reasoning, code, and long-context tasks. | Claude Opus 4, Claude Sonnet 4, Claude 3.7 Sonnet, Claude 3.5 Haiku, Claude 3.5 Sonnet | ~30-100 messages/day (no Opus); 90% cached token discount | [docs.anthropic.com](https://docs.anthropic.com) |
+| **Anthropic** | `anthropic.claude.v1` | Safety-focused LLM provider. Strong at reasoning, code, and long-context tasks. | Claude Opus 4, Claude Sonnet 4, Claude 3.7 Sonnet, Claude 3.5 Haiku, Claude 3.5 Sonnet | ~30-100 messages/day (no Opus); 90% cached token discount | [docs.anthropic.com](https://docs.anthropic.com) |
 | **Google Gemini** | `provider.google.gemini.v1` | Google's multimodal AI family. Largest context windows (up to 1M tokens). | Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.0 Flash, Gemini 2.0 Flash Lite, Gemini 1.5 Pro/Flash | Generous rate-limited tier; no credit card required; 1M context included | [ai.google.dev/gemini-api](https://ai.google.dev/gemini-api) |
 | **xAI (Grok)** | `provider.xai.grok.v1` | High-performance models with real-time data access via X integration. | Grok 3, Grok 3 Mini, Grok 3 Fast, Grok 2, Grok 2 Vision | $25 signup credits; $150/month via data sharing | [docs.x.ai/developers](https://docs.x.ai/developers) |
 | **DeepSeek** | `provider.deepseek.llm.v1` | Ultra-low-cost reasoning and chat. Strongest price-to-performance ratio. | DeepSeek Chat, DeepSeek Reasoner | 5M tokens for new accounts (30-day expiry); off-peak 75% discount | [api-docs.deepseek.com](https://api-docs.deepseek.com) |
@@ -217,6 +219,8 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | **`secret-store.google.secret-manager.v1`** | Google Cloud managed secrets with IAM and audit logging | 6 active versions free; 10K access ops/month free | [cloud.google.com/secret-manager](https://cloud.google.com/secret-manager) |
 | **`secret-store.microsoft.key-vault.v1`** | Microsoft cloud secret, key, and certificate management | 10K operations/month free (Standard tier) | [azure.microsoft.com/en-us/products/key-vault](https://azure.microsoft.com/en-us/products/key-vault) |
 | **`secret-store.1password.connect.v1`** | Secrets Automation API for CI/CD and server-side use | No free API tier; requires Business or Enterprise plan | [developer.1password.com](https://developer.1password.com) |
+| **`secret-store.modelmesh.json-secrets.v1`** | Reads secrets from a local JSON file. Keys are top-level object keys; values are strings. | Built-in | - |
+| **`secret-store.modelmesh.keyring.v1`** | Resolves secrets from the OS keyring (macOS Keychain, Windows Credential Locker, Linux Secret Service). | Built-in | - |
 
 ### Connector-Specific Configuration
 
@@ -257,6 +261,18 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | `vault_id` | string | Vault UUID to resolve secrets from. |
 | `token` | string | Connect server token (or secret reference). |
 
+**`secret-store.modelmesh.json-secrets.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `path` | string | Path to the JSON secrets file. Default: `./secrets.json`. |
+
+**`secret-store.modelmesh.keyring.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `service_name` | string | Keyring service/application name. Default: `modelmesh`. |
+
 ### Deployment Patterns
 
 | Environment | Recommended Store | Reason |
@@ -279,6 +295,8 @@ Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage
 | **`storage.aws.s3.v1`** | AWS S3 | conditional writes | 5 GB, 20K GET, 2K PUT/month (12 months) | multi-instance, serverless | [aws.amazon.com/s3](https://aws.amazon.com/s3) |
 | **`storage.google.drive.v1`** | Google Drive | revision-based | 15 GB free (shared across Google services) | shared team state, client-side apps | [developers.google.com/drive](https://developers.google.com/drive) |
 | **`storage.redis.redis.v1`** | Redis | atomic operations | Redis Cloud 30 MB free; self-hosted open-source | low-latency multi-instance sync | [redis.io](https://redis.io) |
+| **`storage.modelmesh.sqlite.v1`** | SQLite | single-process only | Built-in | structured local storage, queryable state | - |
+| **`storage.modelmesh.memory.v1`** | in-memory | single-process only | Built-in | testing, ephemeral workloads, no persistence | - |
 
 ### Connector-Specific Configuration
 
@@ -318,6 +336,17 @@ Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage
 | `key_prefix` | string | Key namespace prefix (e.g., `modelmesh:`). |
 | `ttl` | duration | Expiration for stored entries. Default: none. |
 
+**`storage.modelmesh.sqlite.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `path` | string | Path to the SQLite database file (e.g., `./mesh-state.db`). |
+| `table` | string | Table name for state data. Default: `modelmesh_state`. |
+
+**`storage.modelmesh.memory.v1`:**
+
+No configuration parameters. All data is held in-memory and lost on process exit. Useful for testing and ephemeral workloads.
+
 ---
 
 ## Observability Connectors
@@ -346,6 +375,8 @@ All trace entries carry a severity level. The `min_severity` configuration optio
 | **`observability.modelmesh.console.v1`** | stdout | ANSI-colored console output for development and debugging. Color-codes events by type and traces by severity. |
 | **`observability.modelmesh.file.v1`** | JSONL file | Appends structured JSON-Lines records to a local file. Suitable for development, log aggregation, and single-instance deploys. |
 | **`observability.modelmesh.webhook.v1`** | HTTP POST | Sends routing events and logs to a configurable URL. Use for alerting, dashboards, or external log aggregation. |
+| **`observability.modelmesh.json-log.v1`** | JSONL file | Appends JSON Lines records to a file. Each line is a self-contained JSON object with type, timestamp, and payload. Optimized for log aggregation pipelines. |
+| **`observability.modelmesh.callback.v1`** | Python callback | Invokes a user-supplied Python callable for each event. Useful for custom integrations, in-process dashboards, and testing. |
 
 ### Connector-Specific Configuration
 
@@ -382,6 +413,21 @@ All trace entries carry a severity level. The `min_severity` configuration optio
 | `timeout` | duration | Request timeout (e.g., `10s`). |
 | `retry_count` | integer | Retries on delivery failure. Default: `3`. |
 | `batch_size` | integer | Events to buffer before sending. Default: `1` (immediate). |
+
+**`observability.modelmesh.json-log.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | string | Output JSONL file path. Default: `modelmesh-events.jsonl`. |
+| `min_severity` | string | Minimum severity for trace output. Default: `info`. |
+| `append` | boolean | Append to existing file (vs overwrite). Default: `true`. |
+
+**`observability.modelmesh.callback.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `callback` | callable | Python callable invoked with each event dict. |
+| `min_severity` | string | Minimum severity for trace output. Default: `info`. |
 
 ### Trace Record Format
 

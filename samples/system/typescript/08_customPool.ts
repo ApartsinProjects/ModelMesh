@@ -154,7 +154,6 @@ async function main(): Promise<void> {
   console.log("Models: GPT-4o (128K), Claude Sonnet 4 (200K), Gemini 2.5 Pro (1M)\n");
 
   const client = mesh.getClient();
-  const router = mesh.getRouter();
 
   // -----------------------------------------------------------------------
   // 3. Route to the long-context pool
@@ -198,28 +197,16 @@ async function main(): Promise<void> {
   console.log(`Response: ${(standardResponse.choices[0] as any).message.content}\n`);
 
   // -----------------------------------------------------------------------
-  // 5. Use the Router API directly for routing introspection
+  // 5. List all pools and their membership
   // -----------------------------------------------------------------------
-  console.log("--- Routing Introspection ---\n");
-
-  const decision = router.route("long-context-analysis");
-  console.log(`Resolved model   : ${decision.modelId}`);
-  console.log(`Resolved provider: ${decision.providerId}`);
-  console.log(`Pool             : ${decision.poolId}`);
-  console.log(`Score            : ${decision.score}`);
-  console.log(`Fallback chain   : [${decision.fallbackChain.join(", ")}]`);
-
-  // -----------------------------------------------------------------------
-  // 6. List all pools and their membership
-  // -----------------------------------------------------------------------
-  console.log("\n--- All Pools ---");
-  const pools = router.listPools();
+  console.log("--- All Pools ---");
+  const pools = mesh.listPools();
   for (const pool of pools) {
     console.log(`  Pool: ${pool}`);
   }
 
   // -----------------------------------------------------------------------
-  // 7. Shut down
+  // 6. Shut down
   // -----------------------------------------------------------------------
   await mesh.shutdown();
   console.log("\nModelMesh shut down.");

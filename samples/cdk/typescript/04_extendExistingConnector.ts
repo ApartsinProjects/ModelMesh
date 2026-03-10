@@ -93,7 +93,7 @@ async function main(): Promise<void> {
 
     // Verify inherited capabilities still work
     console.log(`Capabilities: ${provider.getCapabilities()}`);
-    console.log(`Supports tools? ${provider.supports("tools")}`);
+    console.log(`Supports chat? ${provider.supports("generation.text-generation.chat-completion")}`);
 
     const models: ModelInfo[] = await provider.listModels();
     console.log(`Models: ${JSON.stringify(models.map(m => m.id))}`);

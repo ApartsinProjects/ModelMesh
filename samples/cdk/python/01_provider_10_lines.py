@@ -36,8 +36,8 @@ async def main() -> None:
                 context_window=128_000,
                 max_output_tokens=16_384,
                 pricing=ModelPricing(
-                    input_per_token=0.0000025,
-                    output_per_token=0.00001,
+                    input_per_1k_tokens=0.0025,
+                    output_per_1k_tokens=0.01,
                 ),
             ),
         ],
@@ -47,7 +47,7 @@ async def main() -> None:
     print(f"Capabilities: {provider.get_capabilities()}")
     print(f"Supports chat? {provider.supports('generation.text-generation.chat-completion')}")
 
-    models = await provider.list_models()
+    models = provider.list_models()
     for model in models:
         print(f"Model: {model.id} ({model.name}), context: {model.context_window}")
 
@@ -73,12 +73,12 @@ async def main() -> None:
           f"total={response.usage.total_tokens}")
 
     # -- Step 5: Check quota after usage --
-    quota = await provider.check_quota()
+    quota = provider.check_quota()
     print(f"\nRequests used: {quota.used}")
 
-    pricing = await provider.get_pricing("gpt-4o")
-    print(f"Pricing: ${pricing.input_per_token}/input token, "
-          f"${pricing.output_per_token}/output token")
+    pricing = provider.get_pricing("gpt-4o")
+    print(f"Pricing: ${pricing.input_per_1k_tokens}/1k input tokens, "
+          f"${pricing.output_per_1k_tokens}/1k output tokens")
 
     await provider.close()
 

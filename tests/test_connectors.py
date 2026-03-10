@@ -202,7 +202,7 @@ class TestConnectorRegistry(unittest.TestCase):
     """Test the connector registry."""
 
     def test_has_expected_connectors(self):
-        self.assertEqual(len(CONNECTOR_REGISTRY), 16)
+        self.assertEqual(len(CONNECTOR_REGISTRY), 31)
 
     def test_all_have_connector_id(self):
         for connector_id, cls in CONNECTOR_REGISTRY.items():

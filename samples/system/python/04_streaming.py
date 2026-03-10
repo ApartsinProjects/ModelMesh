@@ -118,7 +118,7 @@ async def main() -> None:
     # The streaming response is an async iterator of CompletionResponse chunks.
     # Each chunk contains partial content that can be printed immediately.
     full_text = ""
-    async for chunk in response_stream:
+    for chunk in response_stream:
         if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
             token = chunk.choices[0].delta.content
             print(token, end="", flush=True)
@@ -143,7 +143,7 @@ async def main() -> None:
         stream=True,
     )
 
-    async for chunk in response_stream:
+    for chunk in response_stream:
         chunk_count += 1
         if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
             print(chunk.choices[0].delta.content, end="", flush=True)

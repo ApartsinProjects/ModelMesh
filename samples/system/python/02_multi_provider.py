@@ -127,9 +127,8 @@ async def main() -> None:
         print(f"Model    : {response.model}")
         print(f"Answer   : {response.choices[0].message.content}")
 
-    # Demonstrate explicit routing inspection through the Router.
-    router = mesh.get_router()
-    pools = router.list_pools()
+    # Demonstrate explicit routing inspection through the mesh.
+    pools = mesh.list_pools()
     print(f"\n--- Pool status ---")
     for pool in pools:
         print(f"  Pool: {pool}")

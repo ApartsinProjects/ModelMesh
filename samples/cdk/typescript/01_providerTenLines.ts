@@ -36,8 +36,8 @@ async function main(): Promise<void> {
                 context_window: 128_000,
                 max_output_tokens: 16_384,
                 pricing: {
-                    input_per_token: 0.0000025,
-                    output_per_token: 0.00001,
+                    input_per_1k_tokens: 0.0025,
+                    output_per_1k_tokens: 0.01,
                 },
             },
         ],
@@ -81,8 +81,8 @@ async function main(): Promise<void> {
 
     const pricing: ModelPricing = await provider.getPricing("gpt-4o");
     console.log(
-        `Pricing: $${pricing.input_per_token}/input token, ` +
-        `$${pricing.output_per_token}/output token`
+        `Pricing: $${pricing.input_per_1k_tokens}/1k input tokens, ` +
+        `$${pricing.output_per_1k_tokens}/1k output tokens`
     );
 
     await provider.close();

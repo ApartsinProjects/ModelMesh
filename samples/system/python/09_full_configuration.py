@@ -369,7 +369,7 @@ async def main() -> None:
 
     # Pool: text-embeddings (stick-until-failure)
     print("\n--- Pool: text-embeddings (stick-until-failure) ---\n")
-    emb_response = await client.embeddings.create(
+    emb_response = client.embeddings.create(
         model="text-embeddings",
         input="Full configuration example.",
     )
