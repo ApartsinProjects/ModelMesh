@@ -125,7 +125,7 @@ ModelMesh ships with a `py.typed` marker (PEP 561) for full type checking suppor
 ### Install
 
 ```bash
-npm install @modelmesh/core
+npm install @nistrapa/modelmesh-core
 ```
 
 For development from source:
@@ -140,7 +140,7 @@ npm test         # run tests
 ### Layer 0 — Zero Config
 
 ```typescript
-import { create } from '@modelmesh/core';
+import { create } from '@nistrapa/modelmesh-core';
 
 const client = create('chat-completion');
 
@@ -163,7 +163,7 @@ const client = create('chat-completion', {
 ### Layer 2 — Full Config
 
 ```typescript
-import { create } from '@modelmesh/core';
+import { create } from '@nistrapa/modelmesh-core';
 
 const client = create({ config: 'modelmesh.json' });
 ```
@@ -171,10 +171,10 @@ const client = create({ config: 'modelmesh.json' });
 ### Package Exports
 
 ```typescript
-import { create, ModelMesh, MeshClient, MeshConfig } from '@modelmesh/core';
+import { create, ModelMesh, MeshClient, MeshConfig } from '@nistrapa/modelmesh-core';
 
 // Browser-specific provider base class (for frontend apps)
-import { BrowserBaseProvider } from '@modelmesh/core/browser';
+import { BrowserBaseProvider } from '@nistrapa/modelmesh-core/browser';
 ```
 
 ---
@@ -187,7 +187,7 @@ For frontend applications that call AI APIs directly from the browser (through a
 
 Same npm package:
 ```bash
-npm install @modelmesh/core
+npm install @nistrapa/modelmesh-core
 ```
 
 ### Usage with ModelMesh Proxy
@@ -243,7 +243,7 @@ while (true) {
 For building custom browser-compatible AI providers:
 
 ```typescript
-import { BrowserBaseProvider, createBrowserProviderConfig } from '@modelmesh/core/browser';
+import { BrowserBaseProvider, createBrowserProviderConfig } from '@nistrapa/modelmesh-core/browser';
 
 class MyProvider extends BrowserBaseProvider {
   protected _getCompletionEndpoint(): string {
@@ -517,7 +517,7 @@ assert "works" in response.choices[0].message.content.lower()
 
 ```typescript
 // TypeScript
-import { create } from '@modelmesh/core';
+import { create } from '@nistrapa/modelmesh-core';
 const client = create('chat-completion');
 const response = await client.chat.completions.create({
   model: 'chat-completion',

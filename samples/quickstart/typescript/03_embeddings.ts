@@ -17,7 +17,7 @@
  *     (e.g., OPENAI_API_KEY).
  */
 
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 // Create a client for the "text-embeddings" capability.
 const client = create("text-embeddings");

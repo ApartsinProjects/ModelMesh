@@ -27,7 +27,7 @@
  */
 
 // @ts-nocheck -- LangChain dependencies are optional; skip type checking
-import { ModelMesh, MeshConfig } from "@modelmesh/core";
+import { ModelMesh, MeshConfig } from "@nistrapa/modelmesh-core";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";

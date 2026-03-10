@@ -26,7 +26,7 @@ Works when:
 - You're in a non-browser runtime (Node.js, Deno, Bun, Workers)
 
 ```typescript
-import { BrowserBaseProvider, createBrowserProviderConfig } from '@modelmesh/core';
+import { BrowserBaseProvider, createBrowserProviderConfig } from '@nistrapa/modelmesh-core';
 
 const provider = new BrowserBaseProvider(createBrowserProviderConfig({
   baseUrl: 'https://api.openai.com',
@@ -127,7 +127,7 @@ import {
   BrowserSecretStore,
   // Runtime metadata
   RuntimeEnvironment,
-} from '@modelmesh/core/browser';
+} from '@nistrapa/modelmesh-core/browser';
 ```
 
 The browser entry point excludes: `ProxyServer`, `MeshConfig.fromFile()`, `FileSecretStore`, `HttpHealthDiscovery`, `KeyValueStorage` (file backend), and all Node.js-dependent connectors (providers using `http`/`https`, file-based storage, env/dotenv/json/encrypted/keyring secret stores).
@@ -232,7 +232,7 @@ ModelMesh provides three persistent storage connectors for browser environments,
 Persists state across page reloads and browser restarts. Subject to ~5-10 MB limit per origin.
 
 ```typescript
-import { LocalStorageStorage } from '@modelmesh/core/browser';
+import { LocalStorageStorage } from '@nistrapa/modelmesh-core/browser';
 
 const storage = new LocalStorageStorage({ prefix: 'myapp:' });
 await storage.save('model-state', {
@@ -248,7 +248,7 @@ const entry = await storage.load('model-state');
 Identical API to localStorage, but data is cleared when the browser tab closes. Useful for ephemeral per-session state.
 
 ```typescript
-import { SessionStorageStorage } from '@modelmesh/core/browser';
+import { SessionStorageStorage } from '@nistrapa/modelmesh-core/browser';
 
 const storage = new SessionStorageStorage({ prefix: 'session:' });
 ```
@@ -258,7 +258,7 @@ const storage = new SessionStorageStorage({ prefix: 'session:' });
 Natively async storage with no practical size limit. Stores binary data directly (no base64 overhead). Recommended for apps with large state.
 
 ```typescript
-import { IndexedDBStorage } from '@modelmesh/core/browser';
+import { IndexedDBStorage } from '@nistrapa/modelmesh-core/browser';
 
 const storage = new IndexedDBStorage({
   dbName: 'myapp',
@@ -279,7 +279,7 @@ storage.close();
 Persists API keys and secrets in localStorage. Supports the full `SecretManagement` interface.
 
 ```typescript
-import { BrowserSecretStore } from '@modelmesh/core/browser';
+import { BrowserSecretStore } from '@nistrapa/modelmesh-core/browser';
 
 const secrets = new BrowserSecretStore({
   prefix: 'myapp-secrets:',
@@ -322,7 +322,7 @@ Every TypeScript connector class declares a `static readonly RUNTIME` property u
 Use `detectRuntime()` and `assertRuntimeCompatible()` to validate connector compatibility:
 
 ```typescript
-import { detectRuntime, assertRuntimeCompatible, RuntimeEnvironment } from '@modelmesh/core';
+import { detectRuntime, assertRuntimeCompatible, RuntimeEnvironment } from '@nistrapa/modelmesh-core';
 
 // Check current environment
 const env = detectRuntime(); // 'node' or 'browser'

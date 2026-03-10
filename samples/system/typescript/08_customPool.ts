@@ -19,7 +19,7 @@
  *     environment variables
  */
 
-import { ModelMesh, MeshConfig, CompletionResponse } from "@modelmesh/core";
+import { ModelMesh, MeshConfig, CompletionResponse } from "@nistrapa/modelmesh-core";
 
 async function main(): Promise<void> {
   // -----------------------------------------------------------------------

@@ -16,7 +16,7 @@ import {
     HttpError,
     ModelInfo,
     createDefaultModelInfo,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 /**
  * Provider with custom error classification logic.

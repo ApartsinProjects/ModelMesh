@@ -9,7 +9,7 @@
  * implementation.
  */
 
-import { StorageEntry } from "@modelmesh/core";
+import { StorageEntry } from "@nistrapa/modelmesh-core";
 
 /**
  * Minimal in-memory storage for demonstration purposes.

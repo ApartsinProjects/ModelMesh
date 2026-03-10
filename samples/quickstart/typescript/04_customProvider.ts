@@ -15,7 +15,7 @@ import {
   CompletionResponse,
   OpenAICompatibleProvider,
   createDefaultModelInfo,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 // OpenAICompatibleProvider: baseUrl + apiKey + model catalogue
 const provider = new OpenAICompatibleProvider({

@@ -18,6 +18,6 @@ fi
 
 npm install
 echo ""
-echo "Installed @modelmesh/core and dev dependencies."
+echo "Installed @nistrapa/modelmesh-core and dev dependencies."
 echo "Run tests:  npm test"
 echo "Build:      npm run build (if configured)"

@@ -247,7 +247,7 @@ Both classes expose the same provider interface and the same protected hooks for
 Every TypeScript connector class declares a `static readonly RUNTIME` property indicating browser/Node.js compatibility. This enables build-time tree-shaking and runtime compatibility checks.
 
 ```typescript
-import { RuntimeEnvironment } from '@modelmesh/core';
+import { RuntimeEnvironment } from '@nistrapa/modelmesh-core';
 
 // Check a connector's runtime requirement
 console.log(OllamaProvider.RUNTIME);        // 'node'
@@ -261,10 +261,10 @@ console.log(MemoryStorage.RUNTIME);          // 'universal'
 | `'browser'` | `RuntimeEnvironment.BROWSER_ONLY` | Browser (window + document) | localStorage/sessionStorage/IndexedDB storage, BrowserSecretStore |
 | `'universal'` | `RuntimeEnvironment.UNIVERSAL` | Any JavaScript runtime | MemoryStorage, MemorySecretStore, BrowserBaseProvider, all rotation policies, ConsoleObservability |
 
-**Runtime Guard** (`detectRuntime()`, `assertRuntimeCompatible()`): Detects the current environment at runtime and throws a descriptive error if a connector is used in an incompatible environment. Available from `@modelmesh/core`:
+**Runtime Guard** (`detectRuntime()`, `assertRuntimeCompatible()`): Detects the current environment at runtime and throws a descriptive error if a connector is used in an incompatible environment. Available from `@nistrapa/modelmesh-core`:
 
 ```typescript
-import { detectRuntime, assertRuntimeCompatible } from '@modelmesh/core';
+import { detectRuntime, assertRuntimeCompatible } from '@nistrapa/modelmesh-core';
 
 const runtime = detectRuntime(); // 'node' or 'browser'
 assertRuntimeCompatible('modelmesh.localstorage.v1', RuntimeEnvironment.BROWSER_ONLY);

@@ -12,7 +12,7 @@ import {
     ModelInfo,
     createDefaultModelInfo,
     createDefaultCompletionRequest,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 async function main(): Promise<void> {
     const provider = new OpenAICompatibleProvider({

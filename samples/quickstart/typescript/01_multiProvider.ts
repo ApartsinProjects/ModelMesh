@@ -17,7 +17,7 @@
  *   - Set OPENAI_API_KEY and ANTHROPIC_API_KEY environment variables.
  */
 
-import { create, CompletionResponse } from "@modelmesh/core";
+import { create, CompletionResponse } from "@nistrapa/modelmesh-core";
 
 // Create a client with two capabilities across two providers.
 // "cost-first" picks the cheapest available model for each request.

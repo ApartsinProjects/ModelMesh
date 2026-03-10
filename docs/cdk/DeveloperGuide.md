@@ -56,7 +56,7 @@ print(response.choices[0].message.content)
 ### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create("chat-completion");
 
@@ -135,7 +135,7 @@ print(f"Embedding dimension: {len(embeddings.data[0].embedding)}")
 ### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create(
     "chat-completion", "text-embeddings",
@@ -255,8 +255,8 @@ asyncio.run(main())
 import {
     OpenAICompatibleProvider,
     BaseProviderConfig,
-} from "@modelmesh/core/cdk";
-import { CompletionRequest, ModelInfo } from "@modelmesh/core/interfaces/provider";
+} from "@nistrapa/modelmesh-core/cdk";
+import { CompletionRequest, ModelInfo } from "@nistrapa/modelmesh-core/interfaces/provider";
 
 // 1. Configure -- this is the entire "connector"
 const config: BaseProviderConfig = {
@@ -402,12 +402,12 @@ class InternalMLError(Exception):
 ### TypeScript
 
 ```typescript
-import { BaseProvider, BaseProviderConfig } from "@modelmesh/core/cdk";
+import { BaseProvider, BaseProviderConfig } from "@nistrapa/modelmesh-core/cdk";
 import {
     CompletionResponse,
     ErrorClassificationResult,
     TokenUsage,
-} from "@modelmesh/core/interfaces/provider";
+} from "@nistrapa/modelmesh-core/interfaces/provider";
 
 /** Error returned inside a 200 response from the internal ML API. */
 class InternalMLError extends Error {
@@ -600,13 +600,13 @@ policy = TimeOfDayRotationPolicy(TimeOfDayPolicyConfig(
 import {
     BaseRotationPolicy,
     BaseRotationPolicyConfig,
-} from "@modelmesh/core/cdk";
+} from "@nistrapa/modelmesh-core/cdk";
 import {
     CompletionRequest,
     DeactivationReason,
     ModelSnapshot,
     SelectionResult,
-} from "@modelmesh/core/interfaces/rotation_policy";
+} from "@nistrapa/modelmesh-core/interfaces/rotation_policy";
 
 /** Extended config with maintenance windows and cost tiers. */
 interface TimeOfDayPolicyConfig extends BaseRotationPolicyConfig {
@@ -796,8 +796,8 @@ provider = AzureOpenAIProvider(AzureOpenAIConfig(
 ### TypeScript
 
 ```typescript
-import { OpenAIProvider } from "@modelmesh/core/connectors/openai";
-import { BaseProviderConfig } from "@modelmesh/core/cdk";
+import { OpenAIProvider } from "@nistrapa/modelmesh-core/connectors/openai";
+import { BaseProviderConfig } from "@nistrapa/modelmesh-core/cdk";
 
 /** Configuration specific to Azure OpenAI deployments. */
 interface AzureOpenAIConfig {
@@ -1031,10 +1031,10 @@ import {
     BaseStorage, BaseStorageConfig,
     BaseObservability, BaseObservabilityConfig,
     BaseDiscovery, BaseDiscoveryConfig,
-} from "@modelmesh/core/cdk";
-import { CompletionRequest, CompletionResponse, TokenUsage } from "@modelmesh/core/interfaces/provider";
-import { ModelSnapshot, CompletionRequest as RotationRequest } from "@modelmesh/core/interfaces/rotation_policy";
-import { ProbeResult } from "@modelmesh/core/interfaces/discovery";
+} from "@nistrapa/modelmesh-core/cdk";
+import { CompletionRequest, CompletionResponse, TokenUsage } from "@nistrapa/modelmesh-core/interfaces/provider";
+import { ModelSnapshot, CompletionRequest as RotationRequest } from "@nistrapa/modelmesh-core/interfaces/rotation_policy";
+import { ProbeResult } from "@nistrapa/modelmesh-core/interfaces/discovery";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -1414,19 +1414,19 @@ asyncio.run(main())
 import {
     BaseProvider,
     BaseProviderConfig,
-} from "@modelmesh/core/cdk";
+} from "@nistrapa/modelmesh-core/cdk";
 import {
     ConnectorTestHarness,
     MockHttpClient,
     mockCompletionRequest,
     mockModelSnapshot,
-} from "@modelmesh/core/cdk/helpers";
+} from "@nistrapa/modelmesh-core/cdk/helpers";
 import {
     CompletionRequest,
     CompletionResponse,
     ModelInfo,
     TokenUsage,
-} from "@modelmesh/core/interfaces/provider";
+} from "@nistrapa/modelmesh-core/interfaces/provider";
 
 // ── The provider under test ──────────────────────────────────────
 
@@ -1653,7 +1653,7 @@ print(response.choices[0].message.content)
 #### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create("chat-completion");
 const response = await client.chat.completions.create({
@@ -1706,7 +1706,7 @@ while True:
 #### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 import * as readline from "readline";
 
 const client = create("chat-completion");
@@ -1764,7 +1764,7 @@ while True:
 #### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 import * as readline from "readline";
 
 const client = create("chat-completion");
@@ -1839,7 +1839,7 @@ while True:
 #### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 import * as readline from "readline";
 
 const client = create("chat-completion");
@@ -1931,7 +1931,7 @@ while True:
 #### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 import * as readline from "readline";
 
 const client = create("chat-completion");
@@ -2012,7 +2012,7 @@ You have built a fully interactive AI chatbot with streaming, a custom personali
 **Step 1: Create a custom browser provider**
 
 ```typescript
-import { BrowserBaseProvider, createBrowserProviderConfig } from '@modelmesh/core/browser';
+import { BrowserBaseProvider, createBrowserProviderConfig } from '@nistrapa/modelmesh-core/browser';
 
 class MyBrowserProvider extends BrowserBaseProvider {
     _buildHeaders() {
@@ -2037,7 +2037,7 @@ const provider = new MyBrowserProvider(createBrowserProviderConfig({
 **Step 2: Use with createBrowser()**
 
 ```typescript
-import { createBrowser } from '@modelmesh/core/browser';
+import { createBrowser } from '@nistrapa/modelmesh-core/browser';
 
 const client = createBrowser({
     providers: {

@@ -24,7 +24,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 // ---------------------------------------------------------------------------
-// Types imported from @modelmesh/core (reproduced here for self-containment)
+// Types imported from @nistrapa/modelmesh-core (reproduced here for self-containment)
 // ---------------------------------------------------------------------------
 
 /** A resolved secret with optional version and expiration metadata. */

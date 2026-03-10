@@ -45,13 +45,13 @@ dependencies = ["modelmesh-lite>=0.1.0"]
 ## TypeScript Installation
 
 ```bash
-npm install @modelmesh/core
+npm install @nistrapa/modelmesh-core
 ```
 
 Or with yarn/pnpm:
 ```bash
-yarn add @modelmesh/core
-pnpm add @modelmesh/core
+yarn add @nistrapa/modelmesh-core
+pnpm add @nistrapa/modelmesh-core
 ```
 
 ## Docker Installation
@@ -87,7 +87,7 @@ print(modelmesh.__name__)  # "modelmesh"
 
 **TypeScript:**
 ```typescript
-import { create } from '@modelmesh/core';
+import { create } from '@nistrapa/modelmesh-core';
 console.log(typeof create);  // "function"
 ```
 

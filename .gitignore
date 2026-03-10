@@ -42,3 +42,8 @@ jest-out.json
 # Package
 *.whl
 *.tar.gz
+
+# Secrets & tokens
+.npmrc
+.pypirc
+.secrets

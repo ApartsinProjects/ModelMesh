@@ -19,7 +19,7 @@
  */
 
 import * as readline from "readline";
-import { create, CompletionResponse } from "@modelmesh/core";
+import { create, CompletionResponse } from "@nistrapa/modelmesh-core";
 
 // --- Step 1: Create a client ---
 // This one line sets everything up.  ModelMesh finds your API key

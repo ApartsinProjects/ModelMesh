@@ -58,7 +58,7 @@ print(response.choices[0].message.content)
 
 | | OpenAI SDK | ModelMesh Lite |
 | --- | --- | --- |
-| **Import** | `import OpenAI from "openai"` | `import { create } from "@modelmesh/core"` |
+| **Import** | `import OpenAI from "openai"` | `import { create } from "@nistrapa/modelmesh-core"` |
 | **Create** | `new OpenAI()` | `create("chat-completion")` |
 | **Model** | `model: "gpt-4o"` | `model: "chat-completion"` |
 
@@ -73,7 +73,7 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);
 
 // ModelMesh Lite -- same interface, capability-driven
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 const client = create("chat-completion");
 const response = await client.chat.completions.create({
     model: "chat-completion",
@@ -556,7 +556,7 @@ print(response.choices[0].message.content)
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create("chat-completion");
 
@@ -600,7 +600,7 @@ emb = client.embeddings.create(
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create(
     "chat-completion", "text-embeddings",
@@ -645,7 +645,7 @@ response = client.chat.completions.create(
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create({ pool: "text-generation" });
 
@@ -698,7 +698,7 @@ client = create(config=cfg)
 **TypeScript:**
 
 ```typescript
-import { create, MeshConfig } from "@modelmesh/core";
+import { create, MeshConfig } from "@nistrapa/modelmesh-core";
 
 // From a YAML file
 const client1 = create({ config: "modelmesh.yaml" });
@@ -760,7 +760,7 @@ client = create("chat-completion", config={
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 // With file logging
 const client = create("chat-completion", {
@@ -829,7 +829,7 @@ client = create(
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create("chat-completion", {
     apiKeys: {
@@ -870,7 +870,7 @@ provider = QuickProvider(
 **TypeScript:**
 
 ```typescript
-import { QuickProvider } from "@modelmesh/core";
+import { QuickProvider } from "@nistrapa/modelmesh-core";
 
 const provider = new QuickProvider({
     baseUrl: "https://api.example.com",
@@ -920,8 +920,8 @@ client = create(config={
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
-import { QuickProvider } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
+import { QuickProvider } from "@nistrapa/modelmesh-core";
 
 const custom = new QuickProvider({
     baseUrl: "https://my-llm-gateway.internal/v1",
@@ -982,7 +982,7 @@ graph.add_node("llm", llm)
 **TypeScript:**
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 import { ChatOpenAI } from "@langchain/openai";
 
 // Create a ModelMesh client

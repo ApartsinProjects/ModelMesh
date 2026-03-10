@@ -213,7 +213,7 @@ Most AI provider APIs do not send CORS headers, so browsers block direct request
 
 ### Browser Entry Point
 
-For bundlers (Webpack, Vite, esbuild), import from `@modelmesh/core/browser` to exclude Node.js-dependent modules (`ProxyServer`, `FileSecretStore`, `HttpHealthDiscovery`, file-backed `KeyValueStorage`). The `createBrowser()` convenience function provides a browser-optimized equivalent of `modelmesh.create()`.
+For bundlers (Webpack, Vite, esbuild), import from `@nistrapa/modelmesh-core/browser` to exclude Node.js-dependent modules (`ProxyServer`, `FileSecretStore`, `HttpHealthDiscovery`, file-backed `KeyValueStorage`). The `createBrowser()` convenience function provides a browser-optimized equivalent of `modelmesh.create()`.
 
 Full browser usage guide in [guides/BrowserUsage.md](guides/BrowserUsage.html).
 

@@ -127,7 +127,7 @@ def test_modelmesh_integration():
 ### TypeScript
 
 ```typescript
-import { create } from '@modelmesh/core';
+import { create } from '@nistrapa/modelmesh-core';
 
 describe('ModelMesh Integration', () => {
   it('creates a working client', () => {

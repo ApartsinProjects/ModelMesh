@@ -19,7 +19,7 @@
 // For a simpler CDK-based approach, see samples/cdk/typescript/
 
 // ---------------------------------------------------------------------------
-// Types imported from @modelmesh/core (reproduced here for self-containment)
+// Types imported from @nistrapa/modelmesh-core (reproduced here for self-containment)
 // ---------------------------------------------------------------------------
 
 /** Authentication method used by a provider connector. */

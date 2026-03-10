@@ -12,7 +12,7 @@ import {
     ModelStatus,
     DeactivationReason,
     createDefaultModelState,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 function main(): void {
     const policy = new BaseRotationPolicy({

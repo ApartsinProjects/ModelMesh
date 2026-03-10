@@ -49,7 +49,7 @@ config = {
 ```
 
 ```typescript
-import { MemorySecretStore } from '@modelmesh/core';
+import { MemorySecretStore } from '@nistrapa/modelmesh-core';
 
 const store = new MemorySecretStore({
   secrets: {
@@ -90,7 +90,7 @@ print(store2.get("OPENAI_API_KEY"))  # sk-abc...
 ```
 
 ```typescript
-import { EncryptedFileSecretStore } from '@modelmesh/core';
+import { EncryptedFileSecretStore } from '@nistrapa/modelmesh-core';
 
 // Create and save
 const store = new EncryptedFileSecretStore({
@@ -159,7 +159,7 @@ if store.keyring_available:
 ```
 
 ```typescript
-import { KeyringSecretStore } from '@modelmesh/core';
+import { KeyringSecretStore } from '@nistrapa/modelmesh-core';
 
 const store = new KeyringSecretStore({ serviceName: 'modelmesh-prod' });
 // Async API (keytar is async)
@@ -226,7 +226,7 @@ class VaultSecretStore(BaseSecretStore):
 ### TypeScript
 
 ```typescript
-import { BaseSecretStore } from '@modelmesh/core';
+import { BaseSecretStore } from '@nistrapa/modelmesh-core';
 
 class VaultSecretStore extends BaseSecretStore {
   static readonly CONNECTOR_ID = 'mycompany.vault.v1';
@@ -251,7 +251,7 @@ CONNECTOR_REGISTRY[VaultSecretStore.CONNECTOR_ID] = VaultSecretStore
 ```
 
 ```typescript
-import { CONNECTOR_REGISTRY } from '@modelmesh/core';
+import { CONNECTOR_REGISTRY } from '@nistrapa/modelmesh-core';
 
 CONNECTOR_REGISTRY[VaultSecretStore.CONNECTOR_ID] = VaultSecretStore;
 ```

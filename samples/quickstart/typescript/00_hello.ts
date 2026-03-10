@@ -12,7 +12,7 @@
  *   - Set at least one provider API key (e.g., OPENAI_API_KEY).
  */
 
-import { create, CompletionResponse } from "@modelmesh/core";
+import { create, CompletionResponse } from "@nistrapa/modelmesh-core";
 
 // Create a client for the "chat-completion" capability.
 // Providers are auto-detected from environment variables.

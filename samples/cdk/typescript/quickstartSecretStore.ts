@@ -8,7 +8,7 @@
  * a full file-backed implementation.
  */
 
-import { BaseSecretStore, BaseSecretStoreConfig } from "@modelmesh/core";
+import { BaseSecretStore, BaseSecretStoreConfig } from "@nistrapa/modelmesh-core";
 
 function main(): void {
     // Create a secret store with inline secrets (for development).

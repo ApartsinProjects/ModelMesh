@@ -13,7 +13,7 @@ import {
     CompletionRequest,
     ModelInfo,
     createDefaultModelInfo,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 /**
  * OpenAI-compatible provider adapted for Azure deployments.

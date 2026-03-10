@@ -16,7 +16,7 @@
  *   - Set OPENAI_API_KEY and COHERE_API_KEY environment variables
  */
 
-import { ModelMesh, MeshConfig } from "@modelmesh/core";
+import { ModelMesh, MeshConfig } from "@nistrapa/modelmesh-core";
 
 async function main(): Promise<void> {
   // -----------------------------------------------------------------------

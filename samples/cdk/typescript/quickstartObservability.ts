@@ -16,7 +16,7 @@ import {
     AggregateStats,
     TraceEntry,
     EventType,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 /**
  * Console-based observability connector for development.

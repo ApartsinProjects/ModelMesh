@@ -64,7 +64,7 @@ const response = await client.chat.completions.create({
 
 **After:**
 ```typescript
-import { create } from '@modelmesh/core';
+import { create } from '@nistrapa/modelmesh-core';
 const client = create('chat-completion');
 
 const response = await client.chat.completions.create({
@@ -162,7 +162,7 @@ Same pattern — just change the model name to the pool name.
 
 After integration, verify:
 
-- [ ] ModelMesh package is installed (`pip install modelmesh-lite` or `npm install @modelmesh/core`)
+- [ ] ModelMesh package is installed (`pip install modelmesh-lite` or `npm install @nistrapa/modelmesh-core`)
 - [ ] At least one API key env var is set
 - [ ] All `OpenAI()` / `Anthropic()` calls replaced with `modelmesh.create()`
 - [ ] All `model="specific-model"` changed to `model="pool-name"` (e.g., `"chat-completion"`)

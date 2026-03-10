@@ -16,7 +16,7 @@
  *   - Set at least one provider API key (e.g., OPENAI_API_KEY).
  */
 
-import { create, CompletionResponse } from "@modelmesh/core";
+import { create, CompletionResponse } from "@nistrapa/modelmesh-core";
 
 // Same one-liner setup as the hello-world sample.
 const client = create("chat-completion");

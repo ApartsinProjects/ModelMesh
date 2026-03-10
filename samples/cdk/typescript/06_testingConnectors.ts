@@ -24,7 +24,7 @@ import {
     createDefaultCompletionRequest,
     createDefaultModelInfo,
     createDefaultTokenUsage,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 // -- Example 1: Using factory functions to create test data --------------------
 

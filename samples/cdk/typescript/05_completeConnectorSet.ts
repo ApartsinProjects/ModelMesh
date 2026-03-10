@@ -14,7 +14,7 @@
  * 6. Discovery -- health probing against AcmeCorp endpoints
  *
  * NOTE: This sample uses the CDK base classes and interfaces exported from
- * @modelmesh/core. For fully custom implementations (implementing interfaces
+ * @nistrapa/modelmesh-core. For fully custom implementations (implementing interfaces
  * directly), see the samples/connectors/typescript/ directory.
  */
 
@@ -53,7 +53,7 @@ import {
     DiscoveryConnector,
     SyncResult,
     SyncStatus,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 // -- 1. Provider ---------------------------------------------------------------
 

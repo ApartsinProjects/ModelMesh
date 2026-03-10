@@ -15,7 +15,7 @@ import {
     DiscoveryConnector,
     SyncResult,
     SyncStatus,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 /**
  * Simple health probe discovery connector.

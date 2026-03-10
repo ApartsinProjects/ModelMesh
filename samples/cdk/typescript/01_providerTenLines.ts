@@ -19,7 +19,7 @@ import {
     ModelPricing,
     createDefaultModelInfo,
     createDefaultCompletionRequest,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 async function main(): Promise<void> {
     // -- Step 1: Configure the provider --

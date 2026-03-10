@@ -16,7 +16,7 @@ import {
     CompletionRequest,
     createDefaultModelState,
     createDefaultCompletionRequest,
-} from "@modelmesh/core";
+} from "@nistrapa/modelmesh-core";
 
 /**
  * Rotation policy that routes based on time of day.

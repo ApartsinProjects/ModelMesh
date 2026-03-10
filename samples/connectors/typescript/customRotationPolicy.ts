@@ -16,7 +16,7 @@
 // For a simpler CDK-based approach, see samples/cdk/typescript/
 
 // ---------------------------------------------------------------------------
-// Types imported from @modelmesh/core (reproduced here for self-containment)
+// Types imported from @nistrapa/modelmesh-core (reproduced here for self-containment)
 // ---------------------------------------------------------------------------
 
 /** Lifecycle status of a model within a pool. */

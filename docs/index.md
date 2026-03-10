@@ -35,7 +35,7 @@ pip install modelmesh-lite[yaml]          # + YAML config support
 
 **TypeScript / Node.js:**
 ```bash
-npm install @modelmesh/core
+npm install @nistrapa/modelmesh-core
 ```
 
 **Docker Proxy (any language):**
@@ -70,7 +70,7 @@ print(response.choices[0].message.content)
 ### TypeScript
 
 ```typescript
-import { create } from "@modelmesh/core";
+import { create } from "@nistrapa/modelmesh-core";
 
 const client = create("chat-completion");
 
