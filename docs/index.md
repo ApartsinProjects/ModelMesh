@@ -40,6 +40,12 @@ npm install @nistrapa/modelmesh-core
 
 **Docker Proxy (any language):**
 ```bash
+# Option A: Pull pre-built image from GitHub Container Registry
+docker pull ghcr.io/apartsinprojects/modelmesh:latest
+
+# Option B: Build from source
+git clone https://github.com/ApartsinProjects/ModelMesh.git
+cd ModelMesh
 cp .env.example .env   # add your API keys
 docker compose up --build
 # Proxy at http://localhost:8080 — speaks the OpenAI REST API

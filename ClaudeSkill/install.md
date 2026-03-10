@@ -56,20 +56,33 @@ pnpm add @nistrapa/modelmesh-core
 
 ## Docker Installation
 
+**Pre-built image (fastest):**
 ```bash
-# Clone and set up
+docker pull ghcr.io/apartsinprojects/modelmesh:latest
+
+# Run with inline env vars
+docker run -p 8080:8080 \
+  -e OPENAI_API_KEY="sk-..." \
+  ghcr.io/apartsinprojects/modelmesh:latest \
+  --host 0.0.0.0 --port 8080
+
+# Or with env file and config
+docker run -p 8080:8080 \
+  --env-file .env \
+  -v ./modelmesh.yaml:/app/modelmesh.yaml:ro \
+  ghcr.io/apartsinprojects/modelmesh:latest \
+  --config /app/modelmesh.yaml --host 0.0.0.0 --port 8080
+```
+
+**From source (Docker Compose):**
+```bash
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
-
-# Create env file with API keys
-cp .env.example .env
-# Edit .env and fill in keys
-
-# Build and run
+cp .env.example .env   # add your API keys
 docker compose up --build
 ```
 
-Or build the image directly:
+**From source (Docker directly):**
 ```bash
 docker build -t modelmesh-proxy .
 docker run -p 8080:8080 --env-file .env -v ./modelmesh.yaml:/app/modelmesh.yaml:ro modelmesh-proxy --config /app/modelmesh.yaml

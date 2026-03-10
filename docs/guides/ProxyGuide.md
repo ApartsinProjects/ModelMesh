@@ -395,7 +395,27 @@ The proxy includes full CORS support (`Access-Control-Allow-Origin: *`) for brow
 
 ### Build and Run
 
-**Using Docker Compose (recommended):**
+**Option A: Pull pre-built image from GHCR (fastest):**
+
+```bash
+docker pull ghcr.io/apartsinprojects/modelmesh:latest
+
+# Run with environment variables
+docker run -p 8080:8080 \
+  -e OPENAI_API_KEY="sk-..." \
+  -e ANTHROPIC_API_KEY="sk-ant-..." \
+  ghcr.io/apartsinprojects/modelmesh:latest \
+  --host 0.0.0.0 --port 8080
+
+# Or run with config file and env file
+docker run -p 8080:8080 \
+  --env-file .env \
+  -v ./modelmesh.yaml:/app/modelmesh.yaml:ro \
+  ghcr.io/apartsinprojects/modelmesh:latest \
+  --config /app/modelmesh.yaml --host 0.0.0.0 --port 8080
+```
+
+**Option B: Docker Compose (recommended for development):**
 
 ```bash
 # 1. Create .env with your API keys
@@ -418,7 +438,7 @@ docker compose logs -f
 docker compose down
 ```
 
-**Using Docker directly:**
+**Option C: Build Docker image locally:**
 
 ```bash
 # Build

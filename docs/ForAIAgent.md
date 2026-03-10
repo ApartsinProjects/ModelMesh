@@ -263,18 +263,35 @@ The Docker proxy exposes the full OpenAI REST API. Any language/framework that c
 - Docker and Docker Compose installed
 - At least one API key
 
-### Setup
+### Install
 
+**Option A — Pre-built image (fastest):**
+```bash
+docker pull ghcr.io/apartsinprojects/modelmesh:latest
+```
+
+**Option B — Build from source:**
 ```bash
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
+```
 
+### Setup
+
+```bash
 # Create .env with your API keys
 cp .env.example .env
 # Edit .env and add your keys: OPENAI_API_KEY=sk-..., etc.
 
-# Start the proxy
+# Start the proxy (from source)
 docker compose up --build
+
+# Or run the pre-built image directly
+docker run -p 8080:8080 \
+  -e OPENAI_API_KEY="sk-..." \
+  -e ANTHROPIC_API_KEY="sk-ant-..." \
+  ghcr.io/apartsinprojects/modelmesh:latest \
+  --host 0.0.0.0 --port 8080
 ```
 
 The proxy runs on `http://localhost:8080`.

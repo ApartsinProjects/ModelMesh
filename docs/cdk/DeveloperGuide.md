@@ -7,7 +7,7 @@ title: "CDK Developer Guide"
 
 A tutorial-driven guide for using ModelMesh Lite, from the convenience layer (`modelmesh.create()`) through custom connectors built with the Connector Development Kit (CDK). Tutorials 0-1 cover the OpenAI-compatible convenience API, Tutorials 2-7 progress from zero-code configuration through full connector suites and automated testing, and Tutorial 8 provides a beginner-friendly walkthrough for new programmers.
 
-> **Prerequisites:** Tutorials 0-1 require only `pip install modelmesh` and an API key. Tutorials 2-7 assume familiarity with the [CDK Overview](Overview.html) and the [class hierarchy](Overview.html#class-hierarchy). Tutorial 8 is self-contained. Each tutorial references the relevant CDK reference documents inline.
+> **Prerequisites:** Tutorials 0-1 require only `pip install modelmesh-lite` and an API key. Tutorials 2-7 assume familiarity with the [CDK Overview](Overview.html) and the [class hierarchy](Overview.html#class-hierarchy). Tutorial 8 is self-contained. Each tutorial references the relevant CDK reference documents inline.
 
 ---
 
