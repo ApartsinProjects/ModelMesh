@@ -1,5 +1,6 @@
 """Tests for CDK base classes: BaseProvider, BaseRotation, BaseSecretStore, BaseStorage."""
 import asyncio
+import json
 import os
 import sys
 import unittest
@@ -159,6 +160,203 @@ class TestBaseProvider(unittest.TestCase):
         self.assertEqual(response.id, "cmpl-123")
         self.assertEqual(response.usage.total_tokens, 15)
         self.assertEqual(len(response.choices), 1)
+
+    def test_parse_response_extracts_message_with_role_content_tool_calls(self):
+        """_parse_response creates a ChatMessage with role, content, and tool_calls."""
+        data = {
+            "id": "cmpl-msg-1",
+            "model": "test-model",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "tool_calls",
+                    "message": {
+                        "role": "assistant",
+                        "content": "Let me call a tool.",
+                        "tool_calls": [
+                            {
+                                "id": "call_abc",
+                                "type": "function",
+                                "function": {
+                                    "name": "get_weather",
+                                    "arguments": '{"city": "Paris"}',
+                                },
+                            }
+                        ],
+                    },
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 20,
+                "completion_tokens": 10,
+                "total_tokens": 30,
+            },
+        }
+        response = self.provider._parse_response(data)
+        self.assertEqual(len(response.choices), 1)
+        choice = response.choices[0]
+        self.assertIsNotNone(choice.message)
+        self.assertEqual(choice.message.role, "assistant")
+        self.assertEqual(choice.message.content, "Let me call a tool.")
+        self.assertIsNotNone(choice.message.tool_calls)
+        self.assertEqual(len(choice.message.tool_calls), 1)
+        self.assertEqual(choice.message.tool_calls[0]["id"], "call_abc")
+        self.assertEqual(choice.finish_reason, "tool_calls")
+
+    def test_parse_response_message_with_content_only(self):
+        """_parse_response creates a ChatMessage when only role and content are present."""
+        data = {
+            "id": "cmpl-msg-2",
+            "model": "test-model",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {
+                        "role": "assistant",
+                        "content": "Hello, world!",
+                    },
+                }
+            ],
+            "usage": {"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+        }
+        response = self.provider._parse_response(data)
+        choice = response.choices[0]
+        self.assertIsNotNone(choice.message)
+        self.assertEqual(choice.message.role, "assistant")
+        self.assertEqual(choice.message.content, "Hello, world!")
+        self.assertIsNone(choice.message.tool_calls)
+
+    def test_parse_response_missing_message_null(self):
+        """_parse_response handles choices where message is explicitly null."""
+        data = {
+            "id": "cmpl-null",
+            "model": "test-model",
+            "choices": [
+                {"index": 0, "finish_reason": "stop", "message": None}
+            ],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        }
+        response = self.provider._parse_response(data)
+        self.assertEqual(len(response.choices), 1)
+        self.assertIsNone(response.choices[0].message)
+
+    def test_parse_response_missing_message_absent(self):
+        """_parse_response handles choices where message key is absent."""
+        data = {
+            "id": "cmpl-absent",
+            "model": "test-model",
+            "choices": [
+                {"index": 0, "finish_reason": "stop"}
+            ],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        }
+        response = self.provider._parse_response(data)
+        self.assertEqual(len(response.choices), 1)
+        self.assertIsNone(response.choices[0].message)
+
+    # -- _parse_sse_chunk tests --
+
+    def test_parse_sse_chunk_extracts_delta_with_role_content_tool_calls(self):
+        """_parse_sse_chunk creates a ChatMessage delta with role, content, and tool_calls."""
+        chunk_data = {
+            "id": "chatcmpl-stream-1",
+            "model": "test-model",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": None,
+                    "delta": {
+                        "role": "assistant",
+                        "content": "Hello",
+                        "tool_calls": [
+                            {
+                                "index": 0,
+                                "id": "call_xyz",
+                                "type": "function",
+                                "function": {"name": "search", "arguments": ""},
+                            }
+                        ],
+                    },
+                }
+            ],
+        }
+        line = json.dumps(chunk_data)
+        result = self.provider._parse_sse_chunk(line)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.id, "chatcmpl-stream-1")
+        self.assertEqual(len(result.choices), 1)
+        delta = result.choices[0].delta
+        self.assertIsNotNone(delta)
+        self.assertEqual(delta.role, "assistant")
+        self.assertEqual(delta.content, "Hello")
+        self.assertIsNotNone(delta.tool_calls)
+        self.assertEqual(len(delta.tool_calls), 1)
+        self.assertEqual(delta.tool_calls[0]["id"], "call_xyz")
+
+    def test_parse_sse_chunk_content_only(self):
+        """_parse_sse_chunk extracts delta with content and default role."""
+        chunk_data = {
+            "id": "chatcmpl-stream-2",
+            "model": "test-model",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": None,
+                    "delta": {"content": " world"},
+                }
+            ],
+        }
+        line = json.dumps(chunk_data)
+        result = self.provider._parse_sse_chunk(line)
+        self.assertIsNotNone(result)
+        delta = result.choices[0].delta
+        self.assertIsNotNone(delta)
+        self.assertEqual(delta.content, " world")
+        self.assertEqual(delta.role, "assistant")  # default role
+        self.assertIsNone(delta.tool_calls)
+
+    def test_parse_sse_chunk_missing_delta_null(self):
+        """_parse_sse_chunk handles choices where delta is explicitly null."""
+        chunk_data = {
+            "id": "chatcmpl-stream-3",
+            "model": "test-model",
+            "choices": [
+                {"index": 0, "finish_reason": "stop", "delta": None}
+            ],
+        }
+        line = json.dumps(chunk_data)
+        result = self.provider._parse_sse_chunk(line)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result.choices), 1)
+        self.assertIsNone(result.choices[0].delta)
+
+    def test_parse_sse_chunk_missing_delta_absent(self):
+        """_parse_sse_chunk handles choices where delta key is absent."""
+        chunk_data = {
+            "id": "chatcmpl-stream-4",
+            "model": "test-model",
+            "choices": [
+                {"index": 0, "finish_reason": "stop"}
+            ],
+        }
+        line = json.dumps(chunk_data)
+        result = self.provider._parse_sse_chunk(line)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result.choices), 1)
+        self.assertIsNone(result.choices[0].delta)
+
+    def test_parse_sse_chunk_invalid_json_returns_none(self):
+        """_parse_sse_chunk returns None for invalid JSON input."""
+        self.assertIsNone(self.provider._parse_sse_chunk("not valid json"))
+        self.assertIsNone(self.provider._parse_sse_chunk(""))
+        bad_json = '{"truncated'
+        self.assertIsNone(self.provider._parse_sse_chunk(bad_json))
+
+    def test_parse_sse_chunk_empty_choices_returns_none(self):
+        """_parse_sse_chunk returns None when choices array is empty."""
+        line = json.dumps({"id": "x", "model": "y", "choices": []})
+        self.assertIsNone(self.provider._parse_sse_chunk(line))
 
     def test_build_headers(self):
         headers = self.provider._build_headers()

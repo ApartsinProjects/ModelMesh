@@ -10,8 +10,8 @@ from datetime import datetime
 
 from modelmesh.cdk import BaseRotationPolicy, BaseRotationPolicyConfig
 from modelmesh.cdk.helpers import mock_model_snapshot, mock_completion_request
+from modelmesh.interfaces.provider import CompletionRequest
 from modelmesh.interfaces.rotation_policy import (
-    CompletionRequest,
     DeactivationReason,
     ModelSnapshot,
     ModelStatus,
@@ -100,8 +100,8 @@ def main() -> None:
     request = mock_completion_request(model="gpt-4o")
     candidates = [gpt4, gpt35]
     result = policy.select(candidates, request)
-    print(f"\nSelected: {result.model_id} (score={result.score:.1f}, "
-          f"reason={result.reason})")
+    result_score = policy.score(result, request)
+    print(f"\nSelected: {result.model_id} (score={result_score:.1f})")
 
     # Show scores for both candidates
     for c in candidates:

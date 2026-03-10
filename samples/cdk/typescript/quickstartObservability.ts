@@ -1,59 +1,108 @@
 /**
- * Quickstart: Create a ConsoleObservability, emit an event, log a request, flush stats.
+ * Quickstart: Implement a console observability connector.
  *
- * Demonstrates the three core observability operations using the
- * ConsoleObservability specialized class with colored console output.
+ * Demonstrates the three core observability operations (emit, log, flush)
+ * using an inline implementation of the ObservabilityConnector interface
+ * with console output.
+ *
+ * For a full Slack + JSON file implementation, see
+ * samples/connectors/typescript/customObservability.ts.
  */
 
 import {
-    ConsoleObservability,
-    BaseObservabilityConfig,
+    ObservabilityConnector,
     RoutingEvent,
     RequestLogEntry,
     AggregateStats,
+    TraceEntry,
     EventType,
-} from "@modelmesh/cdk";
+} from "@modelmesh/core";
+
+/**
+ * Console-based observability connector for development.
+ *
+ * Prints routing events, request logs, statistics, and trace entries
+ * to the console with simple formatting.
+ */
+class ConsoleObservabilityConnector implements ObservabilityConnector {
+    emit(event: RoutingEvent): void {
+        console.log(
+            `[EVENT] ${event.eventType} ` +
+            `model=${event.modelId ?? "n/a"} ` +
+            `provider=${event.providerId ?? "n/a"}`
+        );
+    }
+
+    log(entry: RequestLogEntry): void {
+        console.log(
+            `[LOG] model=${entry.modelId} ` +
+            `provider=${entry.providerId} ` +
+            `capability=${entry.capability} ` +
+            `delivery=${entry.deliveryMode} ` +
+            `latency=${entry.latencyMs}ms ` +
+            `status=${entry.statusCode} ` +
+            `tokens=${entry.tokensIn}/${entry.tokensOut}`
+        );
+    }
+
+    flush(stats: Record<string, AggregateStats>): void {
+        for (const [scope, s] of Object.entries(stats)) {
+            console.log(
+                `[STATS] ${scope}: ` +
+                `requests=${s.requestsTotal} ` +
+                `success=${s.requestsSuccess} ` +
+                `failed=${s.requestsFailed} ` +
+                `tokens=${s.tokensIn}/${s.tokensOut} ` +
+                `cost=$${s.costTotal.toFixed(4)} ` +
+                `latency_avg=${s.latencyAvg.toFixed(0)}ms ` +
+                `latency_p95=${s.latencyP95.toFixed(0)}ms`
+            );
+        }
+    }
+
+    trace(entry: TraceEntry): void {
+        console.log(`[TRACE] [${entry.severity}] ${entry.component}: ${entry.message}`);
+    }
+}
 
 function main(): void {
-    const obs = new ConsoleObservability({
-        logLevel: "summary",
-        redactSecrets: true,
-    });
+    const obs = new ConsoleObservabilityConnector();
 
     // Emit a routing event
     obs.emit({
-        event_type: EventType.MODEL_ACTIVATED,
+        eventType: EventType.MODEL_ACTIVATED,
         timestamp: new Date(),
-        model_id: "gpt-4o",
-        provider_id: "openai",
+        modelId: "gpt-4o",
+        providerId: "openai",
+        metadata: {},
     });
 
     // Log a request
     obs.log({
         timestamp: new Date(),
-        model_id: "gpt-4o",
-        provider_id: "openai",
+        modelId: "gpt-4o",
+        providerId: "openai",
         capability: "generation.text-generation.chat-completion",
-        delivery_mode: "sync",
-        latency_ms: 142.5,
-        status_code: 200,
-        tokens_in: 50,
-        tokens_out: 120,
+        deliveryMode: "sync",
+        latencyMs: 142.5,
+        statusCode: 200,
+        tokensIn: 50,
+        tokensOut: 120,
     });
 
     // Flush aggregate stats
     obs.flush({
         "gpt-4o": {
-            requests_total: 100,
-            requests_success: 95,
-            requests_failed: 5,
-            tokens_in: 5000,
-            tokens_out: 10000,
-            cost_total: 1.50,
-            latency_avg: 150.0,
-            latency_p95: 300.0,
-            downtime_total: 0.0,
-            rotation_events: 2,
+            requestsTotal: 100,
+            requestsSuccess: 95,
+            requestsFailed: 5,
+            tokensIn: 5000,
+            tokensOut: 10000,
+            costTotal: 1.50,
+            latencyAvg: 150.0,
+            latencyP95: 300.0,
+            downtimeTotal: 0.0,
+            rotationEvents: 2,
         },
     });
 }

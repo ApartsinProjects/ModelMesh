@@ -10,7 +10,7 @@ protocol-specific health checks (HTTP, gRPC, TCP) and can override
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from modelmesh.interfaces.discovery import (
@@ -93,7 +93,7 @@ class BaseDiscovery(DiscoveryConnector):
             except Exception as exc:
                 errors.append(f"{provider_id}: {exc}")
 
-        self._last_sync = datetime.utcnow()
+        self._last_sync = datetime.now(timezone.utc)
         self._models_synced = sum(
             len(v) for v in self._known_models.values()
         )

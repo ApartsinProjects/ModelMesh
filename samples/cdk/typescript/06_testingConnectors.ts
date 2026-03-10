@@ -1,162 +1,204 @@
 /**
- * Tutorial 6: Test harness usage with MockHttpClient and ConnectorTestHarness.
+ * Tutorial 6: Testing connectors with factory helpers.
  *
- * Demonstrates how to use the CDK's test utilities to validate connector
- * implementations without making real HTTP calls. Covers:
- * - MockHttpClient for canned responses
- * - mockModelSnapshot and mockCompletionRequest factories
- * - ConnectorTestHarness for interface compliance testing
+ * Demonstrates how to use the CDK's factory functions to create test data
+ * for validating connector implementations without making real HTTP calls.
+ * Covers:
+ * - createDefaultModelState for building model state snapshots
+ * - createDefaultCompletionRequest for building completion requests
+ * - createDefaultModelInfo for building model catalogue entries
+ * - Using BaseRotationPolicy with test data
+ * - Using BaseProvider / OpenAICompatibleProvider for unit testing
  */
 
 import {
-    BaseObservabilityConfig,
     BaseProviderConfig,
-    BaseRotationPolicyConfig,
-    ConsoleObservability,
-    KeyValueStorage,
-    KeyValueStorageConfig,
+    BaseRotationPolicy,
+    BaseRotationConfig,
     OpenAICompatibleProvider,
-    ThresholdRotationPolicy,
     ModelInfo,
-    ConnectorTestHarness,
-    MockHttpClient,
+    ModelState,
     ModelStatus,
-    mockCompletionRequest,
-    mockModelSnapshot,
-} from "@modelmesh/cdk";
+    CompletionRequest,
+    createDefaultModelState,
+    createDefaultCompletionRequest,
+    createDefaultModelInfo,
+    createDefaultTokenUsage,
+} from "@modelmesh/core";
 
-// -- Example 1: Using MockHttpClient with a provider --------------------------
+// -- Example 1: Using factory functions to create test data --------------------
 
-async function testProviderWithMock(): Promise<void> {
-    console.log("=== Testing Provider with MockHttpClient ===\n");
+function testFactoryFunctions(): void {
+    console.log("=== Testing Factory Functions ===\n");
 
-    const mockClient = new MockHttpClient();
+    // Create a healthy model state
+    const healthy = createDefaultModelState({ modelId: "gpt-4o" });
+    console.log(`Healthy: model=${healthy.modelId}, failures=${healthy.failureCount}`);
 
-    // Enqueue a canned completion response
-    mockClient.addResponse({
-        statusCode: 200,
-        body: {
-            id: "chatcmpl-test-123",
-            model: "gpt-4o",
-            choices: [
-                {
-                    index: 0,
-                    message: { role: "assistant", content: "Hello!" },
-                    finish_reason: "stop",
-                },
-            ],
-            usage: {
-                prompt_tokens: 10,
-                completion_tokens: 5,
-                total_tokens: 15,
-            },
-        },
+    // Create a failing model state
+    const failing = createDefaultModelState({
+        modelId: "gpt-4o",
+        failureCount: 10,
+        errorRate: 0.5,
     });
-
-    // Verify recorded requests
-    await mockClient.post("/v1/chat/completions", { model: "gpt-4o" });
-    console.log(`Recorded ${mockClient.calls.length} request(s)`);
-    console.log(`  Method: ${mockClient.calls[0]["method"]}`);
-    console.log(`  URL:    ${mockClient.calls[0]["url"]}`);
-    console.log(`  Body:   ${JSON.stringify(mockClient.calls[0]["json"])}`);
-}
-
-// -- Example 2: Using mock factories -----------------------------------------
-
-function testMockFactories(): void {
-    console.log("\n=== Testing Mock Factories ===\n");
-
-    // Create a healthy model snapshot
-    const healthy = mockModelSnapshot();
-    console.log(`Healthy: model=${healthy.model_id}, failures=${healthy.failure_count}`);
-
-    // Create a failing model snapshot
-    const failing = mockModelSnapshot({ failureCount: 10 });
-    console.log(
-        `Failing: model=${failing.model_id}, failures=${failing.failure_count}`
-    );
+    console.log(`Failing: model=${failing.modelId}, failures=${failing.failureCount}`);
 
     // Create a standby model
-    const standby = mockModelSnapshot({
+    const standby = createDefaultModelState({
+        modelId: "gpt-4o",
         status: ModelStatus.STANDBY,
     });
-    console.log(
-        `Standby: model=${standby.model_id}, ` +
-        `status=${standby.status}`
-    );
+    console.log(`Standby: model=${standby.modelId}, status=${standby.status}`);
 
     // Create a minimal completion request
-    const simple = mockCompletionRequest();
-    console.log(
-        `\nRequest: model=${simple.model}, ` +
-        `messages=${simple.messages.length} msg(s)`
-    );
+    const simple = createDefaultCompletionRequest({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: "Hello!" }],
+    });
+    console.log(`\nRequest: model=${simple.model}, messages=${simple.messages.length} msg(s)`);
 
     // Create a streaming request with custom parameters
-    const streaming = mockCompletionRequest({
+    const streaming = createDefaultCompletionRequest({
         model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: "Stream this" }],
         stream: true,
         temperature: 0.5,
         maxTokens: 100,
     });
     console.log(`Streaming: model=${streaming.model}, stream=${streaming.stream}`);
+
+    // Create model info entries
+    const modelInfo = createDefaultModelInfo({
+        id: "test-model",
+        name: "Test Model",
+        capabilities: ["generation.text-generation.chat-completion"],
+        contextWindow: 128_000,
+        maxOutputTokens: 16_384,
+    });
+    console.log(`\nModelInfo: ${modelInfo.id}, context=${modelInfo.contextWindow}`);
+
+    // Create token usage
+    const usage = createDefaultTokenUsage({
+        promptTokens: 100,
+        completionTokens: 50,
+    });
+    console.log(`TokenUsage: prompt=${usage.promptTokens}, completion=${usage.completionTokens}, total=${usage.totalTokens}`);
 }
 
-// -- Example 3: ConnectorTestHarness ------------------------------------------
+// -- Example 2: Testing rotation policy with mock data -------------------------
 
-async function testProviderWithHarness(): Promise<void> {
-    console.log("\n=== Testing Provider with Harness ===\n");
+function testRotationPolicy(): void {
+    console.log("\n=== Testing Rotation Policy ===\n");
 
-    const mockClient = new MockHttpClient();
-    mockClient.addResponse({
-        statusCode: 200,
-        body: {
-            id: "chatcmpl-test-456",
-            model: "gpt-4o",
-            choices: [
-                {
-                    index: 0,
-                    message: { role: "assistant", content: "Test response." },
-                    finish_reason: "stop",
-                },
-            ],
-            usage: {
-                prompt_tokens: 10,
-                completion_tokens: 5,
-                total_tokens: 15,
-            },
-        },
+    const policy = new BaseRotationPolicy({
+        failureThreshold: 5,
+        errorRateThreshold: 0.3,
+        cooldownSeconds: 120,
+        modelPriority: ["gpt-4o", "gpt-3.5-turbo"],
     });
+
+    // Test deactivation with a healthy model
+    const healthy = createDefaultModelState({
+        modelId: "gpt-4o",
+        failureCount: 0,
+    });
+    console.log(`Healthy deactivate? ${policy.shouldDeactivate(healthy)}`);  // false
+
+    // Test deactivation with a failing model
+    const failing = createDefaultModelState({
+        modelId: "gpt-4o",
+        failureCount: 6,
+    });
+    console.log(`Failing deactivate? ${policy.shouldDeactivate(failing)}`);  // true
+    console.log(`Reason: ${policy.getReason(failing)}`);  // ERROR_THRESHOLD
+
+    // Test selection
+    const candidates = [
+        createDefaultModelState({ modelId: "gpt-4o", providerId: "openai" }),
+        createDefaultModelState({ modelId: "gpt-3.5-turbo", providerId: "openai" }),
+    ];
+    const request = createDefaultCompletionRequest({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: "Test" }],
+    });
+    const selected = policy.select(candidates, request);
+    if (selected) {
+        console.log(`Selected: ${selected.modelId}`);
+    }
+
+    // Show scores
+    for (const c of candidates) {
+        console.log(`  ${c.modelId}: score=${policy.score(c, request).toFixed(1)}`);
+    }
+
+    // Test recovery
+    const standby = createDefaultModelState({
+        modelId: "gpt-4o",
+        status: ModelStatus.STANDBY,
+    });
+    console.log(`\nStandby recover? ${policy.shouldRecover(standby)}`);  // true (no cooldown set)
+}
+
+// -- Example 3: Testing a provider's catalogue and error handling --------------
+
+function testProviderCatalogue(): void {
+    console.log("\n=== Testing Provider Catalogue ===\n");
 
     const provider = new OpenAICompatibleProvider({
         baseUrl: "https://api.openai.com",
         apiKey: "sk-test",
+        timeout: 30,
+        maxRetries: 3,
+        authMethod: "api_key",
+        retryableCodes: [429, 500, 502, 503],
+        nonRetryableCodes: [400, 401, 403],
+        capabilities: ["generation.text-generation.chat-completion"],
         models: [
-            {
+            createDefaultModelInfo({
                 id: "gpt-4o",
                 name: "GPT-4o",
                 capabilities: ["generation.text-generation.chat-completion"],
-                context_window: 128_000,
-                max_output_tokens: 16_384,
-            },
+                contextWindow: 128_000,
+                maxOutputTokens: 16_384,
+            }),
+            createDefaultModelInfo({
+                id: "gpt-4o-mini",
+                name: "GPT-4o Mini",
+                capabilities: ["generation.text-generation.chat-completion"],
+                contextWindow: 128_000,
+                maxOutputTokens: 16_384,
+            }),
         ],
     });
 
-    const harness = new ConnectorTestHarness(provider);
+    // List models
+    const models = provider.listModels();
+    console.log(`Models: ${models.map(m => m.id).join(", ")}`);
 
-    // Use the harness to test complete and stream
-    const response = await harness.complete(mockCompletionRequest({ model: "gpt-4o" }));
-    console.log(`  complete() response id: ${response.id}`);
+    // Get model info
+    const info = provider.getModelInfo("gpt-4o");
+    console.log(`GPT-4o context: ${info.contextWindow}`);
 
-    console.log("  Harness complete/stream tests exercised successfully.");
+    // Test capabilities
+    console.log(`Supports chat? ${provider.supports("generation.text-generation.chat-completion")}`);
+    console.log(`Supports embeddings? ${provider.supports("representation.embeddings.text-embeddings")}`);
+
+    // Test error classification
+    const error = new Error("Connection refused");
+    const classification = provider.classifyError(error);
+    console.log(`\nError classification: retryable=${classification.retryable}, category=${classification.category}`);
+
+    // Test quota
+    const quota = provider.checkQuota();
+    console.log(`Quota used: ${quota.used}`);
 }
 
 // -- Main ---------------------------------------------------------------------
 
 async function main(): Promise<void> {
-    await testProviderWithMock();
-    testMockFactories();
-    await testProviderWithHarness();
+    testFactoryFunctions();
+    testRotationPolicy();
+    testProviderCatalogue();
 
     console.log("\n=== All test examples completed ===");
 }

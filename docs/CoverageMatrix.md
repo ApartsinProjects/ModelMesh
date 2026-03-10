@@ -5,7 +5,7 @@ title: "Test Coverage Matrix"
 
 # Test Coverage Matrix
 
-Correlates documented features with test coverage. Generated from the 356-test suite across 12 test files.
+Correlates documented features with test coverage. The project includes 640 Python tests across 14 test files and 168 TypeScript tests across 10 test files, for a total of 808 tests.
 
 ---
 
@@ -24,7 +24,23 @@ Correlates documented features with test coverage. Generated from the 356-test s
 | Observability Stack | 26 | `test_observability.py` | Covered |
 | Pre-shipped Connectors | 32 | `test_connectors.py` | Covered |
 | CDK Specialized + Mixins + Helpers | 97 | `test_specialized.py` | Covered |
-| **Total** | **356** | **12 files** | |
+| **Total** | **640** | **14 files** | |
+
+### TypeScript Test Suite
+
+| Component | Tests | Test File | Status |
+| --- | ---: | --- | --- |
+| Interfaces (data types, factories, enums) | 12 | `interfaces.test.ts` | Covered |
+| CapabilityTree | 9 | `capability-tree.test.ts` | Covered |
+| EventEmitter | 10 | `event-emitter.test.ts` | Covered |
+| StateManager | 16 | `state-manager.test.ts` | Covered |
+| CapabilityPool | 15 | `pool.test.ts` | Covered |
+| ModelMesh facade | 16 | `mesh.test.ts` | Covered |
+| Router | 5 | `router.test.ts` | Covered |
+| Pre-shipped Connectors | 47 | `connectors.test.ts` | Covered |
+| MeshConfig + Auto-detect | 22 | `config.test.ts` | Covered |
+| MeshClient (OpenAI compat) | 16 | `client.test.ts` | Covered |
+| **Total** | **168** | **10 files** | |
 
 ---
 
@@ -159,9 +175,45 @@ Correlates documented features with test coverage. Generated from the 356-test s
 | CONNECTOR_REGISTRY (8 entries) | `ConnectorCatalogue.md` | `test_has_8_connectors`, `test_all_have_connector_id` | Registry completeness |
 | OpenAI Provider | `connectors/openai-llm.md` | `TestOpenAIProvider` (7 tests) | ID, URL, headers, models, endpoint |
 | Anthropic Provider | `connectors/anthropic-llm.md` | `TestAnthropicProvider` (10 tests) | ID, headers, payload, response parsing |
-| Env Secret Store | `connectors/modelmesh-env.md` | `TestEnvSecretStore` (5 tests) | ID, resolve, prefix, missing |
+| Env Secret Store | `connectors/modelmesh-env.md` | `TestEnvSecretStoreComprehensive` (7 tests) | ID, resolve, prefix, missing, interface |
+| Dotenv Secret Store | `ConnectorCatalogue.md` | `TestDotenvSecretStoreComprehensive` (8 tests) | Parsing, comments, quotes, multiline, env override |
+| JSON Secret Store | `ConnectorCatalogue.md` | `TestJsonSecretStoreComprehensive` (8 tests) | Flat, nested, dot-notation, json_path scoping |
+| Memory Secret Store | `guides/SecretStores.md` | `TestMemorySecretStore` (12 tests) | CRUD, interface, caching, set invalidation |
+| Encrypted File Store | `guides/SecretStores.md` | `TestEncryptedFileSecretStore` (12 tests) | Save/load, passphrase, hex key, round-trip, plaintext check |
+| Keyring Secret Store | `ConnectorCatalogue.md` | `TestKeyringSecretStoreComprehensive` (6 tests) | ID, service name, availability, fallback |
+| Azure Speech TTS | `ConnectorCatalogue.md` | `TestAzureSpeechProvider` (14 tests) | ID, region, URL, headers, SSML, models, XML escape |
 | Stick-Until-Failure | `connectors/modelmesh-stick-until-failure.md` | (via `TestBaseRotation`) | Tested through base rotation tests |
 | Local File Storage | `connectors/modelmesh-local-file.md` | (via `TestBaseStorage`) | Tested through base storage tests |
+
+### 11. Browser Provider (`docs/guides/BrowserUsage.md`)
+
+| Feature | Doc Reference | Test(s) | Notes |
+| --- | --- | --- | --- |
+| BrowserBaseProvider construction | `BrowserUsage.md` | `test_browser_provider_config` | Config defaults, proxyUrl |
+| Fetch-based complete() | `BrowserUsage.md` | `test_browser_provider_complete` | Fetch API transport |
+| Streaming via ReadableStream | `BrowserUsage.md` | `test_browser_provider_stream` | ReadableStream SSE parsing |
+| CORS proxy URL prefixing | `BrowserUsage.md` | `test_browser_proxy_url_prefix` | proxyUrl prepended to API URL |
+| createBrowser() convenience | `BrowserUsage.md` | `test_create_browser` | Browser-optimized create() |
+
+### 12. Audio Interfaces (`docs/ConnectorInterfaces.md`)
+
+| Feature | Doc Reference | Test(s) | Notes |
+| --- | --- | --- | --- |
+| AudioRequest type | `ConnectorInterfaces.md` | `test_audio_request_creation` | Type construction, defaults |
+| AudioResponse type | `ConnectorInterfaces.md` | `test_audio_response_creation` | Type construction, defaults |
+| client.audio.speech.create() | `ConnectorCatalogue.md` | `test_audio_speech_create` | TTS routing through pool |
+| client.audio.transcriptions.create() | `ConnectorCatalogue.md` | `test_audio_transcriptions_create` | STT routing through pool |
+
+### 13. CDK Specialized Classes (`docs/cdk/BaseClasses.md`)
+
+| Feature | Doc Reference | Test(s) | Notes |
+| --- | --- | --- | --- |
+| ThresholdRotationPolicy | `BaseClasses.md` | `TestThresholdRotation` (in `test_specialized.py`) | Threshold-based deactivation/recovery |
+| ConsoleObservability | `BaseClasses.md` | `TestConsoleObservability` (in `test_specialized.py`) | ANSI output, severity filtering |
+| KeyValueStorage | `BaseClasses.md` | `TestKeyValueStorage` (in `test_specialized.py`) | Memory and file backends |
+| FileSecretStore | `BaseClasses.md` | `TestFileSecretStore` (in `test_specialized.py`) | .env, JSON, TOML file loading |
+| HttpHealthDiscovery | `BaseClasses.md` | -- | Requires HTTP mock; coverage gap |
+| CDK test helpers | `Helpers.md` | `TestConnectorTestHarness`, `TestMockHttpClient` (in `test_specialized.py`) | mockCompletionRequest, mockModelSnapshot, MockHttpClient, ConnectorTestHarness |
 
 ---
 
@@ -175,6 +227,8 @@ Correlates documented features with test coverage. Generated from the 356-test s
 | Webhook observability connector | Low | Documented in catalogue but not implemented |
 | HttpHealthDiscovery | Low | Specialized class exists but no dedicated test (requires HTTP mock) |
 | MetricsMixin | Low | Tested indirectly via provider tests |
+| Browser provider end-to-end (real fetch) | Low | Unit tests mock fetch; no integration test with actual browser |
+| Audio streaming (TTS binary stream) | Low | Audio types tested; binary stream end-to-end not yet covered |
 
 ---
 
@@ -201,3 +255,5 @@ Correlates documented features with test coverage. Generated from the 356-test s
 | `interfaces/SecretStore.md` | SecretStore ABC | `test_cdk.py::TestBaseSecretStore` (5 tests) | Direct |
 | `interfaces/Storage.md` | Storage ABC | `test_cdk.py::TestBaseStorage` (9 tests) | Direct |
 | `interfaces/Discovery.md` | Discovery ABC | *(no dedicated tests)* | Gap |
+| `guides/BrowserUsage.md` | BrowserBaseProvider, CORS proxy, createBrowser() | Browser provider tests | Direct |
+| `ConnectorInterfaces.md` (Audio) | AudioRequest, AudioResponse, audio namespace | Audio interface tests | Direct |

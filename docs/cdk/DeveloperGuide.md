@@ -22,6 +22,8 @@ A tutorial-driven guide for using ModelMesh Lite, from the convenience layer (`m
 6. [Tutorial 6: Complete Connector Set for "AcmeCorp"](#tutorial-6-complete-connector-set-for-acmecorp)
 7. [Tutorial 7: Testing with CDK Utilities](#tutorial-7-testing-with-cdk-utilities)
 8. [Tutorial 8: Teen Programmer Guide -- Build Your First AI App](#tutorial-8-teen-programmer-guide----build-your-first-ai-app)
+9. [Tutorial 9: Building a Browser-Compatible Provider](#tutorial-9-building-a-browser-compatible-provider)
+10. [Tutorial 10: Audio Provider Development](#tutorial-10-audio-provider-development)
 
 ---
 
@@ -54,9 +56,9 @@ print(response.choices[0].message.content)
 ### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 const response = await client.chat.completions.create({
     model: "chat-completion",
@@ -133,9 +135,9 @@ print(f"Embedding dimension: {len(embeddings.data[0].embedding)}")
 ### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create(
+const client = create(
     "chat-completion", "text-embeddings",
     {
         providers: ["openai", "anthropic"],
@@ -169,7 +171,7 @@ response = client.chat.completions.create(
 ```
 
 ```typescript
-const client = modelmesh.create({ pool: "text-generation" });
+const client = create({ pool: "text-generation" });
 const response = await client.chat.completions.create({
     model: "text-generation",
     messages: [{ role: "user", content: "Hello!" }],
@@ -183,7 +185,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 ```
 
 ```typescript
-const client = modelmesh.create({ config: "modelmesh.yaml" });
+const client = create({ config: "modelmesh.yaml" });
 ```
 
 ### What's next
@@ -253,8 +255,8 @@ asyncio.run(main())
 import {
     OpenAICompatibleProvider,
     BaseProviderConfig,
-} from "modelmesh/cdk";
-import { CompletionRequest, ModelInfo } from "modelmesh/interfaces/provider";
+} from "@modelmesh/core/cdk";
+import { CompletionRequest, ModelInfo } from "@modelmesh/core/interfaces/provider";
 
 // 1. Configure -- this is the entire "connector"
 const config: BaseProviderConfig = {
@@ -400,12 +402,12 @@ class InternalMLError(Exception):
 ### TypeScript
 
 ```typescript
-import { BaseProvider, BaseProviderConfig } from "modelmesh/cdk";
+import { BaseProvider, BaseProviderConfig } from "@modelmesh/core/cdk";
 import {
     CompletionResponse,
     ErrorClassificationResult,
     TokenUsage,
-} from "modelmesh/interfaces/provider";
+} from "@modelmesh/core/interfaces/provider";
 
 /** Error returned inside a 200 response from the internal ML API. */
 class InternalMLError extends Error {
@@ -598,13 +600,13 @@ policy = TimeOfDayRotationPolicy(TimeOfDayPolicyConfig(
 import {
     BaseRotationPolicy,
     BaseRotationPolicyConfig,
-} from "modelmesh/cdk";
+} from "@modelmesh/core/cdk";
 import {
     CompletionRequest,
     DeactivationReason,
     ModelSnapshot,
     SelectionResult,
-} from "modelmesh/interfaces/rotation_policy";
+} from "@modelmesh/core/interfaces/rotation_policy";
 
 /** Extended config with maintenance windows and cost tiers. */
 interface TimeOfDayPolicyConfig extends BaseRotationPolicyConfig {
@@ -794,8 +796,8 @@ provider = AzureOpenAIProvider(AzureOpenAIConfig(
 ### TypeScript
 
 ```typescript
-import { OpenAIProvider } from "modelmesh/connectors/openai";
-import { BaseProviderConfig } from "modelmesh/cdk";
+import { OpenAIProvider } from "@modelmesh/core/connectors/openai";
+import { BaseProviderConfig } from "@modelmesh/core/cdk";
 
 /** Configuration specific to Azure OpenAI deployments. */
 interface AzureOpenAIConfig {
@@ -1029,10 +1031,10 @@ import {
     BaseStorage, BaseStorageConfig,
     BaseObservability, BaseObservabilityConfig,
     BaseDiscovery, BaseDiscoveryConfig,
-} from "modelmesh/cdk";
-import { CompletionRequest, CompletionResponse, TokenUsage } from "modelmesh/interfaces/provider";
-import { ModelSnapshot, CompletionRequest as RotationRequest } from "modelmesh/interfaces/rotation_policy";
-import { ProbeResult } from "modelmesh/interfaces/discovery";
+} from "@modelmesh/core/cdk";
+import { CompletionRequest, CompletionResponse, TokenUsage } from "@modelmesh/core/interfaces/provider";
+import { ModelSnapshot, CompletionRequest as RotationRequest } from "@modelmesh/core/interfaces/rotation_policy";
+import { ProbeResult } from "@modelmesh/core/interfaces/discovery";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -1412,19 +1414,19 @@ asyncio.run(main())
 import {
     BaseProvider,
     BaseProviderConfig,
-} from "modelmesh/cdk";
+} from "@modelmesh/core/cdk";
 import {
     ConnectorTestHarness,
     MockHttpClient,
     mockCompletionRequest,
     mockModelSnapshot,
-} from "modelmesh/cdk/helpers";
+} from "@modelmesh/core/cdk/helpers";
 import {
     CompletionRequest,
     CompletionResponse,
     ModelInfo,
     TokenUsage,
-} from "modelmesh/interfaces/provider";
+} from "@modelmesh/core/interfaces/provider";
 
 // ── The provider under test ──────────────────────────────────────
 
@@ -1651,9 +1653,9 @@ print(response.choices[0].message.content)
 #### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 const response = await client.chat.completions.create({
     model: "chat-completion",
     messages: [{ role: "user", content: "What is the tallest mountain?" }],
@@ -1704,10 +1706,10 @@ while True:
 #### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 import * as readline from "readline";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const ask = (prompt: string) => new Promise<string>((resolve) => rl.question(prompt, resolve));
@@ -1762,10 +1764,10 @@ while True:
 #### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 import * as readline from "readline";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const ask = (prompt: string) => new Promise<string>((resolve) => rl.question(prompt, resolve));
@@ -1837,10 +1839,10 @@ while True:
 #### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 import * as readline from "readline";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 const systemPrompt =
     "You are a friendly science tutor for teenagers. " +
@@ -1929,10 +1931,10 @@ while True:
 #### TypeScript
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 import * as readline from "readline";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 const systemPrompt =
     "You are a friendly science tutor for teenagers. " +
@@ -1990,6 +1992,164 @@ You have built a fully interactive AI chatbot with streaming, a custom personali
 - [Tutorial 0](#tutorial-0-chat-completion-in-4-lines----openai-compatible) -- understand what happens under the hood when you call `modelmesh.create()`
 - [Tutorial 1](#tutorial-1-multi-provider-rotation-with-capabilities) -- learn how to use multiple AI providers and choose between them
 - [Tutorial 2](#tutorial-2-your-first-provider-in-10-lines) -- if you want to build your own connector for a custom AI service
+
+---
+
+## Tutorial 9: Building a Browser-Compatible Provider
+
+### What you will learn
+
+- How to use `BrowserBaseProvider` to build a provider that runs in web browsers
+- How to configure CORS proxy support via `proxyUrl`
+- How to use `createBrowser()` as a browser-optimized alternative to `modelmesh.create()`
+
+### Background
+
+`BrowserBaseProvider` is the browser equivalent of `BaseProvider`. It uses `fetch()` instead of Node.js HTTP modules and `ReadableStream` instead of Node streams. The same protected hooks are available for subclassing. Use it when your provider will run in a browser, Deno, Bun, or Cloudflare Workers.
+
+### TypeScript
+
+**Step 1: Create a custom browser provider**
+
+```typescript
+import { BrowserBaseProvider, createBrowserProviderConfig } from '@modelmesh/core/browser';
+
+class MyBrowserProvider extends BrowserBaseProvider {
+    _buildHeaders() {
+        return {
+            ...super._buildHeaders(),
+            'X-Custom-Header': 'my-value',
+        };
+    }
+
+    _getCompletionEndpoint() {
+        return `${this.config.baseUrl}/api/generate`;
+    }
+}
+
+const provider = new MyBrowserProvider(createBrowserProviderConfig({
+    baseUrl: 'https://my-api.example.com',
+    apiKey: 'user-provided-key',
+    proxyUrl: 'http://localhost:9090',
+}));
+```
+
+**Step 2: Use with createBrowser()**
+
+```typescript
+import { createBrowser } from '@modelmesh/core/browser';
+
+const client = createBrowser({
+    providers: {
+        'my-provider': {
+            connector: 'browser-base',
+            config: {
+                baseUrl: 'https://api.openai.com',
+                apiKey: userApiKey,
+                proxyUrl: 'http://localhost:9090',
+            },
+        },
+    },
+    models: {
+        'openai.gpt-4o': {
+            provider: 'my-provider',
+            capabilities: ['generation.text-generation.chat-completion'],
+        },
+    },
+});
+
+const response = await client.chat.completions.create({
+    model: 'chat-completion',
+    messages: [{ role: 'user', content: 'Hello!' }],
+});
+```
+
+### CORS Proxy Configuration
+
+The library ships a minimal CORS proxy in `tools/cors-proxy/`:
+
+```bash
+# Node.js (zero dependencies)
+node tools/cors-proxy/cors-proxy.js
+
+# Docker
+cd tools/cors-proxy && docker compose up
+
+# Third-party alternative
+npx local-cors-proxy --proxyUrl https://api.openai.com --port 9090
+```
+
+When `proxyUrl` is set, all API requests route through `{proxyUrl}/{baseUrl}/path`. Omit `proxyUrl` for browser extensions with `host_permissions` or providers that send CORS headers natively.
+
+> **See also:** [Browser Usage Guide](../guides/BrowserUsage.html) for security considerations, provider-specific notes, and full architecture details.
+
+---
+
+## Tutorial 10: Audio Provider Development
+
+### What you will learn
+
+- How audio requests bridge into the `CompletionRequest`/`CompletionResponse` pipeline
+- How to build a TTS or STT provider using the CDK
+- How audio pools and routing work
+
+### Background
+
+Audio capabilities (TTS, STT) use the same provider interface as text generation. The `AudioRequest` and `AudioResponse` types carry audio-specific parameters through the `extra` field of `CompletionRequest`/`CompletionResponse`. Audio providers register capabilities at `generation.audio.text-to-speech` or `understanding.audio.speech-to-text` and participate in the standard pool routing.
+
+### Python -- TTS Provider
+
+```python
+from modelmesh.cdk import BaseProvider, BaseProviderConfig
+from modelmesh.interfaces.provider import CompletionRequest, CompletionResponse
+
+class MyTTSProvider(BaseProvider):
+    """Custom TTS provider using the standard provider interface."""
+
+    def __init__(self, config):
+        super().__init__(BaseProviderConfig(
+            base_url=config["base_url"],
+            api_key=config["api_key"],
+            capabilities=["generation.audio.text-to-speech"],
+        ))
+
+    def _get_completion_endpoint(self):
+        return f"{self._config.base_url}/v1/audio/speech"
+
+    def _build_request_payload(self, request):
+        extra = request.extra or {}
+        return {
+            "input": extra.get("input", ""),
+            "voice": extra.get("voice", "default"),
+            "model": request.model,
+            "response_format": extra.get("format", "mp3"),
+        }
+
+    def _parse_response(self, data):
+        return CompletionResponse(
+            id="audio-" + str(id(data)),
+            model=self._config.models[0].id if self._config.models else "tts",
+            choices=[],
+            extra={"audio": data, "format": "mp3"},
+        )
+```
+
+### Routing Audio Requests
+
+Audio requests route through capability pools like any other request. Configure a pool targeting `generation.audio` to collect all TTS providers, or target the specific leaf `generation.audio.text-to-speech`:
+
+```yaml
+pools:
+  tts:
+    capability: generation.audio.text-to-speech
+    strategy: modelmesh.stick-until-failure.v1
+
+  stt:
+    capability: understanding.audio.speech-to-text
+    strategy: modelmesh.priority-selection.v1
+```
+
+The `client.audio.speech.create()` and `client.audio.transcriptions.create()` methods on `MeshClient` route through these pools automatically.
 
 ---
 

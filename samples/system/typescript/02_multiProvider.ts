@@ -17,75 +17,73 @@
  *   - Set OPENAI_API_KEY and ANTHROPIC_API_KEY environment variables
  */
 
-import { ModelMesh, MeshConfig } from "modelmesh-lite";
+import { ModelMesh, MeshConfig, CompletionResponse } from "@modelmesh/core";
 
 async function main(): Promise<void> {
   // -----------------------------------------------------------------------
   // 1. Define configuration with two providers
   // -----------------------------------------------------------------------
-  const config: MeshConfig = {
-    raw: {
-      // Use environment variables for secret resolution (default store)
-      providers: {
-        "openai.llm.v1": {
-          enabled: true,
-          api_key: "${secrets:OPENAI_API_KEY}",
-        },
-        "anthropic.llm.v1": {
-          enabled: true,
-          api_key: "${secrets:ANTHROPIC_API_KEY}",
-        },
+  const config = new MeshConfig({
+    // Use environment variables for secret resolution (default store)
+    providers: {
+      "openai.llm.v1": {
+        enabled: true,
+        api_key: "${secrets:OPENAI_API_KEY}",
       },
-
-      // Configure the text-generation pool with priority ordering and retry
-      pools: {
-        "text-generation": {
-          // Priority selection tries providers in the given order. When the
-          // first provider fails beyond the retry limit, it moves to standby
-          // and the next provider takes over.
-          strategy: "modelmesh.priority-selection.v1",
-          provider_priority: ["openai.llm.v1", "anthropic.llm.v1"],
-
-          // Deactivation: move a model to standby after 3 consecutive failures
-          deactivation: {
-            retry_limit: 3,
-            error_codes: [429, 500, 502, 503],
-          },
-
-          // Recovery: try the standby model again after 60 seconds
-          recovery: {
-            cooldown: "60s",
-            probe_interval: "300s",
-          },
-
-          // Retry: attempt the same model up to 2 times before rotating
-          retry: {
-            max_attempts: 2,
-            backoff: "exponential_jitter",
-            initial_delay: "500ms",
-            max_delay: "5s",
-            retryable_codes: [429, 500, 502, 503],
-            non_retryable_codes: [400, 401, 403],
-            scope: "same_provider",
-          },
-        },
+      "anthropic.llm.v1": {
+        enabled: true,
+        api_key: "${secrets:ANTHROPIC_API_KEY}",
       },
+    },
 
-      // Console observability prints routing decisions to stdout so you can
-      // see which provider was selected and any rotation events.
-      observability: {
-        routing: {
-          connector: "modelmesh.console.v1",
+    // Configure the text-generation pool with priority ordering and retry
+    pools: {
+      "text-generation": {
+        // Priority selection tries providers in the given order. When the
+        // first provider fails beyond the retry limit, it moves to standby
+        // and the next provider takes over.
+        strategy: "modelmesh.priority-selection.v1",
+        provider_priority: ["openai.llm.v1", "anthropic.llm.v1"],
+
+        // Deactivation: move a model to standby after 3 consecutive failures
+        deactivation: {
+          retry_limit: 3,
+          error_codes: [429, 500, 502, 503],
+        },
+
+        // Recovery: try the standby model again after 60 seconds
+        recovery: {
+          cooldown: "60s",
+          probe_interval: "300s",
+        },
+
+        // Retry: attempt the same model up to 2 times before rotating
+        retry: {
+          max_attempts: 2,
+          backoff: "exponential_jitter",
+          initial_delay: "500ms",
+          max_delay: "5s",
+          retryable_codes: [429, 500, 502, 503],
+          non_retryable_codes: [400, 401, 403],
+          scope: "same_provider",
         },
       },
     },
-  };
+
+    // Console observability prints routing decisions to stdout so you can
+    // see which provider was selected and any rotation events.
+    observability: {
+      routing: {
+        connector: "modelmesh.console.v1",
+      },
+    },
+  });
 
   // -----------------------------------------------------------------------
   // 2. Initialize and obtain the client
   // -----------------------------------------------------------------------
   const mesh = new ModelMesh();
-  await mesh.initialize(config);
+  mesh.initialize(config);
   console.log("ModelMesh initialized with OpenAI + Anthropic providers.\n");
 
   const client = mesh.getClient();
@@ -103,20 +101,20 @@ async function main(): Promise<void> {
     console.log(`\n--- Question: "${question}" ---`);
 
     try {
-      const response = await client.chat.completions.create({
+      const response = (await client.chat.completions.create({
         model: "text-generation",
         messages: [
           { role: "user", content: question },
         ],
         temperature: 0.5,
-        max_tokens: 200,
-      });
+        maxTokens: 200,
+      })) as CompletionResponse;
 
       // The response includes the *real* model name that served the request,
       // letting you see which provider was selected.
       console.log(`Routed to  : ${response.model}`);
-      console.log(`Response   : ${response.choices[0].message.content}`);
-      console.log(`Tokens used: ${response.usage.prompt_tokens + response.usage.completion_tokens}`);
+      console.log(`Response   : ${response.choices[0].message?.content}`);
+      console.log(`Tokens used: ${response.usage.promptTokens + response.usage.completionTokens}`);
     } catch (error) {
       // If all providers are exhausted, the error propagates to the caller.
       console.error("All providers failed:", error);
@@ -126,16 +124,15 @@ async function main(): Promise<void> {
   // -----------------------------------------------------------------------
   // 4. Inspect routing state (optional)
   // -----------------------------------------------------------------------
-  const router = mesh.getRouter();
-  const pool = router.getPool("text-generation");
+  const poolStatus = client.poolStatus("text-generation");
   console.log("\n--- Pool State ---");
   console.log(`Pool: text-generation`);
-  console.log(`Active models:`, pool);
+  console.log(`Active models: ${poolStatus.active}, Standby: ${poolStatus.standby}`);
 
   // -----------------------------------------------------------------------
   // 5. Shut down
   // -----------------------------------------------------------------------
-  await mesh.shutdown();
+  mesh.shutdown();
   console.log("\nModelMesh shut down.");
 }
 

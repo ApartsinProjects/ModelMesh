@@ -10,7 +10,7 @@ from modelmesh.cdk import FileSecretStore, FileSecretStoreConfig
 def main() -> None:
     store = FileSecretStore(FileSecretStoreConfig(
         file_path=".env",
-        file_format="dotenv",
+        format="env",
         cache_ttl_ms=60_000,
         fail_on_missing=True,
     ))

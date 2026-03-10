@@ -286,6 +286,55 @@ class TestModelMesh(unittest.TestCase):
                 os.unlink(tmp)
 
 
+class TestPoolStatus(unittest.TestCase):
+    """Tests for CapabilityPool.status() method."""
+
+    def test_status_returns_current_model_key(self):
+        """Pool status() uses snake_case 'current_model' key, not camelCase."""
+        mesh = ModelMesh()
+        mesh.initialize(_make_config())
+        pool = mesh.pools["chat-completion"]
+        status = pool.status()
+        self.assertIn("current_model", status)
+        self.assertNotIn("currentModel", status)
+
+    def test_status_shows_correct_model_when_active(self):
+        """Pool status() shows the first active model's ID as current_model."""
+        mesh = ModelMesh()
+        mesh.initialize(_make_config())
+        pool = mesh.pools["chat-completion"]
+        status = pool.status()
+        # With two models both active, current_model should be the first one
+        active = pool.active_models
+        self.assertGreater(len(active), 0)
+        self.assertEqual(status["current_model"], active[0].model_id)
+        self.assertGreater(status["active"], 0)
+        self.assertEqual(status["total"], 2)
+
+    def test_status_shows_none_when_all_standby(self):
+        """Pool status() shows current_model=None when all models are standby."""
+        mesh = ModelMesh()
+        mesh.initialize(_make_config())
+        pool = mesh.pools["chat-completion"]
+        # Move all models to standby
+        for model in pool.models:
+            model.status = ModelStatus.STANDBY
+        status = pool.status()
+        self.assertIsNone(status["current_model"])
+        self.assertEqual(status["active"], 0)
+        self.assertEqual(status["standby"], 2)
+        self.assertEqual(status["total"], 2)
+
+    def test_status_keys_complete(self):
+        """Pool status() returns all expected keys."""
+        mesh = ModelMesh()
+        mesh.initialize(_make_config())
+        pool = mesh.pools["chat-completion"]
+        status = pool.status()
+        expected_keys = {"active", "standby", "total", "current_model"}
+        self.assertEqual(set(status.keys()), expected_keys)
+
+
 class _ProviderWithDotCaps(_FakeProvider):
     """Fake provider that returns dot-notation capabilities in ModelInfo."""
 

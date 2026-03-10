@@ -306,7 +306,11 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
     def _stream_chat_response(
         self, mesh: ModelMesh, request: CompletionRequest
     ) -> None:
-        """Route a streaming chat request and emit SSE chunks."""
+        """Route a streaming chat request and emit SSE chunks.
+
+        Writes each chunk to the wire as it arrives from the async
+        generator, providing true real-time streaming to the client.
+        """
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
@@ -314,39 +318,31 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
         self._send_cors_headers()
         self.end_headers()
 
+        wfile = self.wfile
+
+        def _write_chunk(data: bytes) -> None:
+            """Write a single chunk using HTTP chunked transfer encoding."""
+            wfile.write(f"{len(data):x}\r\n".encode("utf-8"))
+            wfile.write(data)
+            wfile.write(b"\r\n")
+            wfile.flush()
+
         try:
-            async def _collect():
-                chunks = []
+            async def _stream_and_write():
                 async for chunk in mesh.route_stream(request):
-                    chunks.append(chunk)
-                return chunks
+                    chunk_dict = _completion_response_to_dict(chunk)
+                    chunk_dict["object"] = "chat.completion.chunk"
+                    data_line = f"data: {json.dumps(chunk_dict)}\n\n"
+                    _write_chunk(data_line.encode("utf-8"))
 
-            chunks = _run_sync(_collect())
-
-            for chunk in chunks:
-                chunk_dict = _completion_response_to_dict(chunk)
-                chunk_dict["object"] = "chat.completion.chunk"
-                data_line = f"data: {json.dumps(chunk_dict)}\n\n"
-                encoded = data_line.encode("utf-8")
-                # Chunked transfer encoding: hex size + CRLF + data + CRLF
-                self.wfile.write(
-                    f"{len(encoded):x}\r\n".encode("utf-8")
-                )
-                self.wfile.write(encoded)
-                self.wfile.write(b"\r\n")
-                self.wfile.flush()
+            _run_sync(_stream_and_write())
 
             # Send [DONE] marker
-            done_line = b"data: [DONE]\n\n"
-            self.wfile.write(
-                f"{len(done_line):x}\r\n".encode("utf-8")
-            )
-            self.wfile.write(done_line)
-            self.wfile.write(b"\r\n")
+            _write_chunk(b"data: [DONE]\n\n")
 
             # Chunked transfer terminator
-            self.wfile.write(b"0\r\n\r\n")
-            self.wfile.flush()
+            wfile.write(b"0\r\n\r\n")
+            wfile.flush()
 
         except Exception as exc:
             logger.exception("Streaming error")
@@ -354,13 +350,9 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
             try:
                 err = json.dumps({"error": {"message": str(exc)}})
                 err_line = f"data: {err}\n\n".encode("utf-8")
-                self.wfile.write(
-                    f"{len(err_line):x}\r\n".encode("utf-8")
-                )
-                self.wfile.write(err_line)
-                self.wfile.write(b"\r\n")
-                self.wfile.write(b"0\r\n\r\n")
-                self.wfile.flush()
+                _write_chunk(err_line)
+                wfile.write(b"0\r\n\r\n")
+                wfile.flush()
             except Exception:
                 pass
 

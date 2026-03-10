@@ -9,15 +9,14 @@
 
 import {
     BaseRotationPolicy,
-    BaseRotationPolicyConfig,
-    ModelSnapshot,
+    BaseRotationConfig,
+    ModelState,
     ModelStatus,
     DeactivationReason,
     CompletionRequest,
-    SelectionResult,
-    mockModelSnapshot,
-    mockCompletionRequest,
-} from "@modelmesh/cdk";
+    createDefaultModelState,
+    createDefaultCompletionRequest,
+} from "@modelmesh/core";
 
 /**
  * Rotation policy that routes based on time of day.
@@ -34,7 +33,7 @@ class TimeOfDayRotationPolicy extends BaseRotationPolicy {
     private cheapModels: string[];
 
     constructor(
-        config: BaseRotationPolicyConfig,
+        config: BaseRotationConfig,
         peakBudget: number = 5.0,
         cheapModels: string[] = [],
     ) {
@@ -49,17 +48,17 @@ class TimeOfDayRotationPolicy extends BaseRotationPolicy {
         return hour >= 9 && hour < 17;
     }
 
-    shouldDeactivate(snapshot: ModelSnapshot): boolean {
+    shouldDeactivate(state: ModelState): boolean {
         /** Deactivate expensive models during peak hours when over budget. */
         // Always check base thresholds first
-        if (super.shouldDeactivate(snapshot)) {
+        if (super.shouldDeactivate(state)) {
             return true;
         }
 
         // During peak hours, enforce tighter budget on non-cheap models
         if (this.isPeakHours()) {
-            if (!this.cheapModels.includes(snapshot.model_id)) {
-                if (snapshot.total_cost >= this.peakBudget) {
+            if (!this.cheapModels.includes(state.modelId)) {
+                if (state.totalCost >= this.peakBudget) {
                     return true;
                 }
             }
@@ -68,11 +67,11 @@ class TimeOfDayRotationPolicy extends BaseRotationPolicy {
         return false;
     }
 
-    score(candidate: ModelSnapshot, request: CompletionRequest): number {
+    score(candidate: ModelState, request: CompletionRequest): number {
         /** Score candidates: prefer cheap models during peak hours. */
         const baseScore = super.score(candidate, request);
 
-        if (this.isPeakHours() && this.cheapModels.includes(candidate.model_id)) {
+        if (this.isPeakHours() && this.cheapModels.includes(candidate.modelId)) {
             // Boost cheap models during peak hours
             return baseScore + 100.0;
         }
@@ -93,12 +92,12 @@ function main(): void {
         ["gpt-3.5-turbo"],
     );
 
-    // Create test snapshots
-    const gpt4 = mockModelSnapshot({
+    // Create test model states
+    const gpt4 = createDefaultModelState({
         modelId: "gpt-4o",
         providerId: "openai",
     });
-    const gpt35 = mockModelSnapshot({
+    const gpt35 = createDefaultModelState({
         modelId: "gpt-3.5-turbo",
         providerId: "openai",
     });
@@ -108,21 +107,25 @@ function main(): void {
     console.log(`GPT-3.5 deactivate? ${policy.shouldDeactivate(gpt35)}`);
 
     // Test selection
-    const request = mockCompletionRequest({ model: "gpt-4o" });
+    const request = createDefaultCompletionRequest({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: "Hello" }],
+    });
     const candidates = [gpt4, gpt35];
-    const result: SelectionResult = policy.select(candidates, request);
-    console.log(
-        `\nSelected: ${result.model_id} (score=${result.score.toFixed(1)}, ` +
-        `reason=${result.reason})`
-    );
+    const result = policy.select(candidates, request);
+    if (result) {
+        console.log(
+            `\nSelected: ${result.modelId} (score=${policy.score(result, request).toFixed(1)})`
+        );
+    }
 
     // Show scores for both candidates
     for (const c of candidates) {
-        console.log(`  ${c.model_id}: score=${policy.score(c, request).toFixed(1)}`);
+        console.log(`  ${c.modelId}: score=${policy.score(c, request).toFixed(1)}`);
     }
 
     // Test recovery
-    const standby = mockModelSnapshot({
+    const standby = createDefaultModelState({
         modelId: "gpt-4o",
         status: ModelStatus.STANDBY,
         failureCount: 0,

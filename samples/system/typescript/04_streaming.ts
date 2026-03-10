@@ -17,60 +17,58 @@
  *   - Set OPENAI_API_KEY and GOOGLE_API_KEY environment variables
  */
 
-import { ModelMesh, MeshConfig } from "modelmesh-lite";
+import { ModelMesh, MeshConfig, CompletionResponse } from "@modelmesh/core";
 
 async function main(): Promise<void> {
   // -----------------------------------------------------------------------
   // 1. Configure two streaming-capable providers
   // -----------------------------------------------------------------------
-  const config: MeshConfig = {
-    raw: {
-      providers: {
-        "openai.llm.v1": {
-          enabled: true,
-          api_key: "${secrets:OPENAI_API_KEY}",
-        },
-        "google.gemini.v1": {
-          enabled: true,
-          api_key: "${secrets:GOOGLE_API_KEY}",
-        },
+  const config = new MeshConfig({
+    providers: {
+      "openai.llm.v1": {
+        enabled: true,
+        api_key: "${secrets:OPENAI_API_KEY}",
       },
-
-      pools: {
-        "text-generation": {
-          strategy: "modelmesh.stick-until-failure.v1",
-          provider_priority: ["openai.llm.v1", "google.gemini.v1"],
-
-          deactivation: {
-            retry_limit: 2,
-            error_codes: [429, 500, 502, 503],
-          },
-          recovery: {
-            cooldown: "30s",
-          },
-          retry: {
-            max_attempts: 1,
-            backoff: "fixed",
-            initial_delay: "500ms",
-            retryable_codes: [429, 500, 502, 503],
-            scope: "any",
-          },
-        },
+      "google.gemini.v1": {
+        enabled: true,
+        api_key: "${secrets:GOOGLE_API_KEY}",
       },
+    },
 
-      observability: {
-        routing: {
-          connector: "modelmesh.console.v1",
+    pools: {
+      "text-generation": {
+        strategy: "modelmesh.stick-until-failure.v1",
+        provider_priority: ["openai.llm.v1", "google.gemini.v1"],
+
+        deactivation: {
+          retry_limit: 2,
+          error_codes: [429, 500, 502, 503],
+        },
+        recovery: {
+          cooldown: "30s",
+        },
+        retry: {
+          max_attempts: 1,
+          backoff: "fixed",
+          initial_delay: "500ms",
+          retryable_codes: [429, 500, 502, 503],
+          scope: "any",
         },
       },
     },
-  };
+
+    observability: {
+      routing: {
+        connector: "modelmesh.console.v1",
+      },
+    },
+  });
 
   // -----------------------------------------------------------------------
   // 2. Initialize
   // -----------------------------------------------------------------------
   const mesh = new ModelMesh();
-  await mesh.initialize(config);
+  mesh.initialize(config);
   console.log("ModelMesh initialized with OpenAI + Gemini (streaming mode).\n");
 
   const client = mesh.getClient();
@@ -83,16 +81,16 @@ async function main(): Promise<void> {
 
   // When stream=true, the client returns an AsyncIterable of chunks.
   // Each chunk contains incremental content from the selected model.
-  const stream = await client.chat.completions.create({
+  const stream = (await client.chat.completions.create({
     model: "text-generation",
     messages: [
       { role: "system", content: "You are a creative storyteller." },
       { role: "user", content: "Write a short story about a robot learning to paint. Keep it under 200 words." },
     ],
     temperature: 0.8,
-    max_tokens: 300,
+    maxTokens: 300,
     stream: true,
-  });
+  })) as AsyncIterableIterator<CompletionResponse>;
 
   // The stream object is an AsyncIterable. If the underlying provider
   // errors mid-stream, ModelMesh transparently retries or rotates to
@@ -100,7 +98,7 @@ async function main(): Promise<void> {
   let fullContent = "";
   let chunkCount = 0;
 
-  for await (const chunk of stream as AsyncIterable<any>) {
+  for await (const chunk of stream) {
     const delta = chunk.choices?.[0]?.delta?.content ?? "";
     if (delta) {
       process.stdout.write(delta);
@@ -119,7 +117,7 @@ async function main(): Promise<void> {
   console.log("\n--- Second Streaming Request ---");
   console.log("Prompt: Continue the story.\n");
 
-  const stream2 = await client.chat.completions.create({
+  const stream2 = (await client.chat.completions.create({
     model: "text-generation",
     messages: [
       { role: "system", content: "You are a creative storyteller." },
@@ -128,11 +126,11 @@ async function main(): Promise<void> {
       { role: "user", content: "Continue the story in 100 words." },
     ],
     temperature: 0.8,
-    max_tokens: 200,
+    maxTokens: 200,
     stream: true,
-  });
+  })) as AsyncIterableIterator<CompletionResponse>;
 
-  for await (const chunk of stream2 as AsyncIterable<any>) {
+  for await (const chunk of stream2) {
     const delta = chunk.choices?.[0]?.delta?.content ?? "";
     if (delta) {
       process.stdout.write(delta);
@@ -144,7 +142,7 @@ async function main(): Promise<void> {
   // -----------------------------------------------------------------------
   // 5. Shut down
   // -----------------------------------------------------------------------
-  await mesh.shutdown();
+  mesh.shutdown();
   console.log("ModelMesh shut down.");
 }
 

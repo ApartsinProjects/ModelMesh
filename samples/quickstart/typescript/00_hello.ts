@@ -12,22 +12,22 @@
  *   - Set at least one provider API key (e.g., OPENAI_API_KEY).
  */
 
-import ModelMesh from "modelmesh";
+import { create, CompletionResponse } from "@modelmesh/core";
 
 // Create a client for the "chat-completion" capability.
 // Providers are auto-detected from environment variables.
-const client = ModelMesh.create("chat-completion");
+const client = create("chat-completion");
 
 async function main(): Promise<void> {
   // Standard OpenAI-compatible call — virtual model name = capability name.
-  const response = await client.chat.completions.create({
+  const response = (await client.chat.completions.create({
     model: "chat-completion",
     messages: [
       { role: "user", content: "Explain what an API is in two sentences." },
     ],
-  });
+  })) as CompletionResponse;
 
-  console.log(response.choices[0].message.content);
+  console.log(response.choices[0].message?.content);
 }
 
 main();

@@ -397,9 +397,18 @@ class BaseProvider(ProviderConnector):
         raw_choices = data.get("choices", [])
         choices: list[CompletionChoice] = []
         for raw in raw_choices:
+            msg_data = raw.get("message")
+            message = None
+            if msg_data:
+                message = ChatMessage(
+                    role=msg_data.get("role", "assistant"),
+                    content=msg_data.get("content"),
+                    tool_calls=msg_data.get("tool_calls"),
+                )
             choices.append(
                 CompletionChoice(
                     index=raw.get("index", 0),
+                    message=message,
                     finish_reason=raw.get("finish_reason"),
                 )
             )
@@ -447,9 +456,18 @@ class BaseProvider(ProviderConnector):
             return None
         choices: list[CompletionChoice] = []
         for raw in raw_choices:
+            delta_data = raw.get("delta")
+            delta = None
+            if delta_data:
+                delta = ChatMessage(
+                    role=delta_data.get("role", "assistant"),
+                    content=delta_data.get("content"),
+                    tool_calls=delta_data.get("tool_calls"),
+                )
             choices.append(
                 CompletionChoice(
                     index=raw.get("index", 0),
+                    delta=delta,
                     finish_reason=raw.get("finish_reason"),
                 )
             )

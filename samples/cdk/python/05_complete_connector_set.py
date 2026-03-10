@@ -17,9 +17,9 @@ import asyncio
 from datetime import datetime
 
 from modelmesh.cdk import (
-    BaseObservabilityConfig,
-    BaseProviderConfig,
-    BaseRotationPolicyConfig,
+    ConsoleObservabilityConfig,
+    OpenAICompatibleConfig,
+    ThresholdRotationConfig,
     ConsoleObservability,
     FileSecretStore,
     FileSecretStoreConfig,
@@ -45,7 +45,7 @@ from modelmesh.interfaces.storage import StorageEntry
 
 def create_provider() -> OpenAICompatibleProvider:
     """Create an AcmeCorp provider using the OpenAI-compatible format."""
-    return OpenAICompatibleProvider(BaseProviderConfig(
+    return OpenAICompatibleProvider(OpenAICompatibleConfig(
         base_url="https://api.acmecorp.example.com",
         api_key="acme-api-key-placeholder",
         timeout=30.0,
@@ -75,12 +75,12 @@ def create_provider() -> OpenAICompatibleProvider:
 
 def create_rotation_policy() -> ThresholdRotationPolicy:
     """Create a threshold-based rotation policy with AcmeCorp priority."""
-    return ThresholdRotationPolicy(BaseRotationPolicyConfig(
-        failure_threshold=5,
+    return ThresholdRotationPolicy(ThresholdRotationConfig(
+        failure_count_threshold=5,
         error_rate_threshold=0.3,
         cooldown_seconds=120,
-        budget_limit=50.0,
-        model_priority=["acme-large", "acme-small"],
+        budget_threshold=50.0,
+        priority_list=["acme-large", "acme-small"],
     ))
 
 
@@ -90,7 +90,7 @@ def create_secret_store() -> FileSecretStore:
     """Create a file-backed secret store for AcmeCorp credentials."""
     return FileSecretStore(FileSecretStoreConfig(
         file_path=".env",
-        file_format="dotenv",
+        format="env",
         cache_ttl_ms=120_000,
         fail_on_missing=False,
     ))
@@ -111,7 +111,7 @@ def create_storage() -> KeyValueStorage:
 
 def create_observability() -> ConsoleObservability:
     """Create a console observability connector for development."""
-    return ConsoleObservability(BaseObservabilityConfig(
+    return ConsoleObservability(ConsoleObservabilityConfig(
         log_level="summary",
         redact_secrets=True,
         scopes=["model", "provider"],
@@ -194,7 +194,7 @@ async def main() -> None:
 
     # Clean up
     await provider.close()
-    await discovery.close()
+    # No close() needed -- HttpHealthDiscovery has no persistent connections
 
     print("\nAll 6 connectors created and exercised successfully.")
 

@@ -2,7 +2,7 @@
 01 - Basic Chat Completion
 ==========================
 
-Simplest possible ModelMesh Lite setup: a single OpenAI provider, one model,
+Simplest possible ModelMesh Lite setup: a single provider, one model,
 and a chat completion request.
 
 This sample demonstrates:
@@ -15,70 +15,107 @@ The virtual model name "text-generation" maps to a capability pool.  ModelMesh
 resolves it to the best (and in this case only) active real model and provider,
 then forwards the request transparently.
 
-Prerequisites:
-  - Set the OPENAI_API_KEY environment variable.
+Uses a mock provider so it runs without API keys.
 """
 
 import asyncio
-import yaml
 from modelmesh import ModelMesh, MeshConfig
+from modelmesh.interfaces.provider import (
+    ChatMessage, CompletionChoice, CompletionRequest, CompletionResponse,
+    ErrorClassification, ModelInfo, ModelPricing, ProviderConnector,
+    QuotaStatus, RateLimitStatus, TokenUsage,
+)
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-# Inline YAML keeps the sample self-contained.  In production you would use
-# ModelMesh.from_yaml("config.yaml") or load from a storage connector.
 
-CONFIG_YAML = """
-secrets:
-  store: modelmesh.env.v1          # read API keys from environment variables
+class MockOpenAIProvider(ProviderConnector):
+    """Mock provider simulating an OpenAI-style chat model."""
 
-providers:
-  openai.llm.v1:
-    enabled: true
-    api_key: ${secrets:OPENAI_API_KEY}
+    async def complete(self, request: CompletionRequest) -> CompletionResponse:
+        return CompletionResponse(
+            id="mock-01",
+            model="gpt-4o-mini",
+            choices=[CompletionChoice(
+                index=0,
+                message=ChatMessage(
+                    role="assistant",
+                    content=(
+                        "An API gateway is a server that acts as a single entry "
+                        "point for a set of microservices, handling request "
+                        "routing, authentication, and rate limiting. It simplifies "
+                        "client interaction by abstracting the complexity of the "
+                        "backend architecture behind a unified interface."
+                    ),
+                ),
+                finish_reason="stop",
+            )],
+            usage=TokenUsage(prompt_tokens=25, completion_tokens=45, total_tokens=70),
+        )
 
-models:
-  gpt-4o-mini:
-    provider: openai.llm.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      system_prompt: true
-    constraints:
-      context_window: 128000
-      max_output_tokens: 16384
+    async def stream(self, request):
+        yield await self.complete(request)
 
-pools:
-  text-generation:
-    strategy: modelmesh.stick-until-failure.v1
+    def get_capabilities(self):
+        return ["generation.text-generation.chat-completion"]
 
-observability:
-  routing:
-    connector: modelmesh.console.v1   # print routing decisions to stdout
-"""
+    def supports(self, cap):
+        return cap in self.get_capabilities()
+
+    def list_models(self):
+        return [ModelInfo(id="gpt-4o-mini", name="GPT-4o Mini (mock)")]
+
+    def get_model_info(self, mid):
+        return ModelInfo(id=mid, name=mid)
+
+    def check_quota(self):
+        return QuotaStatus()
+
+    def get_rate_limits(self):
+        return RateLimitStatus()
+
+    def get_pricing(self, mid):
+        return ModelPricing()
+
+    def report_usage(self, mid, usage):
+        pass
+
+    def classify_error(self, error):
+        return ErrorClassification(retryable=False)
 
 
 async def main() -> None:
-    # 1. Parse the YAML into a MeshConfig and initialize ModelMesh.
-    config = MeshConfig(raw=yaml.safe_load(CONFIG_YAML))
+    # 1. Build a MeshConfig with the mock provider.
+    config = MeshConfig(raw={
+        "providers": {
+            "openai.llm.v1": {
+                "connector": "openai.llm.v1",
+                "enabled": True,
+                "instance": MockOpenAIProvider(),
+            },
+        },
+        "models": {
+            "gpt-4o-mini": {
+                "provider": "openai.llm.v1",
+                "capabilities": [
+                    "generation.text-generation.chat-completion",
+                ],
+            },
+        },
+        "pools": {
+            "text-generation": {
+                "capability": "generation.text-generation.chat-completion",
+                "strategy": "stick-until-failure",
+            },
+        },
+    })
     mesh = ModelMesh()
     mesh.initialize(config)
 
-    print("ModelMesh initialized with a single OpenAI provider.\n")
+    print("ModelMesh initialized with a single provider.\n")
 
     # 2. Get the OpenAI-compatible client.
-    #    This client mirrors the official OpenAI SDK interface.
     client = mesh.get_client()
 
     # 3. Make a chat completion request.
-    #    "text-generation" is a virtual model name that resolves to the
-    #    text-generation capability pool.  ModelMesh selects gpt-4o-mini
-    #    because it is the only model registered in that pool.
     print("Sending chat completion request...")
     response = client.chat.completions.create(
         model="text-generation",
@@ -96,7 +133,7 @@ async def main() -> None:
     print(f"Tokens out : {response.usage.completion_tokens}")
     print(f"\nAssistant:\n{response.choices[0].message.content}")
 
-    # 5. Shut down gracefully (flushes state and statistics).
+    # 5. Shut down gracefully.
     mesh.shutdown()
     print("\nModelMesh shut down.")
 

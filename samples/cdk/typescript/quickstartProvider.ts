@@ -10,32 +10,40 @@ import {
     BaseProviderConfig,
     CompletionRequest,
     ModelInfo,
-} from "@modelmesh/cdk";
+    createDefaultModelInfo,
+    createDefaultCompletionRequest,
+} from "@modelmesh/core";
 
 async function main(): Promise<void> {
     const provider = new OpenAICompatibleProvider({
         baseUrl: "https://api.openai.com",
         apiKey: "sk-your-api-key",
+        timeout: 30,
+        maxRetries: 3,
+        authMethod: "api_key",
+        retryableCodes: [429, 500, 502, 503],
+        nonRetryableCodes: [400, 401, 403],
+        capabilities: ["generation.text-generation.chat-completion"],
         models: [
-            {
+            createDefaultModelInfo({
                 id: "gpt-4o",
                 name: "GPT-4o",
                 capabilities: ["generation.text-generation.chat-completion"],
                 features: { tool_calling: true },
-                context_window: 128_000,
-                max_output_tokens: 16_384,
-            },
+                contextWindow: 128_000,
+                maxOutputTokens: 16_384,
+            }),
         ],
     });
 
-    const request: CompletionRequest = {
+    const request: CompletionRequest = createDefaultCompletionRequest({
         model: "gpt-4o",
         messages: [{ role: "user", content: "Say hello!" }],
-    };
+    });
 
     const response = await provider.complete(request);
-    console.log(`Response: ${response.choices[0]}`);
-    console.log(`Tokens used: ${response.usage.total_tokens}`);
+    console.log(`Response: ${response.choices[0]?.message?.content}`);
+    console.log(`Tokens used: ${response.usage.totalTokens}`);
 
     await provider.close();
 }

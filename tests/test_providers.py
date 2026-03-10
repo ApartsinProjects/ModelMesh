@@ -63,6 +63,9 @@ from modelmesh.connectors.providers.firecrawl_provider import (
 from modelmesh.connectors.providers.assemblyai_provider import (
     AssemblyAIProvider, AssemblyAIProviderConfig,
 )
+from modelmesh.connectors.providers.azure_speech_provider import (
+    AzureSpeechProvider, AzureSpeechProviderConfig,
+)
 
 
 # ========================================================================
@@ -685,6 +688,109 @@ class TestAssemblyAIProvider(unittest.TestCase):
                 any("speech-to-text" in c for c in m.capabilities),
                 f"Model {m.id} should have STT capability",
             )
+
+
+# ========================================================================
+# Azure Speech TTS
+# ========================================================================
+
+class TestAzureSpeechProvider(unittest.TestCase):
+    def setUp(self):
+        self.config = AzureSpeechProviderConfig(api_key="azure-test-key")
+        self.provider = AzureSpeechProvider(self.config)
+
+    def test_connector_id(self):
+        self.assertEqual(AzureSpeechProvider.CONNECTOR_ID, "azure.tts.v1")
+
+    def test_default_region(self):
+        self.assertEqual(self.config.region, "eastus")
+
+    def test_default_base_url_from_region(self):
+        self.assertEqual(
+            self.config.base_url,
+            "https://eastus.tts.speech.microsoft.com",
+        )
+
+    def test_custom_region_updates_base_url(self):
+        config = AzureSpeechProviderConfig(
+            api_key="key", region="westeurope"
+        )
+        self.assertEqual(
+            config.base_url,
+            "https://westeurope.tts.speech.microsoft.com",
+        )
+
+    def test_headers_subscription_key(self):
+        headers = self.provider._build_headers()
+        self.assertIn("Ocp-Apim-Subscription-Key", headers)
+        self.assertEqual(
+            headers["Ocp-Apim-Subscription-Key"], "azure-test-key"
+        )
+
+    def test_headers_content_type_ssml(self):
+        headers = self.provider._build_headers()
+        self.assertEqual(headers["Content-Type"], "application/ssml+xml")
+
+    def test_headers_output_format(self):
+        headers = self.provider._build_headers()
+        self.assertIn("X-Microsoft-OutputFormat", headers)
+        self.assertEqual(
+            headers["X-Microsoft-OutputFormat"],
+            "audio-24khz-48kbitrate-mono-mp3",
+        )
+
+    def test_headers_user_agent(self):
+        headers = self.provider._build_headers()
+        self.assertIn("User-Agent", headers)
+
+    def test_endpoint(self):
+        endpoint = self.provider._get_completion_endpoint()
+        self.assertEqual(
+            endpoint,
+            "https://eastus.tts.speech.microsoft.com/cognitiveservices/v1",
+        )
+
+    def test_default_models(self):
+        models = self.provider.list_models()
+        ids = [m.id for m in models]
+        self.assertIn("en-US-JennyNeural", ids)
+        self.assertIn("en-US-AndrewNeural", ids)
+
+    def test_tts_capability(self):
+        models = self.provider.list_models()
+        for m in models:
+            self.assertTrue(
+                any("text-to-speech" in c for c in m.capabilities),
+                f"Model {m.id} should have TTS capability",
+            )
+
+    def test_build_payload_ssml_format(self):
+        request = CompletionRequest(
+            model="en-US-JennyNeural",
+            messages=[{"role": "user", "content": "Hello world"}],
+        )
+        payload = self.provider._build_request_payload(request)
+        ssml = payload["__ssml_body"]
+        self.assertIn("<speak", ssml)
+        self.assertIn("<voice", ssml)
+        self.assertIn("en-US-JennyNeural", ssml)
+        self.assertIn("Hello world", ssml)
+
+    def test_build_payload_escapes_xml(self):
+        request = CompletionRequest(
+            model="en-US-JennyNeural",
+            messages=[{"role": "user", "content": "A & B < C"}],
+        )
+        payload = self.provider._build_request_payload(request)
+        ssml = payload["__ssml_body"]
+        self.assertIn("A &amp; B &lt; C", ssml)
+        self.assertNotIn("A & B < C", ssml)
+
+    def test_default_voice(self):
+        self.assertEqual(self.config.voice, "en-US-JennyNeural")
+
+    def test_default_language(self):
+        self.assertEqual(self.config.language, "en-US")
 
 
 # ========================================================================

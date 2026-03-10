@@ -118,6 +118,7 @@ pools:
 | **Replicate** | `provider.replicate.inference.v1` | Run any open-source model via API. Pay-per-second billing. | Flux Schnell, SDXL, Llama 3, Whisper | Limited free predictions; no credit card required | [replicate.com/docs](https://replicate.com/docs) |
 | **ElevenLabs** | `provider.elevenlabs.tts.v1` | Leading voice AI. Realistic speech synthesis and voice cloning. | Multilingual v2, Turbo v2.5, Flash v2.5, Monolingual v1 | 10,000 chars/month (~20 min audio); 3 custom voices; non-commercial | [elevenlabs.io/docs](https://elevenlabs.io/docs) |
 | **AssemblyAI** | `provider.assemblyai.stt.v1` | Speech intelligence platform. Transcription with built-in NLU. | Universal, Nano | $50 credits (~185h transcription); one-time, non-recurring | [www.assemblyai.com/docs](https://www.assemblyai.com/docs) |
+| **Azure Speech** | `provider.azure.tts.v1` | Microsoft Azure Cognitive Services Speech. Neural TTS with 400+ voices in 140+ languages. | en-US-JennyNeural, en-US-AndrewNeural, and all Azure Neural voices | 0.5M chars/month free (Neural); 5M chars/month free (Standard) | [learn.microsoft.com/azure/ai-services/speech-service](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-text-to-speech) |
 
 ### Aggregators and Inference Platforms
 
@@ -184,9 +185,40 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 | **Stability AI**      | -        | yes       | -     | -          | -      | -        | -     | -         | credits       |
 | **ElevenLabs**        | -        | -         | yes   | -          | -      | -        | -     | -         | 10k chars/mo  |
 | **AssemblyAI**        | -        | -         | yes   | -          | -      | -        | -     | -         | $50 credit    |
+| **Azure Speech**      | -        | -         | yes   | -          | -      | -        | -     | -         | 0.5M chars/mo |
 | **Perplexity**        | yes      | -         | -     | -          | yes    | yes      | -     | -         | Pro only      |
 | **AWS Bedrock**       | yes      | yes       | -     | yes        | -      | yes      | yes   | yes       | AWS credits   |
 | **Google Cloud APIs** | -        | -         | yes   | -          | -      | -        | -     | -         | generous      |
+
+### CDK Base Classes for Providers
+
+| Base Class | Environment | Transport | Streaming | Use Case |
+| --- | --- | --- | --- | --- |
+| **BaseProvider** | Node.js | `http`/`https` | Node.js streams | Server-side applications, CLI tools, backend services |
+| **BrowserBaseProvider** | Browser, Deno, Bun, Workers | Fetch API | `ReadableStream` | Single-page apps, browser extensions, edge runtimes |
+
+Both classes expose the same provider interface and the same protected hooks for subclassing. See [cdk/BaseClasses.md](cdk/BaseClasses.html#browserbAseprovider) for details and [guides/BrowserUsage.md](guides/BrowserUsage.html) for browser setup.
+
+### Audio Namespace
+
+ElevenLabs (`elevenlabs.tts.v1`), Azure Speech (`azure.tts.v1`), and AssemblyAI (`assemblyai.stt.v1`) are accessible through the MeshClient audio namespace, which follows the OpenAI SDK audio pattern:
+
+```python
+# Text-to-speech
+audio_response = client.audio.speech.create(
+    model="text-to-speech",
+    input="Hello, world!",
+    voice="alloy",
+)
+
+# Speech-to-text
+transcript = client.audio.transcriptions.create(
+    model="speech-to-text",
+    file=audio_file,
+)
+```
+
+Audio requests are internally bridged to `CompletionRequest`/`CompletionResponse` via the `AudioRequest` and `AudioResponse` types (see [ConnectorInterfaces.md -- Audio](ConnectorInterfaces.html#audio)). The same rotation, failover, and pool logic applies to audio providers.
 
 ---
 
@@ -219,7 +251,9 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | **`secret-store.google.secret-manager.v1`** | Google Cloud managed secrets with IAM and audit logging | 6 active versions free; 10K access ops/month free | [cloud.google.com/secret-manager](https://cloud.google.com/secret-manager) |
 | **`secret-store.microsoft.key-vault.v1`** | Microsoft cloud secret, key, and certificate management | 10K operations/month free (Standard tier) | [azure.microsoft.com/en-us/products/key-vault](https://azure.microsoft.com/en-us/products/key-vault) |
 | **`secret-store.1password.connect.v1`** | Secrets Automation API for CI/CD and server-side use | No free API tier; requires Business or Enterprise plan | [developer.1password.com](https://developer.1password.com) |
-| **`secret-store.modelmesh.json-secrets.v1`** | Reads secrets from a local JSON file. Keys are top-level object keys; values are strings. | Built-in | - |
+| **`secret-store.modelmesh.json-secrets.v1`** | Reads secrets from a local JSON file. Keys are top-level object keys; values are strings. Supports dot-notation for nested keys. | Built-in | - |
+| **`secret-store.modelmesh.memory-secrets.v1`** | Holds secrets in an in-memory dictionary. Ideal for testing, scripting, and user-provided keys. Supports runtime add/remove via SecretManagement interface. | Built-in | - |
+| **`secret-store.modelmesh.encrypted-file.v1`** | AES-256-GCM encrypted JSON file. Secrets are decrypted at initialization using a passphrase (PBKDF2) or raw key. Supports save/load round-trips. | Built-in | - |
 | **`secret-store.modelmesh.keyring.v1`** | Resolves secrets from the OS keyring (macOS Keychain, Windows Credential Locker, Linux Secret Service). | Built-in | - |
 
 ### Connector-Specific Configuration
@@ -265,19 +299,44 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `path` | string | Path to the JSON secrets file. Default: `./secrets.json`. |
+| `file_path` | string | Path to the JSON secrets file. |
+| `json_path` | string | Dot-notation path to scope lookups to a nested object (e.g., `secrets.production`). |
+| `fail_on_missing` | boolean | Throw on missing keys. Default: `true`. |
+
+**`secret-store.modelmesh.memory-secrets.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `secrets` | object | Dictionary of secret name/value pairs. |
+| `fail_on_missing` | boolean | Throw on missing keys. Default: `true`. |
+| `cache_enabled` | boolean | Enable TTL-based caching. Default: `true`. |
+
+**`secret-store.modelmesh.encrypted-file.v1`:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | string | Path to the encrypted secrets file. |
+| `passphrase` | string | Human-readable passphrase for PBKDF2 key derivation. |
+| `encryption_key` | string | Raw 32-byte key as a 64-character hex string. Overrides passphrase. |
+| `pbkdf2_iterations` | integer | PBKDF2 iteration count. Default: `600000`. |
+| `fail_on_missing` | boolean | Throw on missing keys. Default: `true`. |
 
 **`secret-store.modelmesh.keyring.v1`:**
 
 | Parameter | Type | Description |
 | --- | --- | --- |
 | `service_name` | string | Keyring service/application name. Default: `modelmesh`. |
+| `fail_on_missing` | boolean | Throw on missing keys. Default: `true`. |
 
 ### Deployment Patterns
 
 | Environment | Recommended Store | Reason |
 | --- | --- | --- |
 | Local dev | `modelmesh.dotenv.v1` / `modelmesh.env.v1` | simple, no infra |
+| Unit tests | `modelmesh.memory-secrets.v1` | inject known secrets without env setup |
+| Scripts | `modelmesh.memory-secrets.v1` | pass keys from user input at runtime |
+| Shared config | `modelmesh.encrypted-file.v1` | keys encrypted at rest, safe to commit |
+| Desktop apps | `modelmesh.keyring.v1` | OS-native secure storage |
 | AWS / GCP | native secret manager | IAM integration |
 | Serverless | cloud secret manager | runtime injection |
 | Client-side | server proxy | keys never reach client |

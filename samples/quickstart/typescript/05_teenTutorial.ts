@@ -19,16 +19,17 @@
  */
 
 import * as readline from "readline";
-import ModelMesh from "modelmesh";
+import { create, CompletionResponse } from "@modelmesh/core";
 
 // --- Step 1: Create a client ---
 // This one line sets everything up.  ModelMesh finds your API key
 // automatically from environment variables.
-const client = ModelMesh.create("chat-completion");
+const client = create("chat-completion");
 
 interface Message {
   role: "system" | "user" | "assistant";
   content: string;
+  [key: string]: unknown;
 }
 
 async function main(): Promise<void> {
@@ -72,16 +73,16 @@ async function main(): Promise<void> {
     // --- Step 5: Stream the AI's response ---
     // stream: true makes the answer appear word-by-word, like typing.
     process.stdout.write("Bot: ");
-    const stream = await client.chat.completions.create({
+    const stream = (await client.chat.completions.create({
       model: "chat-completion",
       messages,
       stream: true,
-    });
+    })) as AsyncIterableIterator<CompletionResponse>;
 
     // Collect the full reply so we can save it to history.
     let fullReply = "";
     for await (const chunk of stream) {
-      const token = chunk.choices[0].delta.content;
+      const token = chunk.choices[0].delta?.content;
       if (token != null) {
         process.stdout.write(token);
         fullReply += token;

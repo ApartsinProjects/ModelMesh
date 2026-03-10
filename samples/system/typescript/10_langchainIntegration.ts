@@ -19,11 +19,15 @@
  * LangChain depends on.
  *
  * Prerequisites:
- *   - npm install langchain @langchain/openai
+ *   - npm install langchain @langchain/openai @langchain/core
  *   - Set OPENAI_API_KEY and ANTHROPIC_API_KEY environment variables
+ *
+ * NOTE: This sample requires @langchain/openai and @langchain/core to be
+ * installed separately. It will not compile without those packages.
  */
 
-import { ModelMesh, MeshConfig } from "modelmesh-lite";
+// @ts-nocheck -- LangChain dependencies are optional; skip type checking
+import { ModelMesh, MeshConfig } from "@modelmesh/core";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -32,78 +36,65 @@ async function main(): Promise<void> {
   // -----------------------------------------------------------------------
   // 1. Configure ModelMesh with multiple providers
   // -----------------------------------------------------------------------
-  const config: MeshConfig = {
-    raw: {
-      providers: {
-        "openai.llm.v1": {
-          enabled: true,
-          api_key: "${secrets:OPENAI_API_KEY}",
-          budget: {
-            daily_limit: 5.00,
-          },
-        },
-        "anthropic.llm.v1": {
-          enabled: true,
-          api_key: "${secrets:ANTHROPIC_API_KEY}",
-          budget: {
-            daily_limit: 5.00,
-          },
+  const config = new MeshConfig({
+    providers: {
+      "openai.llm.v1": {
+        enabled: true,
+        api_key: "${secrets:OPENAI_API_KEY}",
+        budget: {
+          daily_limit: 5.00,
         },
       },
-
-      pools: {
-        "text-generation": {
-          strategy: "modelmesh.cost-first.v1",
-          deactivation: {
-            retry_limit: 3,
-            error_codes: [429, 500, 503],
-          },
-          recovery: {
-            cooldown: "60s",
-            on_quota_reset: true,
-          },
-          retry: {
-            max_attempts: 2,
-            backoff: "exponential_jitter",
-            initial_delay: "500ms",
-            retryable_codes: [429, 500, 502, 503],
-            scope: "same_provider",
-          },
-        },
-      },
-
-      observability: {
-        routing: {
-          connector: "modelmesh.console.v1",
+      "anthropic.llm.v1": {
+        enabled: true,
+        api_key: "${secrets:ANTHROPIC_API_KEY}",
+        budget: {
+          daily_limit: 5.00,
         },
       },
     },
-  };
+
+    pools: {
+      "text-generation": {
+        strategy: "modelmesh.cost-first.v1",
+        deactivation: {
+          retry_limit: 3,
+          error_codes: [429, 500, 503],
+        },
+        recovery: {
+          cooldown: "60s",
+          on_quota_reset: true,
+        },
+        retry: {
+          max_attempts: 2,
+          backoff: "exponential_jitter",
+          initial_delay: "500ms",
+          retryable_codes: [429, 500, 502, 503],
+          scope: "same_provider",
+        },
+      },
+    },
+
+    observability: {
+      routing: {
+        connector: "modelmesh.console.v1",
+      },
+    },
+  });
 
   // -----------------------------------------------------------------------
   // 2. Initialize ModelMesh
   // -----------------------------------------------------------------------
   const mesh = new ModelMesh();
-  await mesh.initialize(config);
+  mesh.initialize(config);
   console.log("ModelMesh initialized.\n");
 
   // -----------------------------------------------------------------------
   // 3. Create a LangChain ChatOpenAI using the ModelMesh client
   // -----------------------------------------------------------------------
-  // The ModelMesh OpenAI-compatible client provides a ChatOpenAI-compatible
-  // interface. LangChain's ChatOpenAI accepts an openAIApiKey and baseURL
-  // (or a client instance). Because ModelMesh exposes the same interface,
-  // LangChain pipelines work without modification.
-  //
-  // The virtual model name "text-generation" maps to the configured pool.
-  // LangChain sees it as a regular model name; ModelMesh resolves it to the
-  // best active real model and provider on every call.
   const meshClient = mesh.getClient();
 
   const llm = new ChatOpenAI({
-    // Pass the ModelMesh client as the underlying OpenAI client.
-    // The exact integration mechanism depends on your LangChain version;
-    // here we use the client passthrough pattern.
     client: meshClient as any,
     modelName: "text-generation",
     temperature: 0.7,
@@ -191,8 +182,6 @@ async function main(): Promise<void> {
   console.log("If OpenAI is unavailable, ModelMesh automatically routes to");
   console.log("Anthropic. The LangChain chain continues without errors.\n");
 
-  // This request goes through the same chain but may route to a different
-  // provider if the primary one is unavailable or over budget.
   const failoverResult = await simpleChain.invoke({
     question: "Explain the concept of failover in distributed systems.",
   });
@@ -202,7 +191,7 @@ async function main(): Promise<void> {
   // -----------------------------------------------------------------------
   // 8. Shut down
   // -----------------------------------------------------------------------
-  await mesh.shutdown();
+  mesh.shutdown();
   console.log("ModelMesh shut down.");
   console.log("\nNote: All LangChain calls above were routed through ModelMesh.");
   console.log("Check the console output above for [routing] log lines showing");

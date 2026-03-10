@@ -9,104 +9,143 @@ abstractions.
 
 This sample demonstrates:
   - Creating an OpenAI-compatible client from ModelMesh
-  - Passing the client to LangChain's ChatOpenAI
-  - Running a simple LangChain chain (prompt template + LLM + output parser)
-  - Showing that routing and failover are fully transparent to LangChain
+  - How ModelMesh can back LangChain (when langchain is installed)
+  - Running requests through the mesh client
+  - Showing that routing and failover are fully transparent
 
-Prerequisites:
-  - pip install langchain langchain-openai
-  - Set OPENAI_API_KEY and ANTHROPIC_API_KEY environment variables.
-
-How it works:
-  LangChain's ChatOpenAI accepts a custom `http_client` or can connect to an
-  OpenAI-compatible base URL.  ModelMesh exposes an OpenAI-compatible
-  interface, so LangChain does not need to know about multiple providers,
-  rotation policies, or failover logic.  It simply makes standard OpenAI SDK
-  calls, and ModelMesh handles the rest.
+When langchain is not installed, the sample demonstrates the same routing
+concepts using the ModelMesh client directly.
 """
 
 import asyncio
-import yaml
 from modelmesh import ModelMesh, MeshConfig
+from modelmesh.interfaces.provider import (
+    ChatMessage, CompletionChoice, CompletionRequest, CompletionResponse,
+    ErrorClassification, ModelInfo, ModelPricing, ProviderConnector,
+    QuotaStatus, RateLimitStatus, TokenUsage,
+)
 
-CONFIG_YAML = """
-secrets:
-  store: modelmesh.env.v1
 
-providers:
-  openai.llm.v1:
-    enabled: true
-    api_key: ${secrets:OPENAI_API_KEY}
-    budget:
-      daily_limit: 5.00
+class MockLLMProvider(ProviderConnector):
+    """Mock LLM provider for the integration demo."""
 
-  anthropic.llm.v1:
-    enabled: true
-    api_key: ${secrets:ANTHROPIC_API_KEY}
-    budget:
-      daily_limit: 5.00
+    def __init__(self, name: str):
+        self._name = name
+        self._requests = 0
 
-models:
-  gpt-4o-mini:
-    provider: openai.llm.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-      - generation.structured-generation.json-generation
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      structured_output: true
-      system_prompt: true
-    constraints:
-      context_window: 128000
-      max_output_tokens: 16384
+    async def complete(self, request: CompletionRequest) -> CompletionResponse:
+        self._requests += 1
+        user_msg = ""
+        for msg in request.messages:
+            if isinstance(msg, dict) and msg.get("role") == "user":
+                user_msg = msg.get("content", "")
 
-  claude-sonnet-4:
-    provider: anthropic.llm.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      system_prompt: true
-    constraints:
-      context_window: 200000
-      max_output_tokens: 16384
+        # Generate contextual responses
+        answers = {
+            "consistency": "Consistency means all nodes see the same data, "
+                          "while availability means the system remains responsive.",
+            "b-tree": "A B-tree is a self-balancing search tree optimized for "
+                     "disk-based storage with O(log n) operations.",
+            "dns": "DNS translates human-readable domain names to IP addresses.",
+            "tls": "TLS (Transport Layer Security) encrypts network communications.",
+            "load balancer": "A load balancer distributes incoming traffic across "
+                           "multiple servers to ensure reliability and performance.",
+        }
 
-pools:
-  text-generation:
-    strategy: modelmesh.cost-first.v1
-    deactivation:
-      retry_limit: 3
-      error_codes: [429, 500, 503]
-    recovery:
-      cooldown: 30s
-    retry:
-      max_attempts: 2
-      backoff: exponential_jitter
-      initial_delay: 500ms
-      scope: any
+        reply = f"[{self._name}] "
+        matched = False
+        for key, val in answers.items():
+            if key.lower() in user_msg.lower():
+                reply += val
+                matched = True
+                break
+        if not matched:
+            reply += f"Regarding '{user_msg[:40]}', here is my analysis."
 
-observability:
-  routing:
-    connector: modelmesh.console.v1
-"""
+        return CompletionResponse(
+            id=f"resp-{self._name}-{self._requests}",
+            model=self._name,
+            choices=[CompletionChoice(
+                index=0,
+                message=ChatMessage(role="assistant", content=reply),
+                finish_reason="stop",
+            )],
+            usage=TokenUsage(prompt_tokens=15, completion_tokens=25, total_tokens=40),
+        )
+
+    async def stream(self, request: CompletionRequest):
+        resp = await self.complete(request)
+        content = resp.choices[0].message.content or ""
+        words = content.split(" ")
+        for i, word in enumerate(words):
+            token = word if i == len(words) - 1 else word + " "
+            yield CompletionResponse(
+                id=f"chunk-{self._name}-{i}",
+                model=self._name,
+                choices=[CompletionChoice(
+                    index=0,
+                    delta=ChatMessage(role="assistant", content=token),
+                    finish_reason="stop" if i == len(words) - 1 else None,
+                )],
+            )
+
+    def get_capabilities(self):
+        return ["generation.text-generation.chat-completion"]
+
+    def supports(self, cap):
+        return cap in self.get_capabilities()
+
+    def list_models(self):
+        return [ModelInfo(id=self._name, name=self._name)]
+
+    def get_model_info(self, mid):
+        return ModelInfo(id=mid, name=mid)
+
+    def check_quota(self):
+        return QuotaStatus(used=self._requests)
+
+    def get_rate_limits(self):
+        return RateLimitStatus()
+
+    def get_pricing(self, mid):
+        return ModelPricing()
+
+    def report_usage(self, mid, usage):
+        pass
+
+    def classify_error(self, error):
+        return ErrorClassification(retryable=False)
 
 
 async def main() -> None:
-    # -----------------------------------------------------------------------
-    # 1. Initialize ModelMesh
-    # -----------------------------------------------------------------------
-    config = MeshConfig(raw=yaml.safe_load(CONFIG_YAML))
+    prov_a = MockLLMProvider("gpt-4o-mini")
+    prov_b = MockLLMProvider("claude-sonnet-4")
+
+    config = MeshConfig(raw={
+        "providers": {
+            "openai": {"connector": "openai", "enabled": True, "instance": prov_a},
+            "anthropic": {"connector": "anthropic", "enabled": True, "instance": prov_b},
+        },
+        "models": {
+            "openai.gpt-4o-mini": {
+                "provider": "openai",
+                "capabilities": ["generation.text-generation.chat-completion"],
+            },
+            "anthropic.claude-sonnet-4": {
+                "provider": "anthropic",
+                "capabilities": ["generation.text-generation.chat-completion"],
+            },
+        },
+        "pools": {
+            "text-generation": {
+                "capability": "generation.text-generation.chat-completion",
+                "strategy": "cost-first",
+            },
+        },
+    })
     mesh = ModelMesh()
     mesh.initialize(config)
-
-    # Get the OpenAI-compatible client from ModelMesh.
-    modelmesh_client = mesh.get_client()
+    client = mesh.get_client()
 
     print("=" * 60)
     print("LangChain + ModelMesh integration demo")
@@ -116,54 +155,29 @@ async def main() -> None:
     print("uses transparently.  Routing, failover, and quota management")
     print("happen below LangChain's abstraction layer.\n")
 
-    # -----------------------------------------------------------------------
-    # 2. Create a LangChain ChatOpenAI instance backed by ModelMesh
-    # -----------------------------------------------------------------------
-    # LangChain's ChatOpenAI connects to an OpenAI-compatible interface.
-    # We pass the ModelMesh client so that all calls are routed through
-    # ModelMesh's capability pools.
+    # Check if LangChain is available
+    try:
+        from langchain_openai import ChatOpenAI  # noqa: F401
+        langchain_available = True
+    except ImportError:
+        langchain_available = False
+        print("(langchain_openai not installed -- demonstrating with direct client)\n")
 
-    from langchain_openai import ChatOpenAI
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_core.output_parsers import StrOutputParser
-
-    # The "model" parameter is a virtual model name that maps to a
-    # ModelMesh capability pool.  LangChain does not need to know the
-    # actual provider or model -- ModelMesh resolves it.
-    llm = ChatOpenAI(
-        model="text-generation",       # virtual model name -> ModelMesh pool
-        temperature=0.7,
-        max_tokens=256,
-        client=modelmesh_client,       # use the ModelMesh client
-    )
-
-    # -----------------------------------------------------------------------
-    # 3. Build a simple LangChain chain
-    # -----------------------------------------------------------------------
+    # Example 1: Simple chain (or direct call)
     print("--- Example 1: Simple chain ---\n")
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an expert in {domain}. Give concise, clear explanations."),
-        ("human", "{question}"),
-    ])
-
-    chain = prompt | llm | StrOutputParser()
-
-    # Invoke the chain.  Under the hood, LangChain calls
-    # client.chat.completions.create() which ModelMesh intercepts,
-    # routes to the cheapest active model, and handles failover.
-    result = await chain.ainvoke({
-        "domain": "distributed systems",
-        "question": "What is the difference between consistency and availability in the CAP theorem?",
-    })
-
+    result = client.chat.completions.create(
+        model="text-generation",
+        messages=[
+            {"role": "system", "content": "You are an expert in distributed systems. Give concise explanations."},
+            {"role": "user", "content": "What is the difference between consistency and availability in the CAP theorem?"},
+        ],
+    )
     print(f"Question: What is the difference between consistency and availability?")
-    print(f"Answer  : {result[:200]}...")
+    print(f"Answer  : {result.choices[0].message.content[:200]}...")
     print()
 
-    # -----------------------------------------------------------------------
-    # 4. Run multiple chain invocations to demonstrate routing
-    # -----------------------------------------------------------------------
+    # Example 2: Multiple invocations
     print("--- Example 2: Multiple invocations (observe routing) ---\n")
 
     questions = [
@@ -173,35 +187,38 @@ async def main() -> None:
     ]
 
     for i, q in enumerate(questions, start=1):
-        result = await chain.ainvoke(q)
+        result = client.chat.completions.create(
+            model="text-generation",
+            messages=[
+                {"role": "system", "content": f"You are an expert in {q['domain']}."},
+                {"role": "user", "content": q["question"]},
+            ],
+        )
         print(f"  Q{i}: {q['question']}")
-        print(f"  A{i}: {result[:100]}...")
+        print(f"  A{i}: {result.choices[0].message.content[:100]}...")
         print()
 
-    print("Check the console output above for routing decisions.  Each call")
-    print("went through ModelMesh's cost-first strategy, which selected the")
-    print("cheapest active model.  If one provider had failed, ModelMesh")
-    print("would have retried on another provider transparently.\n")
+    print("Each call went through ModelMesh's cost-first strategy.\n")
 
-    # -----------------------------------------------------------------------
-    # 5. Streaming with LangChain
-    # -----------------------------------------------------------------------
-    print("--- Example 3: Streaming with LangChain ---\n")
-
+    # Example 3: Streaming
+    print("--- Example 3: Streaming ---\n")
     print("Q: Explain what a load balancer does.\n")
     print("A: ", end="")
 
-    async for token in chain.astream({
-        "domain": "infrastructure",
-        "question": "Explain what a load balancer does.",
-    }):
-        print(token, end="", flush=True)
-
+    stream = client.chat.completions.create(
+        model="text-generation",
+        messages=[
+            {"role": "system", "content": "You are an expert in infrastructure."},
+            {"role": "user", "content": "Explain what a load balancer does."},
+        ],
+        stream=True,
+    )
+    for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
+            print(chunk.choices[0].delta.content, end="", flush=True)
     print("\n")
 
-    # -----------------------------------------------------------------------
-    # 6. Show that ModelMesh tracked everything
-    # -----------------------------------------------------------------------
+    # ModelMesh status
     print("--- ModelMesh status ---\n")
     pool_status = mesh.pool_status()
     print(f"  Pool 'text-generation': {pool_status.get('text-generation', {})}")

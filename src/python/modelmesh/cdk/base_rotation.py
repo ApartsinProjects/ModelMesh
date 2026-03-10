@@ -175,7 +175,7 @@ class BaseSelectionStrategy(SelectionStrategy):
             return 1000.0 + (len(self._config.model_priority) - idx)
 
         # Check provider priority list
-        provider_id = getattr(state, "provider_id", None)
+        provider_id = state.provider_id
         if provider_id and provider_id in self._config.provider_priority:
             idx = self._config.provider_priority.index(provider_id)
             return 500.0 + (len(self._config.provider_priority) - idx)
@@ -297,7 +297,7 @@ class BaseRotationPolicy(DeactivationPolicy, RecoveryPolicy, SelectionStrategy):
             return 1000.0 + (len(self._config.model_priority) - idx)
 
         # Check provider priority list
-        provider_id = getattr(state, "provider_id", None)
+        provider_id = state.provider_id
         if provider_id and provider_id in self._config.provider_priority:
             idx = self._config.provider_priority.index(provider_id)
             return 500.0 + (len(self._config.provider_priority) - idx)
@@ -309,7 +309,7 @@ class BaseRotationPolicy(DeactivationPolicy, RecoveryPolicy, SelectionStrategy):
         """Return a human-readable reason for why a candidate was selected."""
         if state.model_id in self._config.model_priority:
             return "model_priority"
-        provider_id = getattr(state, "provider_id", None)
+        provider_id = state.provider_id
         if provider_id and provider_id in self._config.provider_priority:
             return "provider_priority"
         return "lowest_error_rate"

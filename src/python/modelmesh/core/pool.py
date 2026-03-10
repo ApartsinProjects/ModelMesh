@@ -59,6 +59,7 @@ class PoolModel:
             total_tokens=self.total_tokens,
             last_failure_at=self.last_failure_at,
             last_success_at=self.last_success_at,
+            provider_id=self.provider_id,
         )
 
 

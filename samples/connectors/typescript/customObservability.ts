@@ -18,7 +18,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 // ---------------------------------------------------------------------------
-// Types imported from modelmesh-lite (reproduced here for self-containment)
+// Types imported from @modelmesh/core (reproduced here for self-containment)
 // ---------------------------------------------------------------------------
 
 /** Types of routing events emitted by the library. */

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from modelmesh.cdk.base_storage import BaseStorage, BaseStorageConfig
@@ -119,9 +119,9 @@ class KeyValueStorage(BaseStorage):
                 try:
                     self._timestamps[key] = datetime.fromisoformat(ts_str)
                 except (ValueError, TypeError):
-                    self._timestamps[key] = datetime.utcnow()
+                    self._timestamps[key] = datetime.now(timezone.utc)
             else:
-                self._timestamps[key] = datetime.utcnow()
+                self._timestamps[key] = datetime.now(timezone.utc)
 
     def _save_to_file(self) -> None:
         """Persist all stored entries to the JSON file.
@@ -140,7 +140,7 @@ class KeyValueStorage(BaseStorage):
                 "data": base64.b64encode(entry.data).decode("ascii"),
                 "metadata": entry.metadata,
                 "timestamp": self._timestamps.get(
-                    key, datetime.utcnow()
+                    key, datetime.now(timezone.utc)
                 ).isoformat(),
             }
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from modelmesh.interfaces.storage import (
@@ -63,7 +63,7 @@ class BaseStorage(StorageConnector, Locking):
                 metadata={**entry.metadata, "_compressed": True},
             )
         self._store[key] = entry
-        self._timestamps[key] = datetime.utcnow()
+        self._timestamps[key] = datetime.now(timezone.utc)
 
     # -- Inventory -----------------------------------------------------------
 
@@ -92,7 +92,7 @@ class BaseStorage(StorageConnector, Locking):
         return EntryMetadata(
             key=key,
             size=len(entry.data),
-            last_modified=self._timestamps.get(key, datetime.utcnow()),
+            last_modified=self._timestamps.get(key, datetime.now(timezone.utc)),
             content_type=self._config.format,
         )
 
@@ -120,14 +120,14 @@ class BaseStorage(StorageConnector, Locking):
             existing = self._locks[key]
             if (
                 existing.expires_at is not None
-                and datetime.utcnow() > existing.expires_at
+                and datetime.now(timezone.utc) > existing.expires_at
             ):
                 del self._locks[key]
             else:
-                deadline = datetime.utcnow() + timedelta(
+                deadline = datetime.now(timezone.utc) + timedelta(
                     seconds=effective_timeout
                 )
-                while key in self._locks and datetime.utcnow() < deadline:
+                while key in self._locks and datetime.now(timezone.utc) < deadline:
                     await asyncio.sleep(0.1)
                 if key in self._locks:
                     raise TimeoutError(
@@ -135,7 +135,7 @@ class BaseStorage(StorageConnector, Locking):
                         f"within {effective_timeout}s"
                     )
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         handle = LockHandle(
             key=key,
             lock_id=str(uuid.uuid4()),
@@ -160,7 +160,7 @@ class BaseStorage(StorageConnector, Locking):
         handle = self._locks[key]
         if (
             handle.expires_at is not None
-            and datetime.utcnow() > handle.expires_at
+            and datetime.now(timezone.utc) > handle.expires_at
         ):
             del self._locks[key]
             return False

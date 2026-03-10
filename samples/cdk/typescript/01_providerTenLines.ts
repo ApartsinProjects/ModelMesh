@@ -17,7 +17,9 @@ import {
     CompletionResponse,
     ModelInfo,
     ModelPricing,
-} from "@modelmesh/cdk";
+    createDefaultModelInfo,
+    createDefaultCompletionRequest,
+} from "@modelmesh/core";
 
 async function main(): Promise<void> {
     // -- Step 1: Configure the provider --
@@ -26,20 +28,24 @@ async function main(): Promise<void> {
         apiKey: "sk-your-api-key",
         timeout: 30,
         maxRetries: 3,
+        authMethod: "api_key",
+        retryableCodes: [429, 500, 502, 503],
+        nonRetryableCodes: [400, 401, 403],
         capabilities: ["generation.text-generation.chat-completion"],
         models: [
-            {
+            createDefaultModelInfo({
                 id: "gpt-4o",
                 name: "GPT-4o",
                 capabilities: ["generation.text-generation.chat-completion"],
                 features: { tool_calling: true, vision: true, system_prompt: true },
-                context_window: 128_000,
-                max_output_tokens: 16_384,
+                contextWindow: 128_000,
+                maxOutputTokens: 16_384,
                 pricing: {
-                    input_per_1k_tokens: 0.0025,
-                    output_per_1k_tokens: 0.01,
+                    inputPer1kTokens: 0.0025,
+                    outputPer1kTokens: 0.01,
+                    perRequest: 0,
                 },
-            },
+            }),
         ],
     });
 
@@ -47,42 +53,42 @@ async function main(): Promise<void> {
     console.log(`Capabilities: ${provider.getCapabilities()}`);
     console.log(`Supports chat? ${provider.supports("generation.text-generation.chat-completion")}`);
 
-    const models: ModelInfo[] = await provider.listModels();
+    const models: ModelInfo[] = provider.listModels();
     for (const model of models) {
-        console.log(`Model: ${model.id} (${model.name}), context: ${model.context_window}`);
+        console.log(`Model: ${model.id} (${model.name}), context: ${model.contextWindow}`);
     }
 
     // -- Step 3: Send a completion request --
-    const request: CompletionRequest = {
+    const request: CompletionRequest = createDefaultCompletionRequest({
         model: "gpt-4o",
         messages: [
             { role: "system", content: "You are a helpful assistant." },
             { role: "user", content: "What is ModelMesh?" },
         ],
         temperature: 0.7,
-        max_tokens: 256,
-    };
+        maxTokens: 256,
+    });
 
     const response: CompletionResponse = await provider.complete(request);
 
     // -- Step 4: Inspect the response --
     console.log(`\nResponse ID: ${response.id}`);
     console.log(`Model: ${response.model}`);
-    console.log(`Content: ${response.choices[0]}`);
+    console.log(`Content: ${response.choices[0]?.message?.content}`);
     console.log(
-        `Tokens: prompt=${response.usage.prompt_tokens}, ` +
-        `completion=${response.usage.completion_tokens}, ` +
-        `total=${response.usage.total_tokens}`
+        `Tokens: prompt=${response.usage.promptTokens}, ` +
+        `completion=${response.usage.completionTokens}, ` +
+        `total=${response.usage.totalTokens}`
     );
 
     // -- Step 5: Check quota after usage --
-    const quota = await provider.checkQuota();
+    const quota = provider.checkQuota();
     console.log(`\nRequests used: ${quota.used}`);
 
-    const pricing: ModelPricing = await provider.getPricing("gpt-4o");
+    const pricing: ModelPricing = provider.getPricing("gpt-4o");
     console.log(
-        `Pricing: $${pricing.input_per_1k_tokens}/1k input tokens, ` +
-        `$${pricing.output_per_1k_tokens}/1k output tokens`
+        `Pricing: $${pricing.inputPer1kTokens}/1k input tokens, ` +
+        `$${pricing.outputPer1kTokens}/1k output tokens`
     );
 
     await provider.close();

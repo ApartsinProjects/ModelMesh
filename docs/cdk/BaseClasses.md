@@ -342,10 +342,26 @@ class BaseProvider(ProviderConnector):
         Override this method to handle custom response schemas.
         """
         usage_data = data.get("usage", {})
+        raw_choices = data.get("choices", [])
+        choices = []
+        for raw in raw_choices:
+            msg_data = raw.get("message")
+            message = None
+            if msg_data:
+                message = ChatMessage(
+                    role=msg_data.get("role", "assistant"),
+                    content=msg_data.get("content"),
+                    tool_calls=msg_data.get("tool_calls"),
+                )
+            choices.append(CompletionChoice(
+                index=raw.get("index", 0),
+                message=message,
+                finish_reason=raw.get("finish_reason"),
+            ))
         return CompletionResponse(
-            id=data["id"],
-            model=data["model"],
-            choices=data["choices"],
+            id=data.get("id", ""),
+            model=data.get("model", ""),
+            choices=choices,
             usage=TokenUsage(
                 prompt_tokens=usage_data.get("prompt_tokens", 0),
                 completion_tokens=usage_data.get("completion_tokens", 0),
@@ -381,9 +397,24 @@ class BaseProvider(ProviderConnector):
             data = json.loads(line)
         except json.JSONDecodeError:
             return None
-        choices = data.get("choices", [])
-        if not choices:
+        raw_choices = data.get("choices", [])
+        if not raw_choices:
             return None
+        choices = []
+        for raw in raw_choices:
+            delta_data = raw.get("delta")
+            delta = None
+            if delta_data:
+                delta = ChatMessage(
+                    role=delta_data.get("role", "assistant"),
+                    content=delta_data.get("content"),
+                    tool_calls=delta_data.get("tool_calls"),
+                )
+            choices.append(CompletionChoice(
+                index=raw.get("index", 0),
+                delta=delta,
+                finish_reason=raw.get("finish_reason"),
+            ))
         return CompletionResponse(
             id=data.get("id", ""),
             model=data.get("model", ""),
@@ -630,15 +661,26 @@ class BaseProvider implements ProviderConnector {
 
     /** Parse an OpenAI-format JSON response into a CompletionResponse. */
     protected parseResponse(data: Record<string, unknown>): CompletionResponse {
-        const usage = (data.usage as Record<string, number>) ?? {};
+        const usageData = (data.usage as Record<string, number>) ?? {};
+        const rawChoices = (data.choices as Record<string, any>[]) ?? [];
+        const choices = rawChoices.map((raw) => {
+            const msg = raw.message;
+            return {
+                index: raw.index ?? 0,
+                message: msg
+                    ? { role: msg.role || "assistant", content: msg.content }
+                    : undefined,
+                finishReason: raw.finish_reason,
+            };
+        });
         return {
-            id: data.id as string,
-            model: data.model as string,
-            choices: data.choices as Record<string, unknown>[],
+            id: (data.id as string) ?? "",
+            model: (data.model as string) ?? "",
+            choices,
             usage: {
-                prompt_tokens: usage.prompt_tokens ?? 0,
-                completion_tokens: usage.completion_tokens ?? 0,
-                total_tokens: usage.total_tokens ?? 0,
+                promptTokens: usageData.prompt_tokens ?? 0,
+                completionTokens: usageData.completion_tokens ?? 0,
+                totalTokens: usageData.total_tokens ?? 0,
             },
         };
     }
@@ -664,13 +706,23 @@ class BaseProvider implements ProviderConnector {
     protected parseSseChunk(line: string): CompletionResponse | null {
         try {
             const data = JSON.parse(line);
-            const choices = data.choices ?? [];
-            if (choices.length === 0) return null;
+            const rawChoices = data.choices ?? [];
+            if (rawChoices.length === 0) return null;
+            const choices = rawChoices.map((raw: any) => {
+                const delta = raw.delta;
+                return {
+                    index: raw.index ?? 0,
+                    delta: delta
+                        ? { role: delta.role || "assistant", content: delta.content }
+                        : undefined,
+                    finishReason: raw.finish_reason,
+                };
+            });
             return {
                 id: data.id ?? "",
                 model: data.model ?? "",
                 choices,
-                usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+                usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
             };
         } catch {
             return null;
@@ -690,6 +742,70 @@ class HttpError extends Error {
     }
 }
 ```
+
+---
+
+## BrowserBaseProvider
+
+Browser-compatible equivalent of `BaseProvider`. Identical interface and protected hooks, but uses the Fetch API and `ReadableStream` instead of Node.js `http`/`https` modules and Node streams. Works in any environment that supports `fetch()` -- browsers, Deno, Cloudflare Workers, Bun.
+
+> **Implements:** [ProviderConnector](../interfaces/Provider.html) (same as BaseProvider)
+
+### How It Differs from BaseProvider
+
+| Aspect | BaseProvider | BrowserBaseProvider |
+|---|---|---|
+| HTTP transport | Node.js `http`/`https` via `urllib` (Python) or built-in `http` (TS) | `fetch()` API |
+| Streaming | Node.js streams / `AsyncIterator` with line-based SSE parsing | `ReadableStream` with `TextDecoderStream` and SSE parsing |
+| Request timeout | `req.destroy()` / `socket.setTimeout()` | `AbortController` with `AbortSignal.timeout()` |
+| CORS proxy | Not applicable | `proxyUrl` config prepends proxy URL to all API endpoints |
+| Environment | Node.js only | Browser, Deno, Bun, Cloudflare Workers, any fetch-capable runtime |
+| API surface | Identical | Identical |
+
+### Configuration
+
+```typescript
+interface BrowserProviderConfig {
+    baseUrl: string;
+    apiKey: string;
+    models: ModelInfo[];
+    timeout: number;           // seconds, default 30
+    maxRetries: number;        // default 3
+    authMethod: string;        // default "api_key"
+    retryableCodes: number[];  // default [429, 500, 502, 503]
+    nonRetryableCodes: number[]; // default [400, 401, 403]
+    capabilities: string[];    // default ["generation.text-generation.chat-completion"]
+    proxyUrl?: string;         // optional CORS proxy URL prefix
+}
+```
+
+The `proxyUrl` field is the only configuration difference from `BaseProviderConfig`. When set, all API requests are sent to `{proxyUrl}/{baseUrl}/path` instead of `{baseUrl}/path`. The proxy is expected to forward the request and add CORS headers to the response.
+
+### Protected Hook Methods
+
+All hooks from `BaseProvider` are available and work identically:
+
+| Hook | Default | Override To |
+|---|---|---|
+| `_buildRequestPayload(request)` | OpenAI JSON format | Change request translation |
+| `_parseResponse(data)` | Parse OpenAI JSON response | Handle custom response schemas |
+| `_buildHeaders()` | `{"Authorization": "Bearer {apiKey}", "Content-Type": "application/json"}` | Add custom headers or change auth |
+| `_getCompletionEndpoint()` | `"{baseUrl}/v1/chat/completions"` | Change the URL path |
+| `_parseSseChunk(line)` | Parse `data: {...}` SSE lines | Handle non-standard streaming |
+
+### When to Use Which Base Class
+
+```
+Is the provider used in a web browser or edge runtime?
+├── Yes ──► BrowserBaseProvider
+└── No
+    └── Is it used in Node.js?
+        └── Yes ──► BaseProvider
+```
+
+Both can be used in Deno and Bun. `BrowserBaseProvider` is the safer default for cross-runtime code since `fetch()` is available everywhere.
+
+> **See also:** [Browser Usage Guide](../guides/BrowserUsage.html) for CORS proxy setup, security considerations, and browser-specific patterns.
 
 ---
 

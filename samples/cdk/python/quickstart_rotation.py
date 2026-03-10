@@ -4,13 +4,13 @@ Demonstrates how the threshold-based rotation policy decides whether a
 model should be deactivated based on its failure count and error rate.
 """
 
-from modelmesh.cdk import ThresholdRotationPolicy, BaseRotationPolicyConfig
+from modelmesh.cdk import ThresholdRotationPolicy, ThresholdRotationConfig
 from modelmesh.cdk.helpers import mock_model_snapshot
 
 
 def main() -> None:
-    policy = ThresholdRotationPolicy(BaseRotationPolicyConfig(
-        failure_threshold=5,
+    policy = ThresholdRotationPolicy(ThresholdRotationConfig(
+        failure_count_threshold=5,
         error_rate_threshold=0.3,
         cooldown_seconds=120,
     ))

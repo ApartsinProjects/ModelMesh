@@ -11,7 +11,7 @@ and read the result.
 
 import asyncio
 
-from modelmesh.cdk import OpenAICompatibleProvider, BaseProviderConfig
+from modelmesh.cdk import OpenAICompatibleProvider, OpenAICompatibleConfig
 from modelmesh.interfaces.provider import (
     CompletionRequest,
     ModelInfo,
@@ -21,7 +21,7 @@ from modelmesh.interfaces.provider import (
 
 async def main() -> None:
     # -- Step 1: Configure the provider --
-    provider = OpenAICompatibleProvider(BaseProviderConfig(
+    provider = OpenAICompatibleProvider(OpenAICompatibleConfig(
         base_url="https://api.openai.com",
         api_key="sk-your-api-key",
         timeout=30.0,
@@ -52,6 +52,8 @@ async def main() -> None:
         print(f"Model: {model.id} ({model.name}), context: {model.context_window}")
 
     # -- Step 3: Send a completion request --
+    # Note: This would call a real API. We wrap in try/except to handle
+    # missing credentials gracefully.
     request = CompletionRequest(
         model="gpt-4o",
         messages=[
@@ -62,15 +64,19 @@ async def main() -> None:
         max_tokens=256,
     )
 
-    response = await provider.complete(request)
+    try:
+        response = await provider.complete(request)
 
-    # -- Step 4: Inspect the response --
-    print(f"\nResponse ID: {response.id}")
-    print(f"Model: {response.model}")
-    print(f"Content: {response.choices[0]}")
-    print(f"Tokens: prompt={response.usage.prompt_tokens}, "
-          f"completion={response.usage.completion_tokens}, "
-          f"total={response.usage.total_tokens}")
+        # -- Step 4: Inspect the response --
+        print(f"\nResponse ID: {response.id}")
+        print(f"Model: {response.model}")
+        print(f"Content: {response.choices[0]}")
+        print(f"Tokens: prompt={response.usage.prompt_tokens}, "
+              f"completion={response.usage.completion_tokens}, "
+              f"total={response.usage.total_tokens}")
+    except Exception as e:
+        print(f"\n(Skipping live API call -- {type(e).__name__}: {e})")
+        print("In production, set a valid API key to see the full response.")
 
     # -- Step 5: Check quota after usage --
     quota = provider.check_quota()

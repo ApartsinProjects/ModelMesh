@@ -16,28 +16,28 @@
  *   - Set at least one provider API key (e.g., OPENAI_API_KEY).
  */
 
-import ModelMesh from "modelmesh";
+import { create, CompletionResponse } from "@modelmesh/core";
 
 // Same one-liner setup as the hello-world sample.
-const client = ModelMesh.create("chat-completion");
+const client = create("chat-completion");
 
 async function main(): Promise<void> {
   process.stdout.write("User: Write a haiku about distributed systems.\n\n");
   process.stdout.write("Assistant: ");
 
   // Pass stream: true to get an async iterable of chunks instead of a single response.
-  const stream = await client.chat.completions.create({
+  const stream = (await client.chat.completions.create({
     model: "chat-completion",
     messages: [
       { role: "user", content: "Write a haiku about distributed systems." },
     ],
     stream: true,
-  });
+  })) as AsyncIterableIterator<CompletionResponse>;
 
   // Each chunk mirrors the OpenAI streaming format.
   // chunk.choices[0].delta.content holds the next piece of text (or null/undefined).
   for await (const chunk of stream) {
-    const token = chunk.choices[0].delta.content;
+    const token = chunk.choices[0].delta?.content;
     if (token != null) {
       process.stdout.write(token);
     }

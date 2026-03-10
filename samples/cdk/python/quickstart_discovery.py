@@ -32,7 +32,7 @@ async def main() -> None:
         print(f"Provider: {report.provider_id}, Available: {report.available}")
         print(f"Availability score: {report.availability_score:.2f}")
 
-    await discovery.close()
+    # No close() needed -- HttpHealthDiscovery has no persistent connections
 
 
 if __name__ == "__main__":

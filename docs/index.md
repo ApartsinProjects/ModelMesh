@@ -14,8 +14,10 @@ title: ModelMesh Lite
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
+  <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="https://github.com/ApartsinProjects/ModelMesh/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-640%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-808%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -25,8 +27,14 @@ Your application requests a **capability** (e.g. "chat completion"). ModelMesh p
 
 ## Install
 
+**Python:**
 ```bash
 pip install modelmesh-lite
+```
+
+**TypeScript / Node.js:**
+```bash
+npm install @modelmesh/core
 ```
 
 ## Quick Start
@@ -54,11 +62,9 @@ print(response.choices[0].message.content)
 ### TypeScript
 
 ```typescript
-import { ModelMesh } from "@modelmesh/core";
+import { create } from "@modelmesh/core";
 
-const mesh = new ModelMesh();
-await mesh.initialize({ providers: ["openai"] });
-const client = mesh.getClient();
+const client = create("chat-completion");
 
 const response = await client.chat.completions.create({
     model: "chat-completion",
@@ -169,6 +175,13 @@ client = modelmesh.create(config="modelmesh.yaml")
 | **[Connector Catalogue](ConnectorCatalogue.html)** | All pre-shipped connectors with config schemas |
 | **[Connector Interfaces](ConnectorInterfaces.html)** | Interface definitions for all connector types |
 | **[System Services](SystemServices.html)** | Runtime objects: Router, Pool, Model, State |
+
+### Guides
+
+| Document | Description |
+|---|---|
+| **[Browser Usage](guides/BrowserUsage.html)** | BrowserBaseProvider, CORS proxy setup, and browser-specific patterns |
+| **[Audio (TTS/STT)](ConnectorInterfaces.html#audio)** | AudioRequest/AudioResponse types, `client.audio` namespace |
 
 ### CDK (Connector Development Kit)
 

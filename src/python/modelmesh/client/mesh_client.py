@@ -7,11 +7,15 @@ Supports ``client.chat.completions.create()``, ``client.embeddings.create()``,
 """
 from __future__ import annotations
 
+import asyncio
+import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional
 
 from modelmesh._sync import _run_sync
 from modelmesh.interfaces.provider import (
+    AudioSpeechResponse,
+    AudioTranscriptionResponse,
     CompletionRequest,
     CompletionResponse,
 )
@@ -39,6 +43,7 @@ class MeshClient:
         self._mesh = mesh
         self.chat = _ChatNamespace(self)
         self.embeddings = _EmbeddingsNamespace(self)
+        self.audio = _AudioNamespace(self)
         self.models = _ModelsNamespace(self)
 
     @property
@@ -193,25 +198,60 @@ class _StreamIterator:
         for chunk in stream:
             print(chunk.choices[0].delta.content, end="")
 
-    Internally uses ``_run_sync()`` to bridge the async generator.
+    Uses a dedicated background event loop so the async generator
+    remains valid across multiple ``__next__`` calls.
     """
 
     def __init__(self, mesh: ModelMesh, request: CompletionRequest) -> None:
         self._mesh = mesh
         self._request = request
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._thread: threading.Thread | None = None
         self._aiter = None
+
+    def _ensure_loop(self) -> None:
+        """Start a persistent background event loop if not yet running."""
+        if self._loop is not None:
+            return
+        self._loop = asyncio.new_event_loop()
+
+        def _run_loop():
+            asyncio.set_event_loop(self._loop)
+            self._loop.run_forever()
+
+        self._thread = threading.Thread(target=_run_loop, daemon=True)
+        self._thread.start()
 
     def __iter__(self):
         return self
 
     def __next__(self) -> CompletionResponse:
+        self._ensure_loop()
+        assert self._loop is not None
         if self._aiter is None:
-            # Create the async generator
+            # Create the async generator on the persistent loop
             self._aiter = self._mesh.route_stream(self._request).__aiter__()
         try:
-            return _run_sync(self._aiter.__anext__())
+            future = asyncio.run_coroutine_threadsafe(
+                self._aiter.__anext__(), self._loop
+            )
+            return future.result()
         except StopAsyncIteration:
+            self._cleanup()
             raise StopIteration
+
+    def _cleanup(self) -> None:
+        """Shut down the background loop and thread."""
+        if self._loop is not None:
+            self._loop.call_soon_threadsafe(self._loop.stop)
+            if self._thread is not None:
+                self._thread.join(timeout=5)
+            self._loop.close()
+            self._loop = None
+            self._thread = None
+
+    def __del__(self):
+        self._cleanup()
 
 
 # ---------------------------------------------------------------------------
@@ -260,6 +300,123 @@ class _EmbeddingsNamespace:
         )
 
         return _run_sync(self._client.mesh.route(request))
+
+
+# ---------------------------------------------------------------------------
+# Audio namespace
+# ---------------------------------------------------------------------------
+
+
+class _AudioSpeechNamespace:
+    """Namespace for ``client.audio.speech.create()``.
+
+    Routes text-to-speech requests through the appropriate capability pool.
+    """
+
+    def __init__(self, client: MeshClient) -> None:
+        self._client = client
+
+    def create(
+        self,
+        *,
+        model: str,
+        input: str,
+        voice: str,
+        response_format: str = "mp3",
+        speed: float = 1.0,
+        **kwargs,
+    ) -> AudioSpeechResponse:
+        """Create speech from text (text-to-speech).
+
+        Routes through a pool with the ``text-to-speech`` capability.
+        The text is passed as a user message to the underlying provider.
+
+        Args:
+            model: Virtual model name for the TTS pool.
+            input: Text to synthesize.
+            voice: Voice identifier (provider-specific).
+            response_format: Output audio format (e.g. "mp3", "wav").
+            speed: Speech speed multiplier (0.25–4.0).
+
+        Returns:
+            An ``AudioSpeechResponse`` with audio metadata.
+        """
+        request = CompletionRequest(
+            model=model,
+            messages=[{"role": "user", "content": input}],
+            temperature=0.0,
+        )
+
+        response = _run_sync(self._client.mesh.route(request))
+
+        return AudioSpeechResponse(
+            format=response_format,
+            model=response.model or model,
+            input_characters=len(input),
+            size_bytes=response.usage.completion_tokens,
+        )
+
+
+class _AudioTranscriptionsNamespace:
+    """Namespace for ``client.audio.transcriptions.create()``.
+
+    Routes speech-to-text requests through the appropriate capability pool.
+    """
+
+    def __init__(self, client: MeshClient) -> None:
+        self._client = client
+
+    def create(
+        self,
+        *,
+        model: str,
+        file: str,
+        language: str | None = None,
+        response_format: str = "json",
+        prompt: str | None = None,
+        **kwargs,
+    ) -> AudioTranscriptionResponse:
+        """Transcribe audio to text (speech-to-text).
+
+        Routes through a pool with the ``speech-to-text`` capability.
+        The audio URL is passed as a user message to the underlying provider.
+
+        Args:
+            model: Virtual model name for the STT pool.
+            file: Audio file URL or path.
+            language: Language hint (ISO-639-1).
+            response_format: Output format ("json", "text", "srt", "vtt").
+            prompt: Prompt to guide transcription.
+
+        Returns:
+            An ``AudioTranscriptionResponse`` with transcribed text.
+        """
+        request = CompletionRequest(
+            model=model,
+            messages=[{"role": "user", "content": file}],
+            temperature=0.0,
+        )
+
+        response = _run_sync(self._client.mesh.route(request))
+
+        content = ""
+        if response.choices:
+            msg = response.choices[0].message
+            if msg and msg.content:
+                content = msg.content
+
+        return AudioTranscriptionResponse(
+            text=content,
+            model=response.model or model,
+        )
+
+
+class _AudioNamespace:
+    """Namespace for ``client.audio``."""
+
+    def __init__(self, client: MeshClient) -> None:
+        self.speech = _AudioSpeechNamespace(client)
+        self.transcriptions = _AudioTranscriptionsNamespace(client)
 
 
 # ---------------------------------------------------------------------------

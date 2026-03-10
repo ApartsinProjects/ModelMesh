@@ -45,7 +45,8 @@ Interfaces (abstract contracts -- one per connector type)
      ▼
 Base Classes (default implementations -- one per connector type)
 │
-├── BaseProvider
+├── BaseProvider             ── Node.js provider (http/https transport)
+├── BrowserBaseProvider      ── Browser/edge provider (fetch API, ReadableStream, CORS proxy)
 ├── BaseRotationPolicy
 ├── BaseSecretStore
 ├── BaseStorage
@@ -199,14 +200,17 @@ Use the decision trees below to choose the right starting point for each connect
 ### Provider
 
 ```
-Is the API OpenAI-compatible (chat completions format)?
-├── Yes ──► OpenAICompatibleProvider (config only)
+Will this provider run in a web browser or edge runtime (Deno, Workers)?
+├── Yes ──► BrowserBaseProvider (fetch-based, supports proxyUrl for CORS)
 └── No
-    ├── Is it a standard REST API with JSON request/response?
-    │   ├── Yes ──► HttpApiProvider (override translate methods)
-    │   └── No ──► BaseProvider (override complete + stream)
-    └── Need full control over every sub-interface?
-        └── Yes ──► Implement ProviderConnector interface directly
+    Is the API OpenAI-compatible (chat completions format)?
+    ├── Yes ──► OpenAICompatibleProvider (config only)
+    └── No
+        ├── Is it a standard REST API with JSON request/response?
+        │   ├── Yes ──► HttpApiProvider (override translate methods)
+        │   └── No ──► BaseProvider (override complete + stream)
+        └── Need full control over every sub-interface?
+            └── Yes ──► Implement ProviderConnector interface directly
 ```
 
 ### Rotation Policy

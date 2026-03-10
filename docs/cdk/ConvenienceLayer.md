@@ -5,7 +5,7 @@ title: "Convenience Layer"
 
 # Convenience Layer
 
-The convenience layer is a high-level entry point that makes ModelMesh Lite feel like a drop-in replacement for the OpenAI SDK. Instead of manually wiring providers, pools, and rotation policies, a single `modelmesh.create()` call auto-detects available providers from environment variables, builds the internal routing infrastructure, and returns a `MeshClient` -- an OpenAI SDK-compatible client with the same `client.chat.completions.create()` interface and the same response shape.
+The convenience layer is a high-level entry point that makes ModelMesh Lite feel like a drop-in replacement for the OpenAI SDK. Instead of manually wiring providers, pools, and rotation policies, a single `create()` call auto-detects available providers from environment variables, builds the internal routing infrastructure, and returns a `MeshClient` -- an OpenAI SDK-compatible client with the same `client.chat.completions.create()` interface and the same response shape.
 
 The goal is **progressive disclosure**: simple use cases require one line of setup; advanced use cases unlock the full configuration surface without changing the API.
 
@@ -31,7 +31,7 @@ There are exactly three differences between using the OpenAI SDK and using Model
 | | OpenAI SDK | ModelMesh Lite |
 | --- | --- | --- |
 | **Import** | `from openai import OpenAI` | `import modelmesh` |
-| **Create** | `client = OpenAI()` | `client = modelmesh.create("chat-completion")` |
+| **Create** | `client = OpenAI()` | `client = create("chat-completion")` |
 | **Model** | `model="gpt-4o"` | `model="chat-completion"` |
 
 ```python
@@ -46,7 +46,7 @@ print(response.choices[0].message.content)
 
 # ModelMesh Lite -- same interface, capability-driven
 import modelmesh
-client = modelmesh.create("chat-completion")
+client = create("chat-completion")
 response = client.chat.completions.create(
     model="chat-completion",
     messages=[{"role": "user", "content": "Hello!"}],
@@ -58,8 +58,8 @@ print(response.choices[0].message.content)
 
 | | OpenAI SDK | ModelMesh Lite |
 | --- | --- | --- |
-| **Import** | `import OpenAI from "openai"` | `import modelmesh from "modelmesh"` |
-| **Create** | `new OpenAI()` | `modelmesh.create("chat-completion")` |
+| **Import** | `import OpenAI from "openai"` | `import { create } from "@modelmesh/core"` |
+| **Create** | `new OpenAI()` | `create("chat-completion")` |
 | **Model** | `model: "gpt-4o"` | `model: "chat-completion"` |
 
 ```typescript
@@ -73,8 +73,8 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);
 
 // ModelMesh Lite -- same interface, capability-driven
-import modelmesh from "modelmesh";
-const client = modelmesh.create("chat-completion");
+import { create } from "@modelmesh/core";
+const client = create("chat-completion");
 const response = await client.chat.completions.create({
     model: "chat-completion",
     messages: [{ role: "user", content: "Hello!" }],
@@ -86,13 +86,13 @@ Everything after client creation is identical. Existing code that uses the OpenA
 
 ### Virtual Model Names
 
-The capability name passed to `modelmesh.create()` becomes the **virtual model name** used in API calls. When the request reaches the router, the virtual name resolves to the best active real model in the corresponding pool (e.g., `"chat-completion"` may resolve to `gpt-4o`, `claude-sonnet-4-20250514`, or `gemini-2.0-flash` depending on provider availability).
+The capability name passed to `create()` becomes the **virtual model name** used in API calls. When the request reaches the router, the virtual name resolves to the best active real model in the corresponding pool (e.g., `"chat-completion"` may resolve to `gpt-4o`, `claude-sonnet-4-20250514`, or `gemini-2.0-flash` depending on provider availability).
 
 The `response.model` field always reports the **actual model** used, so callers can inspect which provider handled each request.
 
 ---
 
-## `modelmesh.create()` API Reference
+## `create()` API Reference
 
 ### Python
 
@@ -314,7 +314,7 @@ for model in models.data:
 ```typescript
 const models = await client.models.list();
 for (const model of models.data) {
-    console.log(`${model.id} -- owned by ${model.ownedBy}`);
+    console.log(`${model.id} -- owned by ${model.owned_by}`);
 }
 ```
 
@@ -544,7 +544,7 @@ Specify a single capability. Providers are auto-detected from environment variab
 ```python
 import modelmesh
 
-client = modelmesh.create("chat-completion")
+client = create("chat-completion")
 
 response = client.chat.completions.create(
     model="chat-completion",
@@ -556,9 +556,9 @@ print(response.choices[0].message.content)
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 const response = await client.chat.completions.create({
     model: "chat-completion",
@@ -578,7 +578,7 @@ Request multiple capabilities, filter to specific providers, and choose a rotati
 ```python
 import modelmesh
 
-client = modelmesh.create(
+client = create(
     "chat-completion", "text-embeddings",
     providers=["openai", "anthropic"],
     strategy="cost-first",
@@ -600,9 +600,9 @@ emb = client.embeddings.create(
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create(
+const client = create(
     "chat-completion", "text-embeddings",
     {
         providers: ["openai", "anthropic"],
@@ -634,7 +634,7 @@ Use a predefined pool from the capability hierarchy. Predefined pools come with 
 ```python
 import modelmesh
 
-client = modelmesh.create(pool="text-generation")
+client = create(pool="text-generation")
 
 response = client.chat.completions.create(
     model="text-generation",
@@ -645,9 +645,9 @@ response = client.chat.completions.create(
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create({ pool: "text-generation" });
+const client = create({ pool: "text-generation" });
 
 const response = await client.chat.completions.create({
     model: "text-generation",
@@ -667,10 +667,10 @@ Pass a complete configuration file, dictionary, or `MeshConfig` object. This byp
 import modelmesh
 
 # From a YAML file
-client = modelmesh.create(config="modelmesh.yaml")
+client = create(config="modelmesh.yaml")
 
 # From a dictionary
-client = modelmesh.create(config={
+client = create(config={
     "providers": {
         "openai": {
             "connector": "openai.llm.v1",
@@ -692,19 +692,19 @@ client = modelmesh.create(config={
 # From a MeshConfig object
 from modelmesh import MeshConfig
 cfg = MeshConfig.from_file("modelmesh.yaml")
-client = modelmesh.create(config=cfg)
+client = create(config=cfg)
 ```
 
 **TypeScript:**
 
 ```typescript
-import modelmesh, { MeshConfig } from "modelmesh";
+import { create, MeshConfig } from "@modelmesh/core";
 
 // From a YAML file
-const client1 = modelmesh.create({ config: "modelmesh.yaml" });
+const client1 = create({ config: "modelmesh.yaml" });
 
 // From an object literal
-const client2 = modelmesh.create({
+const client2 = create({
     config: {
         providers: {
             openai: {
@@ -727,14 +727,14 @@ const client2 = modelmesh.create({
 
 // From a MeshConfig instance
 const cfg = MeshConfig.fromFile("modelmesh.yaml");
-const client3 = modelmesh.create({ config: cfg });
+const client3 = create({ config: cfg });
 ```
 
 > **Configuration reference:** Full YAML schema and all configuration options are documented in [SystemConfiguration.md](../SystemConfiguration.html).
 
 ### Observability Configuration
 
-By default, `modelmesh.create()` disables observability output by using the `modelmesh.null.v1` connector (zero overhead). To enable observability, pass an observability section in the `config` parameter.
+By default, `create()` disables observability output by using the `modelmesh.null.v1` connector (zero overhead). To enable observability, pass an observability section in the `config` parameter.
 
 **Python:**
 
@@ -742,17 +742,17 @@ By default, `modelmesh.create()` disables observability output by using the `mod
 import modelmesh
 
 # With file logging
-client = modelmesh.create("chat-completion", config={
+client = create("chat-completion", config={
     "observability": {"connector": "modelmesh.file.v1"}
 })
 
 # With console output (colored, for development)
-client = modelmesh.create("chat-completion", config={
+client = create("chat-completion", config={
     "observability": {"connector": "modelmesh.console.v1"}
 })
 
 # Explicitly disabled (default behavior)
-client = modelmesh.create("chat-completion", config={
+client = create("chat-completion", config={
     "observability": {"connector": "modelmesh.null.v1"}
 })
 ```
@@ -760,17 +760,17 @@ client = modelmesh.create("chat-completion", config={
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
 // With file logging
-const client = modelmesh.create("chat-completion", {
+const client = create("chat-completion", {
     config: {
         observability: { connector: "modelmesh.file.v1" },
     },
 });
 
 // With console output (colored, for development)
-const client2 = modelmesh.create("chat-completion", {
+const client2 = create("chat-completion", {
     config: {
         observability: { connector: "modelmesh.console.v1" },
     },
@@ -783,13 +783,13 @@ const client2 = modelmesh.create("chat-completion", {
 | `modelmesh.console.v1` | ANSI-colored console output for development |
 | `modelmesh.file.v1` | Structured JSONL file output |
 
-> **Note:** When `modelmesh.create()` is called without a `config` parameter (Layers 0, 1, and 1b), observability defaults to `modelmesh.null.v1`. To enable observability in these layers, wrap the call with a config dict that includes both capabilities and an observability section.
+> **Note:** When `create()` is called without a `config` parameter (Layers 0, 1, and 1b), observability defaults to `modelmesh.null.v1`. To enable observability in these layers, wrap the call with a config dict that includes both capabilities and an observability section.
 
 ---
 
 ## Auto-Detection Registry
 
-When `modelmesh.create()` runs without an explicit `config`, it scans environment variables to discover which providers are available. Each provider maps to an environment variable, a provider name, and a connector ID.
+When `create()` runs without an explicit `config`, it scans environment variables to discover which providers are available. Each provider maps to an environment variable, a provider name, and a connector ID.
 
 | Environment Variable | Provider Name | Connector ID | Capabilities |
 | --- | --- | --- | --- |
@@ -817,7 +817,7 @@ When `modelmesh.create()` runs without an explicit `config`, it scans environmen
 ```python
 import modelmesh
 
-client = modelmesh.create(
+client = create(
     "chat-completion",
     api_keys={
         "openai": "sk-custom-key-here",
@@ -829,9 +829,9 @@ client = modelmesh.create(
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
-const client = modelmesh.create("chat-completion", {
+const client = create("chat-completion", {
     apiKeys: {
         openai: "sk-custom-key-here",
         anthropic: "sk-ant-custom-key-here",
@@ -870,7 +870,7 @@ provider = QuickProvider(
 **TypeScript:**
 
 ```typescript
-import { QuickProvider } from "modelmesh/cdk";
+import { QuickProvider } from "@modelmesh/core";
 
 const provider = new QuickProvider({
     baseUrl: "https://api.example.com",
@@ -887,7 +887,7 @@ const provider = new QuickProvider({
 
 When `models` is empty or omitted, `QuickProvider` sends a GET request to `{base_url}/v1/models` during initialization and populates its model catalogue from the response. This matches the behavior of providers that expose an OpenAI-compatible model listing endpoint.
 
-### Using `QuickProvider` with `modelmesh.create()`
+### Using `QuickProvider` with `create()`
 
 Pass a `QuickProvider` through the `config` parameter by constructing a configuration object that references it.
 
@@ -902,7 +902,7 @@ custom = QuickProvider(
     api_key="sk-internal-key",
 )
 
-client = modelmesh.create(config={
+client = create(config={
     "providers": {
         "internal-gateway": {
             "instance": custom,
@@ -920,15 +920,15 @@ client = modelmesh.create(config={
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
-import { QuickProvider } from "modelmesh/cdk";
+import { create } from "@modelmesh/core";
+import { QuickProvider } from "@modelmesh/core";
 
 const custom = new QuickProvider({
     baseUrl: "https://my-llm-gateway.internal/v1",
     apiKey: "sk-internal-key",
 });
 
-const client = modelmesh.create({
+const client = create({
     config: {
         providers: {
             "internal-gateway": {
@@ -960,7 +960,7 @@ import modelmesh
 from langchain_core.messages import HumanMessage
 
 # Create a ModelMesh client
-client = modelmesh.create("chat-completion")
+client = create("chat-completion")
 
 # Use directly in LangChain -- MeshClient is ChatOpenAI-compatible
 from langchain_openai import ChatOpenAI
@@ -982,11 +982,11 @@ graph.add_node("llm", llm)
 **TypeScript:**
 
 ```typescript
-import modelmesh from "modelmesh";
+import { create } from "@modelmesh/core";
 import { ChatOpenAI } from "@langchain/openai";
 
 // Create a ModelMesh client
-const client = modelmesh.create("chat-completion");
+const client = create("chat-completion");
 
 // Use directly in LangChain -- MeshClient is ChatOpenAI-compatible
 const llm = new ChatOpenAI({

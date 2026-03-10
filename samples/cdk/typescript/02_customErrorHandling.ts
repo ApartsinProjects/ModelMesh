@@ -15,7 +15,8 @@ import {
     ErrorClassification,
     HttpError,
     ModelInfo,
-} from "@modelmesh/cdk";
+    createDefaultModelInfo,
+} from "@modelmesh/core";
 
 /**
  * Provider with custom error classification logic.
@@ -27,13 +28,14 @@ import {
  */
 class CustomErrorProvider extends BaseProvider {
     classifyError(error: Error): ErrorClassification {
-        const statusCode = (error as HttpError).statusCode;
+        const statusCode = (error as any).statusCode;
 
         if (statusCode === 418) {
             // This provider uses 418 to signal rate limiting
             return {
                 retryable: true,
                 category: "rate_limit",
+                message: error.message,
             };
         }
 
@@ -42,6 +44,7 @@ class CustomErrorProvider extends BaseProvider {
             return {
                 retryable: false,
                 category: "client_error",
+                message: error.message,
             };
         }
 
@@ -50,6 +53,7 @@ class CustomErrorProvider extends BaseProvider {
             return {
                 retryable: true,
                 category: "server_error",
+                message: error.message,
             };
         }
 
@@ -62,14 +66,20 @@ async function main(): Promise<void> {
     const provider = new CustomErrorProvider({
         baseUrl: "https://custom-api.example.com",
         apiKey: "sk-custom-key",
+        timeout: 30,
+        maxRetries: 3,
+        authMethod: "api_key",
+        retryableCodes: [429, 500, 502, 503],
+        nonRetryableCodes: [400, 401, 403],
+        capabilities: ["generation.text-generation.chat-completion"],
         models: [
-            {
+            createDefaultModelInfo({
                 id: "custom-model-v1",
                 name: "Custom Model v1",
                 capabilities: ["generation.text-generation.chat-completion"],
-                context_window: 32_000,
-                max_output_tokens: 4_096,
-            },
+                contextWindow: 32_000,
+                maxOutputTokens: 4_096,
+            }),
         ],
     });
 

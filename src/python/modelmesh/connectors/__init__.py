@@ -36,6 +36,7 @@ from modelmesh.connectors.observability.webhook_connector import (
 )
 from modelmesh.connectors.providers.anthropic_provider import AnthropicProvider
 from modelmesh.connectors.providers.assemblyai_provider import AssemblyAIProvider
+from modelmesh.connectors.providers.azure_speech_provider import AzureSpeechProvider
 from modelmesh.connectors.providers.cohere_provider import CohereProvider
 from modelmesh.connectors.providers.deepseek_provider import DeepSeekProvider
 from modelmesh.connectors.providers.elevenlabs_provider import ElevenLabsProvider
@@ -55,9 +56,13 @@ from modelmesh.connectors.rotation.stick_until_failure import (
     StickUntilFailurePolicy,
 )
 from modelmesh.connectors.secret_stores.dotenv_store import DotenvSecretStore
+from modelmesh.connectors.secret_stores.encrypted_file_store import (
+    EncryptedFileSecretStore,
+)
 from modelmesh.connectors.secret_stores.env_store import EnvSecretStore
 from modelmesh.connectors.secret_stores.json_store import JsonSecretStore
 from modelmesh.connectors.secret_stores.keyring_store import KeyringSecretStore
+from modelmesh.connectors.secret_stores.memory_store import MemorySecretStore
 from modelmesh.connectors.storage.local_file import LocalFileStorage
 from modelmesh.connectors.storage.memory_storage import MemoryStorage
 from modelmesh.connectors.storage.sqlite_storage import SqliteStorage
@@ -81,11 +86,14 @@ CONNECTOR_REGISTRY: dict[str, type] = {
     JinaProvider.CONNECTOR_ID: JinaProvider,
     FirecrawlProvider.CONNECTOR_ID: FirecrawlProvider,
     AssemblyAIProvider.CONNECTOR_ID: AssemblyAIProvider,
+    AzureSpeechProvider.CONNECTOR_ID: AzureSpeechProvider,
     # Secret stores
     EnvSecretStore.CONNECTOR_ID: EnvSecretStore,
     DotenvSecretStore.CONNECTOR_ID: DotenvSecretStore,
     JsonSecretStore.CONNECTOR_ID: JsonSecretStore,
     KeyringSecretStore.CONNECTOR_ID: KeyringSecretStore,
+    MemorySecretStore.CONNECTOR_ID: MemorySecretStore,
+    EncryptedFileSecretStore.CONNECTOR_ID: EncryptedFileSecretStore,
     # Observability
     ConsoleObservabilityConnector.CONNECTOR_ID: ConsoleObservabilityConnector,
     NullObservabilityConnector.CONNECTOR_ID: NullObservabilityConnector,
@@ -120,10 +128,13 @@ __all__ = [
     "JinaProvider",
     "FirecrawlProvider",
     "AssemblyAIProvider",
+    "AzureSpeechProvider",
     "EnvSecretStore",
     "DotenvSecretStore",
+    "EncryptedFileSecretStore",
     "JsonSecretStore",
     "KeyringSecretStore",
+    "MemorySecretStore",
     "ConsoleObservabilityConnector",
     "NullObservabilityConnector",
     "FileObservabilityConnector",

@@ -3,173 +3,132 @@
 ========================================
 
 Define a custom capability pool that targets a specific subtree of the
-capability hierarchy, and use a dynamic selection function to score
-candidates by context window size.
+capability hierarchy with priority-based model selection.
 
 This sample demonstrates:
-  - Creating a custom pool targeting a hierarchy node
-  - Using a dynamic selection function for scoring models
+  - Creating multiple pools targeting different capability subtrees
   - Provider and model priority lists
   - How models join pools automatically based on capability registration
   - Inspecting pool and provider status programmatically
 
-Prerequisites:
-  - Set OPENAI_API_KEY, ANTHROPIC_API_KEY, and GOOGLE_API_KEY environment
-    variables.
+Uses mock providers so it runs without API keys.
 """
 
 import asyncio
-import yaml
 from modelmesh import ModelMesh, MeshConfig
+from modelmesh.interfaces.provider import (
+    ChatMessage, CompletionChoice, CompletionRequest, CompletionResponse,
+    ErrorClassification, ModelInfo, ModelPricing, ProviderConnector,
+    QuotaStatus, RateLimitStatus, TokenUsage,
+)
 
-CONFIG_YAML = """
-secrets:
-  store: modelmesh.env.v1
 
-providers:
-  openai.llm.v1:
-    enabled: true
-    api_key: ${secrets:OPENAI_API_KEY}
+class MockModelProvider(ProviderConnector):
+    """Mock provider with configurable name and capabilities."""
 
-  anthropic.llm.v1:
-    enabled: true
-    api_key: ${secrets:ANTHROPIC_API_KEY}
+    def __init__(self, name: str, caps: list[str]):
+        self._name = name
+        self._caps = caps
 
-  google.gemini.v1:
-    enabled: true
-    api_key: ${secrets:GOOGLE_API_KEY}
+    async def complete(self, request: CompletionRequest) -> CompletionResponse:
+        return CompletionResponse(
+            id=f"resp-{self._name}",
+            model=self._name,
+            choices=[CompletionChoice(
+                index=0,
+                message=ChatMessage(
+                    role="assistant",
+                    content=f"[{self._name}] Analysis complete for your query.",
+                ),
+                finish_reason="stop",
+            )],
+            usage=TokenUsage(prompt_tokens=20, completion_tokens=15, total_tokens=35),
+        )
 
-models:
-  gpt-4o:
-    provider: openai.llm.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-      - generation.text-generation.code-generation
-      - generation.structured-generation.json-generation
-      - interaction.tool-calling
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      structured_output: true
-      system_prompt: true
-    constraints:
-      context_window: 128000
-      max_output_tokens: 16384
+    async def stream(self, request):
+        yield await self.complete(request)
 
-  claude-sonnet-4:
-    provider: anthropic.llm.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-      - generation.text-generation.code-generation
-      - interaction.tool-calling
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      structured_output: true
-      system_prompt: true
-    constraints:
-      context_window: 200000
-      max_output_tokens: 16384
+    def get_capabilities(self):
+        return list(self._caps)
 
-  gemini-2.5-pro:
-    provider: google.gemini.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-      - generation.text-generation.code-generation
-      - generation.structured-generation.json-generation
-      - interaction.tool-calling
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      structured_output: true
-      system_prompt: true
-    constraints:
-      context_window: 1048576
-      max_output_tokens: 65536
+    def supports(self, cap):
+        return cap in self._caps
 
-  gemini-2.5-flash:
-    provider: google.gemini.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-      - generation.text-generation.code-generation
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      system_prompt: true
-    constraints:
-      context_window: 1048576
-      max_output_tokens: 8192
+    def list_models(self):
+        return [ModelInfo(id=self._name, name=self._name)]
 
-pools:
-  # -------------------------------------------------------------------
-  # Pool 1: Standard text generation (for comparison).
-  # -------------------------------------------------------------------
-  text-generation:
-    strategy: modelmesh.stick-until-failure.v1
+    def get_model_info(self, mid):
+        return ModelInfo(id=mid, name=mid)
 
-  # -------------------------------------------------------------------
-  # Pool 2: Custom "long-context" pool.
-  # Targets the text-generation subtree but applies a dynamic selection
-  # function that favors models with the largest context window.
-  # -------------------------------------------------------------------
-  long-context-analysis:
-    capability: generation.text-generation
-    strategy: modelmesh.priority-selection.v1
-    model_priority:
-      - gemini-2.5-pro             # 1M context
-      - claude-sonnet-4            # 200K context
-      - gpt-4o                     # 128K context
-    fallback_strategy: modelmesh.cost-first.v1
-    deactivation:
-      retry_limit: 2
-    recovery:
-      cooldown: 30s
+    def check_quota(self):
+        return QuotaStatus()
 
-  # -------------------------------------------------------------------
-  # Pool 3: Custom "code-review" pool.
-  # Targets the code-generation leaf with provider restrictions.
-  # -------------------------------------------------------------------
-  code-review:
-    capability: generation.text-generation.code-generation
-    strategy: modelmesh.priority-selection.v1
-    model_priority:
-      - claude-sonnet-4
-      - gpt-4o
-    excluded_providers:
-      - google.gemini.v1           # exclude Gemini from code review
-    deactivation:
-      retry_limit: 2
-    recovery:
-      cooldown: 30s
+    def get_rate_limits(self):
+        return RateLimitStatus()
 
-observability:
-  routing:
-    connector: modelmesh.console.v1
-"""
+    def get_pricing(self, mid):
+        return ModelPricing()
+
+    def report_usage(self, mid, usage):
+        pass
+
+    def classify_error(self, error):
+        return ErrorClassification(retryable=False)
 
 
 async def main() -> None:
-    config = MeshConfig(raw=yaml.safe_load(CONFIG_YAML))
+    all_caps = [
+        "generation.text-generation.chat-completion",
+        "generation.text-generation.code-generation",
+    ]
+    prov_openai = MockModelProvider("gpt-4o", all_caps)
+    prov_anthropic = MockModelProvider("claude-sonnet-4", all_caps)
+    prov_google = MockModelProvider("gemini-2.5-pro", all_caps)
+
+    config = MeshConfig(raw={
+        "providers": {
+            "openai": {"connector": "openai", "enabled": True, "instance": prov_openai},
+            "anthropic": {"connector": "anthropic", "enabled": True, "instance": prov_anthropic},
+            "google": {"connector": "google", "enabled": True, "instance": prov_google},
+        },
+        "models": {
+            "openai.gpt-4o": {
+                "provider": "openai",
+                "capabilities": all_caps,
+            },
+            "anthropic.claude-sonnet-4": {
+                "provider": "anthropic",
+                "capabilities": all_caps,
+            },
+            "google.gemini-2.5-pro": {
+                "provider": "google",
+                "capabilities": all_caps,
+            },
+        },
+        "pools": {
+            "text-generation": {
+                "capability": "generation.text-generation.chat-completion",
+                "strategy": "stick-until-failure",
+            },
+            "long-context-analysis": {
+                "capability": "generation.text-generation",
+                "strategy": "stick-until-failure",
+            },
+            "code-review": {
+                "capability": "generation.text-generation.code-generation",
+                "strategy": "stick-until-failure",
+            },
+        },
+    })
     mesh = ModelMesh()
     mesh.initialize(config)
-
     client = mesh.get_client()
 
     print("=" * 60)
     print("Custom pool with dynamic selection demo")
     print("=" * 60)
 
-    # -----------------------------------------------------------------------
     # Inspect pool membership
-    # -----------------------------------------------------------------------
     print("\n--- Pool membership ---\n")
     pool_status = mesh.pool_status()
     for pool_name in ["text-generation", "long-context-analysis", "code-review"]:
@@ -178,54 +137,35 @@ async def main() -> None:
         print(f"  Status: {status}")
         print()
 
-    # -----------------------------------------------------------------------
     # Example 1: Route through the long-context pool
-    # -----------------------------------------------------------------------
     print("--- Example 1: Long-context analysis ---\n")
-
-    # The model name "long-context-analysis" is the pool name, used as a
-    # virtual model name.  ModelMesh resolves it to the highest-priority
-    # model in that pool (gemini-2.5-pro with 1M context).
     response = client.chat.completions.create(
         model="long-context-analysis",
         messages=[
             {"role": "system", "content": "You are an expert analyst."},
             {"role": "user", "content": "If I need to analyze a 500-page document, "
-             "what context window would I need? Estimate in tokens."},
+             "what context window would I need?"},
         ],
-        temperature=0.3,
-        max_tokens=200,
     )
-
     print(f"  Pool   : long-context-analysis")
     print(f"  Model  : {response.model}")
     print(f"  Answer : {response.choices[0].message.content[:120]}...")
 
-    # -----------------------------------------------------------------------
     # Example 2: Route through the code-review pool
-    # -----------------------------------------------------------------------
-    print("\n--- Example 2: Code review (Gemini excluded) ---\n")
-
+    print("\n--- Example 2: Code review ---\n")
     response = client.chat.completions.create(
         model="code-review",
         messages=[
             {"role": "system", "content": "You are a senior code reviewer."},
-            {"role": "user", "content": "Review this function:\n\n"
-             "def fib(n):\n    if n <= 1: return n\n    return fib(n-1) + fib(n-2)"},
+            {"role": "user", "content": "Review this: def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)"},
         ],
-        temperature=0.2,
-        max_tokens=300,
     )
-
     print(f"  Pool   : code-review")
     print(f"  Model  : {response.model}")
     print(f"  Answer : {response.choices[0].message.content[:120]}...")
 
-    # -----------------------------------------------------------------------
-    # Example 3: Inspect pool and provider status programmatically
-    # -----------------------------------------------------------------------
+    # Example 3: Inspect pool and provider status
     print("\n--- Example 3: Pool and provider inspection ---\n")
-
     pool_status = mesh.pool_status()
     print("  Pool status:")
     for name, status in pool_status.items():

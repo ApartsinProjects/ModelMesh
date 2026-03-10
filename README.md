@@ -9,8 +9,10 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
+  <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-579%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-808%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -20,8 +22,14 @@ Your application requests a **capability** (e.g. "chat completion"). ModelMesh p
 
 ## Install
 
+**Python:**
 ```bash
 pip install modelmesh-lite
+```
+
+**TypeScript / Node.js:**
+```bash
+npm install @modelmesh/core
 ```
 
 ## Quick Start
@@ -49,11 +57,9 @@ print(response.choices[0].message.content)
 ### TypeScript
 
 ```typescript
-import { ModelMesh } from "@modelmesh/core";
+import { create } from "@modelmesh/core";
 
-const mesh = new ModelMesh();
-await mesh.initialize({ providers: ["openai"] });
-const client = mesh.getClient();
+const client = create("chat-completion");
 
 const response = await client.chat.completions.create({
     model: "chat-completion",
@@ -187,13 +193,22 @@ client = modelmesh.create(config="modelmesh.yaml")
 ## Development
 
 ```bash
-# Clone and install dev dependencies
+# Clone the repository
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
 
-# Run tests
+# Run Python tests (640 tests)
 pip install pytest
 cd src/python && python -m pytest ../../tests/ -v
+
+# Run TypeScript tests (168 tests)
+cd src/typescript && npm install && npm test
+```
+
+## Docker
+
+```bash
+docker run -e OPENAI_API_KEY="sk-..." ghcr.io/apartsinprojects/modelmesh
 ```
 
 ## License

@@ -196,6 +196,29 @@ This decouples routing from application code: multiple applications (LangChain p
 
 ---
 
+## Browser Compatibility
+
+ModelMesh Lite runs in web browsers via the **BrowserBaseProvider** class and a dedicated browser entry point. `BrowserBaseProvider` mirrors the full `BaseProvider` interface but uses the Fetch API and `ReadableStream` instead of Node.js `http`/`https` modules and Node streams. The same protected hooks (`_buildHeaders`, `_buildRequestPayload`, `_parseResponse`, `_parseSseChunk`, `_getCompletionEndpoint`) are available for subclassing, so browser providers are built with the same patterns as server-side providers.
+
+### CORS Proxy Support
+
+Most AI provider APIs do not send CORS headers, so browsers block direct requests. `BrowserBaseProvider` accepts an optional `proxyUrl` configuration field. When set, all API URLs are prefixed with the proxy URL, routing requests through a lightweight CORS proxy that adds the required headers. The library ships with a minimal transparent CORS proxy in `tools/cors-proxy/` (Node.js script, Docker Compose included).
+
+### Two Modes
+
+| Mode | When to use | Configuration |
+| --- | --- | --- |
+| **With CORS proxy** | Standard web pages calling any AI provider API | Set `proxyUrl` in `BrowserBaseProvider` config |
+| **Direct access** | Browser extensions with `host_permissions`, providers that send CORS headers (e.g., Anthropic), non-browser runtimes | Omit `proxyUrl` |
+
+### Browser Entry Point
+
+For bundlers (Webpack, Vite, esbuild), import from `@modelmesh/core/browser` to exclude Node.js-dependent modules (`ProxyServer`, `FileSecretStore`, `HttpHealthDiscovery`, file-backed `KeyValueStorage`). The `createBrowser()` convenience function provides a browser-optimized equivalent of `modelmesh.create()`.
+
+Full browser usage guide in [guides/BrowserUsage.md](guides/BrowserUsage.html).
+
+---
+
 ## Configuration
 
 The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [persistent storage connectors](#persistent-storage), enabling centralized management and sharing across instances. Full YAML reference in [SystemConfiguration.md](SystemConfiguration.html).

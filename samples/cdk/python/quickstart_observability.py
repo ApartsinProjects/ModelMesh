@@ -6,7 +6,7 @@ ConsoleObservability specialized class with colored console output.
 
 from datetime import datetime
 
-from modelmesh.cdk import ConsoleObservability, BaseObservabilityConfig
+from modelmesh.cdk import ConsoleObservability, ConsoleObservabilityConfig
 from modelmesh.interfaces.observability import (
     AggregateStats,
     EventType,
@@ -16,7 +16,7 @@ from modelmesh.interfaces.observability import (
 
 
 def main() -> None:
-    obs = ConsoleObservability(BaseObservabilityConfig(
+    obs = ConsoleObservability(ConsoleObservabilityConfig(
         log_level="summary",
         redact_secrets=True,
     ))

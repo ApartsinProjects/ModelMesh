@@ -226,3 +226,29 @@ Parameters shared by all discovery connectors. Individual connectors may add con
 | `discovery.health.timeout` | duration | Probe timeout (e.g., `10s`). |
 | `discovery.health.failure_threshold` | integer | Consecutive failures before deactivation. |
 | `discovery.health.providers` | list | Providers to probe. Default: all enabled providers. |
+
+---
+
+## Audio
+
+Audio capabilities (text-to-speech, speech-to-text) are integrated into the provider interface through dedicated request and response types that bridge into the existing `CompletionRequest`/`CompletionResponse` pipeline. This allows audio providers (ElevenLabs TTS, AssemblyAI STT) to participate in the same rotation, failover, and pool routing as text-generation providers.
+
+### AudioRequest and AudioResponse Types
+
+| Type | Purpose | Key fields |
+| --- | --- | --- |
+| **AudioRequest** | Wraps a TTS or STT request for routing through the provider pipeline. | `input` (text for TTS, audio buffer for STT), `voice`, `format`, `model`, `language` |
+| **AudioResponse** | Wraps audio provider output. | `audio` (binary data or stream for TTS), `text` (transcript for STT), `duration`, `usage` |
+
+Audio connectors bridge these types into `CompletionRequest`/`CompletionResponse` internally. The provider's `complete()` method receives a `CompletionRequest` whose `extra` field carries the audio-specific parameters; the response's `extra` field carries audio-specific output. This preserves the uniform provider interface while supporting audio-specific data.
+
+### MeshClient Audio Namespace
+
+The `MeshClient` exposes audio through an OpenAI SDK-compatible namespace:
+
+| Method | Capability | Description |
+| --- | --- | --- |
+| `client.audio.speech.create()` | `generation.audio.text-to-speech` | Generate speech from text. Routes to TTS providers (ElevenLabs, OpenAI, Google Cloud). |
+| `client.audio.transcriptions.create()` | `understanding.audio.speech-to-text` | Transcribe audio to text. Routes to STT providers (AssemblyAI, OpenAI Whisper, Groq). |
+
+Audio requests follow the same routing pipeline as text requests: capability resolution, pool selection, rotation policy, retry, and failover. Pools targeting `generation.audio` or `understanding.audio` collect all audio-capable models automatically.

@@ -19,7 +19,7 @@
 // For a simpler CDK-based approach, see samples/cdk/typescript/
 
 // ---------------------------------------------------------------------------
-// Types imported from modelmesh-lite (reproduced here for self-containment)
+// Types imported from @modelmesh/core (reproduced here for self-containment)
 // ---------------------------------------------------------------------------
 
 /** Authentication method used by a provider connector. */
@@ -87,7 +87,7 @@ interface RateLimitStatus {
 }
 
 /** Result of classifying a provider error. */
-interface ErrorClassification {
+interface ErrorClassificationResult {
     retryable: boolean;
     category: string;
     retry_after?: number;
@@ -122,14 +122,14 @@ interface CostPricing {
     reportUsage(modelId: string, usage: TokenUsage): void;
 }
 
-interface ErrorClassification {
-    classifyError(error: Error): ErrorClassification;
+interface ErrorHandling {
+    classifyError(error: Error): ErrorClassificationResult;
     isRetryable(error: Error): boolean;
 }
 
 interface ProviderConnector
     extends ModelExecution, Capabilities, ModelCatalogue,
-            QuotaRateLimits, CostPricing, ErrorClassification {}
+            QuotaRateLimits, CostPricing, ErrorHandling {}
 
 // ---------------------------------------------------------------------------
 // vLLM-specific types — the wire format used by the self-hosted server

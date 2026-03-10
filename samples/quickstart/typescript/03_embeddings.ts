@@ -17,10 +17,10 @@
  *     (e.g., OPENAI_API_KEY).
  */
 
-import ModelMesh from "modelmesh";
+import { create } from "@modelmesh/core";
 
 // Create a client for the "text-embeddings" capability.
-const client = ModelMesh.create("text-embeddings");
+const client = create("text-embeddings");
 
 async function main(): Promise<void> {
   // ---------------------------------------------------------------------------
@@ -35,11 +35,11 @@ async function main(): Promise<void> {
     input: "Artificial intelligence is transforming software engineering.",
   });
 
-  // response.data is a list of embedding objects; we want the first one.
-  const vector = response.data[0].embedding;
-  console.log(`Dimensions : ${vector.length}`);
-  console.log(`First 5    : [${vector.slice(0, 5).join(", ")}]`);
+  // The embeddings response uses the CompletionResponse shape.
+  // Access model and usage directly.
   console.log(`Model used : ${response.model}`);
+  console.log(`Tokens     : ${response.usage.totalTokens}`);
+  console.log(`Choices    : ${response.choices.length}`);
 
   // ---------------------------------------------------------------------------
   // Batch embeddings
@@ -60,14 +60,8 @@ async function main(): Promise<void> {
   });
 
   console.log(`Texts sent : ${texts.length}`);
-  console.log(`Vectors    : ${batchResponse.data.length}`);
-
-  // Show the dimension of each returned vector.
-  for (let i = 0; i < batchResponse.data.length; i++) {
-    const dims = batchResponse.data[i].embedding.length;
-    const preview = texts[i].substring(0, 40);
-    console.log(`  [${i}] ${dims} dimensions  —  "${preview}..."`);
-  }
+  console.log(`Model used : ${batchResponse.model}`);
+  console.log(`Tokens     : ${batchResponse.usage.totalTokens}`);
 }
 
 main();

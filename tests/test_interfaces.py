@@ -28,6 +28,10 @@ from modelmesh.interfaces.provider import (
     QuotaStatus,
     RateLimitStatus,
     ProviderConnector,
+    AudioSpeechRequest,
+    AudioSpeechResponse,
+    AudioTranscriptionRequest,
+    AudioTranscriptionResponse,
 )
 from modelmesh.interfaces.rotation import (
     ModelState,
@@ -361,6 +365,126 @@ class TestErrorClassification(unittest.TestCase):
         self.assertTrue(ec.retryable)
         self.assertEqual(ec.error_code, 429)
         self.assertEqual(ec.category, "rate_limit")
+
+
+# ---------------------------------------------------------------------------
+# Audio types
+# ---------------------------------------------------------------------------
+
+
+class TestAudioSpeechRequest(unittest.TestCase):
+    """Test the AudioSpeechRequest dataclass."""
+
+    def test_creation(self):
+        req = AudioSpeechRequest(
+            model="tts-1",
+            input="Hello, world!",
+            voice="alloy",
+        )
+        self.assertEqual(req.model, "tts-1")
+        self.assertEqual(req.input, "Hello, world!")
+        self.assertEqual(req.voice, "alloy")
+
+    def test_defaults(self):
+        req = AudioSpeechRequest(model="tts-1", input="Hello", voice="nova")
+        self.assertEqual(req.response_format, "mp3")
+        self.assertEqual(req.speed, 1.0)
+
+    def test_custom_format_and_speed(self):
+        req = AudioSpeechRequest(
+            model="tts-1-hd",
+            input="Testing",
+            voice="shimmer",
+            response_format="wav",
+            speed=1.5,
+        )
+        self.assertEqual(req.response_format, "wav")
+        self.assertEqual(req.speed, 1.5)
+
+
+class TestAudioSpeechResponse(unittest.TestCase):
+    """Test the AudioSpeechResponse dataclass."""
+
+    def test_defaults(self):
+        resp = AudioSpeechResponse()
+        self.assertIsNone(resp.audio_data)
+        self.assertEqual(resp.format, "mp3")
+        self.assertEqual(resp.size_bytes, 0)
+        self.assertIsNone(resp.duration_seconds)
+        self.assertEqual(resp.model, "")
+        self.assertEqual(resp.input_characters, 0)
+
+    def test_with_data(self):
+        resp = AudioSpeechResponse(
+            audio_data=b"\x00\x01\x02",
+            format="wav",
+            size_bytes=3,
+            duration_seconds=1.5,
+            model="tts-1",
+            input_characters=13,
+        )
+        self.assertEqual(resp.audio_data, b"\x00\x01\x02")
+        self.assertEqual(resp.format, "wav")
+        self.assertEqual(resp.size_bytes, 3)
+        self.assertEqual(resp.duration_seconds, 1.5)
+        self.assertEqual(resp.model, "tts-1")
+        self.assertEqual(resp.input_characters, 13)
+
+
+class TestAudioTranscriptionRequest(unittest.TestCase):
+    """Test the AudioTranscriptionRequest dataclass."""
+
+    def test_creation(self):
+        req = AudioTranscriptionRequest(
+            model="whisper-1",
+            file="https://example.com/audio.mp3",
+        )
+        self.assertEqual(req.model, "whisper-1")
+        self.assertEqual(req.file, "https://example.com/audio.mp3")
+
+    def test_defaults(self):
+        req = AudioTranscriptionRequest(model="whisper-1", file="audio.mp3")
+        self.assertIsNone(req.language)
+        self.assertEqual(req.response_format, "json")
+        self.assertIsNone(req.prompt)
+
+    def test_custom_options(self):
+        req = AudioTranscriptionRequest(
+            model="assemblyai-best",
+            file="https://example.com/audio.wav",
+            language="en",
+            response_format="text",
+            prompt="Technical discussion about AI",
+        )
+        self.assertEqual(req.language, "en")
+        self.assertEqual(req.response_format, "text")
+        self.assertEqual(req.prompt, "Technical discussion about AI")
+
+
+class TestAudioTranscriptionResponse(unittest.TestCase):
+    """Test the AudioTranscriptionResponse dataclass."""
+
+    def test_defaults(self):
+        resp = AudioTranscriptionResponse()
+        self.assertEqual(resp.text, "")
+        self.assertIsNone(resp.language)
+        self.assertIsNone(resp.duration_seconds)
+        self.assertIsNone(resp.confidence)
+        self.assertEqual(resp.model, "")
+
+    def test_with_data(self):
+        resp = AudioTranscriptionResponse(
+            text="Hello, this is a test.",
+            language="en",
+            duration_seconds=5.2,
+            confidence=0.95,
+            model="whisper-1",
+        )
+        self.assertEqual(resp.text, "Hello, this is a test.")
+        self.assertEqual(resp.language, "en")
+        self.assertEqual(resp.duration_seconds, 5.2)
+        self.assertEqual(resp.confidence, 0.95)
+        self.assertEqual(resp.model, "whisper-1")
 
 
 if __name__ == "__main__":

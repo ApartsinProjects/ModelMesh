@@ -152,7 +152,7 @@ _CAPABILITY_ALIASES: dict[str, str] = {
     "text-generation": "generation.text-generation",
     "text-embeddings": "representation.embeddings.text-embeddings",
     "text-to-speech": "generation.audio.text-to-speech",
-    "speech-to-text": "representation.audio.speech-to-text",
+    "speech-to-text": "understanding.audio.speech-to-text",
     "text-to-image": "generation.image.text-to-image",
     "image-to-text": "representation.image.image-to-text",
     "code-generation": "generation.text-generation.code-generation",

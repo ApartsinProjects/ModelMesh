@@ -148,6 +148,62 @@ class ErrorClassification:
     category: str = "unknown"  # "auth", "rate_limit", "server", "client", "network"
 
 
+@dataclass
+class AudioSpeechRequest:
+    """Request payload for text-to-speech synthesis.
+
+    Matches the OpenAI audio speech API shape so callers can use
+    ``client.audio.speech.create(model=..., voice=..., input=...)``.
+    """
+
+    model: str
+    input: str
+    voice: str
+    response_format: str = "mp3"
+    speed: float = 1.0
+
+
+@dataclass
+class AudioSpeechResponse:
+    """Response from a text-to-speech synthesis request.
+
+    Wraps audio output metadata. The actual audio bytes are returned
+    by the transport layer separately when available.
+    """
+
+    audio_data: Optional[bytes] = None
+    format: str = "mp3"
+    size_bytes: int = 0
+    duration_seconds: Optional[float] = None
+    model: str = ""
+    input_characters: int = 0
+
+
+@dataclass
+class AudioTranscriptionRequest:
+    """Request payload for speech-to-text transcription.
+
+    Matches the OpenAI audio transcriptions API shape.
+    """
+
+    model: str
+    file: str
+    language: Optional[str] = None
+    response_format: str = "json"
+    prompt: Optional[str] = None
+
+
+@dataclass
+class AudioTranscriptionResponse:
+    """Response from a speech-to-text transcription request."""
+
+    text: str = ""
+    language: Optional[str] = None
+    duration_seconds: Optional[float] = None
+    confidence: Optional[float] = None
+    model: str = ""
+
+
 class ProviderConnector(ABC):
     """Abstract interface for provider connectors.
 
@@ -243,5 +299,9 @@ __all__ = [
     "QuotaStatus",
     "RateLimitStatus",
     "ErrorClassification",
+    "AudioSpeechRequest",
+    "AudioSpeechResponse",
+    "AudioTranscriptionRequest",
+    "AudioTranscriptionResponse",
     "ProviderConnector",
 ]

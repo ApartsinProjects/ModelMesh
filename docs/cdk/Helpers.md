@@ -936,66 +936,42 @@ Factory for creating `ModelSnapshot` test instances with sensible defaults and c
 #### Python
 
 ```python
-from datetime import datetime
-from typing import Optional
-
-
 def mock_model_snapshot(
-    model_id: str = "gpt-4",
-    provider_id: str = "openai",
-    status: str = "active",
+    model_id: str = "test.model-a",
+    provider_id: str = "test.v1",
+    status: ModelStatus = ModelStatus.ACTIVE,
     failure_count: int = 0,
+    total_requests: int = 0,
     error_rate: float = 0.0,
-    cooldown_remaining: Optional[float] = None,
-    quota_used: int = 0,
-    tokens_used: int = 0,
-    cost_accumulated: float = 0.0,
-    latency_avg: Optional[float] = None,
-    last_request: Optional[datetime] = None,
-    last_failure: Optional[datetime] = None,
-) -> "ModelSnapshot":
-    """Create a ModelSnapshot instance for testing.
+) -> ModelState:
+    """Create a ModelState snapshot for rotation policy testing.
 
     All fields have sensible defaults representing a healthy active model.
     Override individual fields to simulate specific conditions.
 
     Args:
-        model_id: Model identifier.
-        provider_id: Provider identifier.
-        status: Model status ("active" or "standby").
-        failure_count: Number of consecutive failures.
-        error_rate: Error rate over the sliding window (0.0--1.0).
-        cooldown_remaining: Seconds remaining in cooldown, or None.
-        quota_used: Number of requests consumed in the current quota period.
-        tokens_used: Total tokens consumed.
-        cost_accumulated: Total cost in USD.
-        latency_avg: Average latency in milliseconds.
-        last_request: Timestamp of the most recent request.
-        last_failure: Timestamp of the most recent failure.
+        model_id: Dot-notated model identifier.
+        provider_id: Provider connector ID.
+        status: Current lifecycle status.
+        failure_count: Consecutive failures.
+        total_requests: Lifetime request count.
+        error_rate: Current error rate (0.0--1.0).
 
     Returns:
-        A ModelSnapshot instance ready for use in tests.
+        A ModelState instance ready for use in tests.
 
     Examples:
         >>> healthy = mock_model_snapshot()
         >>> failing = mock_model_snapshot(failure_count=5, error_rate=0.8)
-        >>> standby = mock_model_snapshot(status="standby", cooldown_remaining=30.0)
+        >>> standby = mock_model_snapshot(status=ModelStatus.STANDBY)
     """
-    from modelmesh.interfaces.rotation_policy import ModelSnapshot, ModelStatus
-
-    return ModelSnapshot(
+    return ModelState(
         model_id=model_id,
         provider_id=provider_id,
-        status=ModelStatus(status),
+        status=status,
         failure_count=failure_count,
+        total_requests=total_requests,
         error_rate=error_rate,
-        cooldown_remaining=cooldown_remaining,
-        quota_used=quota_used,
-        tokens_used=tokens_used,
-        cost_accumulated=cost_accumulated,
-        latency_avg=latency_avg,
-        last_request=last_request,
-        last_failure=last_failure,
     )
 ```
 
@@ -1003,31 +979,25 @@ def mock_model_snapshot(
 
 ```typescript
 /**
- * Create a ModelSnapshot instance for testing.
+ * Create a ModelState snapshot for rotation policy testing.
  *
  * All fields have sensible defaults representing a healthy active model.
  * Override individual fields to simulate specific conditions.
  *
  * @param overrides - Fields to override from the defaults.
- * @returns A ModelSnapshot instance ready for use in tests.
+ * @returns A ModelState object ready for use in tests.
  *
  * @example
  * const healthy = mockModelSnapshot();
- * const failing = mockModelSnapshot({ failure_count: 5, error_rate: 0.8 });
- * const standby = mockModelSnapshot({ status: ModelStatus.STANDBY, cooldown_remaining: 30 });
+ * const failing = mockModelSnapshot({ failureCount: 5, errorRate: 0.8 });
+ * const standby = mockModelSnapshot({ status: ModelStatus.STANDBY });
  */
-function mockModelSnapshot(overrides: Partial<ModelSnapshot> = {}): ModelSnapshot {
-    return {
-        model_id: "gpt-4",
-        provider_id: "openai",
-        status: ModelStatus.ACTIVE,
-        failure_count: 0,
-        error_rate: 0.0,
-        quota_used: 0,
-        tokens_used: 0,
-        cost_accumulated: 0.0,
+function mockModelSnapshot(overrides: Partial<ModelState> = {}): ModelState {
+    return createDefaultModelState({
+        modelId: "test.model-a",
+        providerId: "test.v1",
         ...overrides,
-    };
+    });
 }
 ```
 

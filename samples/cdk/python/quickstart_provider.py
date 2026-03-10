@@ -6,12 +6,12 @@ OpenAICompatibleProvider specialized class with a BaseProviderConfig.
 
 import asyncio
 
-from modelmesh.cdk import OpenAICompatibleProvider, BaseProviderConfig
+from modelmesh.cdk import OpenAICompatibleProvider, OpenAICompatibleConfig
 from modelmesh.interfaces.provider import CompletionRequest, ModelInfo
 
 
 async def main() -> None:
-    provider = OpenAICompatibleProvider(BaseProviderConfig(
+    provider = OpenAICompatibleProvider(OpenAICompatibleConfig(
         base_url="https://api.openai.com",
         api_key="sk-your-api-key",
         models=[ModelInfo(

@@ -1,0 +1,14 @@
+# Quick start:
+#   docker compose up
+#
+# Then configure BrowserBaseProvider with:
+#   proxyUrl: 'http://localhost:9090'
+
+services:
+  cors-proxy:
+    build: .
+    ports:
+      - "9090:9090"
+    environment:
+      - PORT=9090
+    restart: unless-stopped

@@ -17,7 +17,7 @@
 // For a simpler CDK-based approach, see samples/cdk/typescript/
 
 // ---------------------------------------------------------------------------
-// Types imported from modelmesh-lite (reproduced here for self-containment)
+// Types imported from @modelmesh/core (reproduced here for self-containment)
 // ---------------------------------------------------------------------------
 
 /** Controls when storage persistence occurs. */

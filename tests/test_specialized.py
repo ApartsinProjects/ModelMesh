@@ -633,14 +633,32 @@ class TestCDKHelpers(unittest.TestCase):
         req = mock_completion_request()
         self.assertIsInstance(req, CompletionRequest)
 
-    def test_mock_model_snapshot_raises_due_to_provider_id(self):
-        """mock_model_snapshot passes provider_id which ModelState does not accept.
+    def test_mock_model_snapshot_creates_valid_state(self):
+        """mock_model_snapshot creates a valid ModelState with defaults."""
+        snapshot = mock_model_snapshot()
+        self.assertEqual(snapshot.model_id, "test.model-a")
+        self.assertEqual(snapshot.provider_id, "test.v1")
+        self.assertEqual(snapshot.status, ModelStatus.ACTIVE)
+        self.assertEqual(snapshot.failure_count, 0)
+        self.assertEqual(snapshot.total_requests, 0)
+        self.assertEqual(snapshot.error_rate, 0.0)
 
-        This documents a known issue in the helper: ModelState does not have
-        a provider_id field, so the default call raises TypeError.
-        """
-        with self.assertRaises(TypeError):
-            mock_model_snapshot()
+    def test_mock_model_snapshot_custom_values(self):
+        """mock_model_snapshot accepts custom failure_count, total_requests, error_rate."""
+        snapshot = mock_model_snapshot(
+            model_id="custom.model",
+            provider_id="custom.v1",
+            status=ModelStatus.STANDBY,
+            failure_count=5,
+            total_requests=100,
+            error_rate=0.3,
+        )
+        self.assertEqual(snapshot.model_id, "custom.model")
+        self.assertEqual(snapshot.provider_id, "custom.v1")
+        self.assertEqual(snapshot.status, ModelStatus.STANDBY)
+        self.assertEqual(snapshot.failure_count, 5)
+        self.assertEqual(snapshot.total_requests, 100)
+        self.assertAlmostEqual(snapshot.error_rate, 0.3)
 
     def test_mock_http_client_records_post_calls(self):
         client = MockHttpClient()

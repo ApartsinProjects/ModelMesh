@@ -109,9 +109,19 @@ class ModelMesh:
 ## TypeScript
 
 ```typescript
-interface MeshConfig {
-  /** Raw parsed configuration from YAML or programmatic input. */
-  raw: Record<string, unknown>;
+class MeshConfig {
+  /** Raw parsed configuration from YAML, JSON, or programmatic input. */
+  readonly raw: Record<string, unknown>;
+
+  constructor(raw?: Record<string, unknown>);
+  static fromFile(path: string): MeshConfig;
+  static fromDict(data: Record<string, unknown>): MeshConfig;
+
+  get providers(): Record<string, unknown>;
+  get models(): Record<string, unknown>;
+  get pools(): Record<string, unknown>;
+  merge(overrides: Record<string, unknown>): MeshConfig;
+  validate(): string[];
 }
 
 class ModelMesh {

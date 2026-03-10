@@ -53,7 +53,8 @@ def mock_model_snapshot(
     provider_id: str = "test.v1",
     status: ModelStatus = ModelStatus.ACTIVE,
     failure_count: int = 0,
-    success_count: int = 0,
+    total_requests: int = 0,
+    error_rate: float = 0.0,
 ) -> ModelState:
     """Create a ``ModelState`` snapshot for rotation policy testing.
 
@@ -62,7 +63,8 @@ def mock_model_snapshot(
         provider_id: Provider connector ID.
         status: Current lifecycle status.
         failure_count: Consecutive failures.
-        success_count: Lifetime successes.
+        total_requests: Lifetime request count.
+        error_rate: Current error rate (0.0–1.0).
 
     Returns:
         A ``ModelState`` instance.
@@ -72,7 +74,8 @@ def mock_model_snapshot(
         provider_id=provider_id,
         status=status,
         failure_count=failure_count,
-        success_count=success_count,
+        total_requests=total_requests,
+        error_rate=error_rate,
     )
 
 

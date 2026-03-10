@@ -17,11 +17,11 @@
  *   - Set OPENAI_API_KEY and ANTHROPIC_API_KEY environment variables.
  */
 
-import ModelMesh from "modelmesh";
+import { create, CompletionResponse } from "@modelmesh/core";
 
 // Create a client with two capabilities across two providers.
 // "cost-first" picks the cheapest available model for each request.
-const client = ModelMesh.create(
+const client = create(
   "chat-completion",
   "text-embeddings",
   {
@@ -38,19 +38,19 @@ async function main(): Promise<void> {
   console.log("Chat Completion");
   console.log("=".repeat(50));
 
-  const response = await client.chat.completions.create({
+  const response = (await client.chat.completions.create({
     model: "chat-completion",
     messages: [
       { role: "system", content: "You are a concise assistant." },
       { role: "user", content: "What is the difference between TCP and UDP?" },
     ],
-    max_tokens: 200,
-  });
+    maxTokens: 200,
+  })) as CompletionResponse;
 
   console.log(`Model used  : ${response.model}`);
-  console.log(`Prompt tkns : ${response.usage.prompt_tokens}`);
-  console.log(`Compl. tkns : ${response.usage.completion_tokens}`);
-  console.log(`\nAssistant:\n${response.choices[0].message.content}`);
+  console.log(`Prompt tkns : ${response.usage.promptTokens}`);
+  console.log(`Compl. tkns : ${response.usage.completionTokens}`);
+  console.log(`\nAssistant:\n${response.choices[0].message?.content}`);
 
   // ---------------------------------------------------------------------------
   // Text embeddings
@@ -64,10 +64,12 @@ async function main(): Promise<void> {
     input: "ModelMesh routes AI requests to the best provider.",
   });
 
-  const vector = embedResponse.data[0].embedding;
+  // The embeddings response uses the CompletionResponse shape; the raw
+  // embedding data is provider-dependent.  Access the model and usage
+  // fields directly.
   console.log(`Model used : ${embedResponse.model}`);
-  console.log(`Dimensions : ${vector.length}`);
-  console.log(`First 5    : [${vector.slice(0, 5).join(", ")}]`);
+  console.log(`Usage      : ${embedResponse.usage.totalTokens} tokens`);
+  console.log(`Response   : ${embedResponse.choices.length} choice(s)`);
 }
 
 main();

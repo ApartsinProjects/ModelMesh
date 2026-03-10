@@ -1,0 +1,46 @@
+{
+  "name": "@modelmesh/core",
+  "version": "0.1.0",
+  "description": "One integration point for all your AI providers. Automatic failover, free-tier aggregation, and capability-based routing.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "openai",
+    "anthropic",
+    "gemini",
+    "routing",
+    "failover",
+    "model-mesh"
+  ],
+  "author": "Sasha Apartsin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ApartsinProjects/ModelMesh"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "typescript": "^5.5.0",
+    "rimraf": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

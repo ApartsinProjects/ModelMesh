@@ -17,7 +17,7 @@
  *   - Set the OPENAI_API_KEY environment variable
  */
 
-import { ModelMesh, MeshConfig } from "modelmesh-lite";
+import { ModelMesh, MeshConfig, CompletionResponse } from "@modelmesh/core";
 
 async function main(): Promise<void> {
   // -----------------------------------------------------------------------
@@ -27,26 +27,24 @@ async function main(): Promise<void> {
   // (secret-store.modelmesh.env.v1). The provider connector ID follows the
   // naming convention: vendor.service.version (the "provider." prefix is
   // omitted inside the providers section).
-  const config: MeshConfig = {
-    raw: {
-      providers: {
-        "openai.llm.v1": {
-          enabled: true,
-          api_key: "${secrets:OPENAI_API_KEY}",
-        },
+  const config = new MeshConfig({
+    providers: {
+      "openai.llm.v1": {
+        enabled: true,
+        api_key: "${secrets:OPENAI_API_KEY}",
       },
-      // No explicit pool configuration needed -- the predefined
-      // "text-generation" pool automatically includes all models registered
-      // at the generation.text-generation capability node or its descendants.
-      // The default selection strategy is stick-until-failure.
     },
-  };
+    // No explicit pool configuration needed -- the predefined
+    // "text-generation" pool automatically includes all models registered
+    // at the generation.text-generation capability node or its descendants.
+    // The default selection strategy is stick-until-failure.
+  });
 
   // -----------------------------------------------------------------------
   // 2. Initialize ModelMesh
   // -----------------------------------------------------------------------
   const mesh = new ModelMesh();
-  await mesh.initialize(config);
+  mesh.initialize(config);
   console.log("ModelMesh initialized with OpenAI provider.");
 
   // -----------------------------------------------------------------------
@@ -64,15 +62,15 @@ async function main(): Promise<void> {
   // text-generation pool (in this case, a GPT model from OpenAI).
   console.log("Sending chat completion request...");
 
-  const response = await client.chat.completions.create({
+  const response = (await client.chat.completions.create({
     model: "text-generation",
     messages: [
       { role: "system", content: "You are a helpful assistant." },
       { role: "user", content: "Explain what ModelMesh Lite does in one sentence." },
     ],
     temperature: 0.7,
-    max_tokens: 150,
-  });
+    maxTokens: 150,
+  })) as CompletionResponse;
 
   // -----------------------------------------------------------------------
   // 5. Print the response
@@ -80,13 +78,13 @@ async function main(): Promise<void> {
   console.log("\n--- Response ---");
   console.log(`Model used : ${response.model}`);
   console.log(`Response ID: ${response.id}`);
-  console.log(`Content    : ${response.choices[0].message.content}`);
-  console.log(`Tokens     : prompt=${response.usage.prompt_tokens}, completion=${response.usage.completion_tokens}`);
+  console.log(`Content    : ${response.choices[0].message?.content}`);
+  console.log(`Tokens     : prompt=${response.usage.promptTokens}, completion=${response.usage.completionTokens}`);
 
   // -----------------------------------------------------------------------
   // 6. Shut down gracefully
   // -----------------------------------------------------------------------
-  await mesh.shutdown();
+  mesh.shutdown();
   console.log("\nModelMesh shut down.");
 }
 

@@ -12,7 +12,8 @@ import {
     BaseProviderConfig,
     CompletionRequest,
     ModelInfo,
-} from "@modelmesh/cdk";
+    createDefaultModelInfo,
+} from "@modelmesh/core";
 
 /**
  * OpenAI-compatible provider adapted for Azure deployments.
@@ -20,8 +21,8 @@ import {
  * Azure OpenAI uses a different URL pattern and authentication header
  * compared to the standard OpenAI API. This subclass overrides only
  * the two methods that differ:
- * - getCompletionEndpoint: constructs the Azure deployment URL
- * - buildHeaders: uses the 'api-key' header instead of Bearer token
+ * - _getCompletionEndpoint: constructs the Azure deployment URL
+ * - _buildHeaders: uses the 'api-key' header instead of Bearer token
  *
  * Everything else (request/response translation, streaming, error
  * classification, retry logic) is inherited.
@@ -29,7 +30,7 @@ import {
 class AzureOpenAIProvider extends OpenAICompatibleProvider {
     private resource: string;
     private deployment: string;
-    private apiVersion: string;
+    private azureApiVersion: string;
 
     constructor(
         config: BaseProviderConfig,
@@ -40,23 +41,23 @@ class AzureOpenAIProvider extends OpenAICompatibleProvider {
         super(config);
         this.resource = resource;
         this.deployment = deployment;
-        this.apiVersion = apiVersion;
+        this.azureApiVersion = apiVersion;
     }
 
     /** Construct the Azure OpenAI deployment endpoint URL. */
-    protected getCompletionEndpoint(): string {
+    protected _getCompletionEndpoint(): string {
         return (
             `https://${this.resource}.openai.azure.com` +
             `/openai/deployments/${this.deployment}` +
-            `/chat/completions?api-version=${this.apiVersion}`
+            `/chat/completions?api-version=${this.azureApiVersion}`
         );
     }
 
     /** Build Azure-specific headers using the api-key header. */
-    protected buildHeaders(): Record<string, string> {
+    protected _buildHeaders(): Record<string, string> {
         return {
             "Content-Type": "application/json",
-            "api-key": this.config.apiKey,
+            "api-key": this._config.apiKey,
         };
     }
 }
@@ -67,15 +68,21 @@ async function main(): Promise<void> {
         {
             baseUrl: "https://my-resource.openai.azure.com",
             apiKey: "your-azure-api-key",
+            timeout: 30,
+            maxRetries: 3,
+            authMethod: "api_key",
+            retryableCodes: [429, 500, 502, 503],
+            nonRetryableCodes: [400, 401, 403],
+            capabilities: ["generation.text-generation.chat-completion"],
             models: [
-                {
+                createDefaultModelInfo({
                     id: "gpt-4o",
                     name: "GPT-4o (Azure)",
                     capabilities: ["generation.text-generation.chat-completion"],
                     features: { tool_calling: true },
-                    context_window: 128_000,
-                    max_output_tokens: 16_384,
-                },
+                    contextWindow: 128_000,
+                    maxOutputTokens: 16_384,
+                }),
             ],
         },
         "my-resource",
@@ -84,24 +91,27 @@ async function main(): Promise<void> {
     );
 
     // Verify the endpoint URL was constructed correctly
-    const endpoint = (provider as any).getCompletionEndpoint();
+    const endpoint = (provider as any)._getCompletionEndpoint();
     console.log(`Endpoint: ${endpoint}`);
 
     // Verify the headers use Azure-style auth
-    const headers = (provider as any).buildHeaders();
+    const headers = (provider as any)._buildHeaders();
     console.log(`Headers: ${JSON.stringify(headers)}`);
 
     // Verify inherited capabilities still work
     console.log(`Capabilities: ${provider.getCapabilities()}`);
     console.log(`Supports chat? ${provider.supports("generation.text-generation.chat-completion")}`);
 
-    const models: ModelInfo[] = await provider.listModels();
+    const models: ModelInfo[] = provider.listModels();
     console.log(`Models: ${JSON.stringify(models.map(m => m.id))}`);
 
     // The complete() call would work against a real Azure deployment:
     // const response = await provider.complete({
     //     model: "gpt-4o",
     //     messages: [{ role: "user", content: "Hello from Azure!" }],
+    //     temperature: 1.0,
+    //     stream: false,
+    //     topP: 1.0,
     // });
 
     await provider.close();

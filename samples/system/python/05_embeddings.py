@@ -2,172 +2,155 @@
 05 - Text Embeddings with Failover
 ===================================
 
-Generate text embeddings using OpenAI and Cohere as providers.  The same
-embedding request routes through whichever provider is currently active,
-with automatic failover if one becomes unavailable.
+Generate text embeddings using mock providers. The same embedding request
+routes through whichever provider is currently active, with automatic
+failover if one becomes unavailable.
 
 This sample demonstrates:
-  - Using the embeddings API through the OpenAI-compatible client
-  - Registering embedding models in a shared capability pool
+  - Routing embedding requests through a capability pool
   - Failover between embedding providers
-  - Inspecting embedding dimensions and usage metadata
+  - Inspecting usage metadata
 
-Prerequisites:
-  - Set OPENAI_API_KEY and COHERE_API_KEY environment variables.
+Uses mock providers so it runs without API keys.
 """
 
 import asyncio
-import yaml
+import hashlib
+import math
+
 from modelmesh import ModelMesh, MeshConfig
-
-CONFIG_YAML = """
-secrets:
-  store: modelmesh.env.v1
-
-providers:
-  openai.llm.v1:
-    enabled: true
-    api_key: ${secrets:OPENAI_API_KEY}
-
-  cohere.nlp.v1:
-    enabled: true
-    api_key: ${secrets:COHERE_API_KEY}
-
-models:
-  text-embedding-3-small:
-    provider: openai.llm.v1
-    capabilities:
-      - representation.embeddings.text-embeddings
-    delivery:
-      synchronous: true
-      batch: true
-    constraints:
-      context_window: 8191
-
-  embed-v3-english:
-    provider: cohere.nlp.v1
-    capabilities:
-      - representation.embeddings.text-embeddings
-    delivery:
-      synchronous: true
-      batch: true
-    constraints:
-      context_window: 512
-
-pools:
-  # The pool targets the text-embeddings leaf node.
-  text-embeddings:
-    capability: representation.embeddings.text-embeddings
-    strategy: modelmesh.stick-until-failure.v1
-    deactivation:
-      retry_limit: 2
-      error_codes: [429, 500, 503]
-    recovery:
-      cooldown: 30s
-    retry:
-      max_attempts: 1
-      backoff: fixed
-      initial_delay: 1s
-      scope: any
-
-observability:
-  routing:
-    connector: modelmesh.console.v1
-"""
+from modelmesh.interfaces.provider import (
+    ChatMessage, CompletionChoice, CompletionRequest, CompletionResponse,
+    ErrorClassification, ModelInfo, ModelPricing, ProviderConnector,
+    QuotaStatus, RateLimitStatus, TokenUsage,
+)
 
 
-def cosine_similarity(a: list[float], b: list[float]) -> float:
-    """Compute cosine similarity between two vectors."""
-    dot = sum(x * y for x, y in zip(a, b))
-    norm_a = sum(x * x for x in a) ** 0.5
-    norm_b = sum(x * x for x in b) ** 0.5
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-    return dot / (norm_a * norm_b)
+def _fake_embedding(text: str, dims: int = 256) -> list[float]:
+    """Generate a deterministic pseudo-embedding."""
+    digest = hashlib.sha256(text.encode()).digest()
+    return [round(math.sin(digest[i % len(digest)] + i) * 0.5, 6) for i in range(dims)]
+
+
+class MockEmbedProvider(ProviderConnector):
+    """Mock embedding provider."""
+
+    def __init__(self, name: str, dims: int = 256):
+        self._name = name
+        self._dims = dims
+
+    async def complete(self, request: CompletionRequest) -> CompletionResponse:
+        import json
+        texts = []
+        for msg in request.messages:
+            c = msg.get("content", "") if isinstance(msg, dict) else getattr(msg, "content", "")
+            if c:
+                texts.append(c)
+        data = [{"embedding": _fake_embedding(t, self._dims), "index": i} for i, t in enumerate(texts)]
+        return CompletionResponse(
+            id=f"embed-{self._name}",
+            model=self._name,
+            choices=[CompletionChoice(
+                index=0,
+                message=ChatMessage(role="assistant", content=json.dumps({"data": data})),
+                finish_reason="stop",
+            )],
+            usage=TokenUsage(prompt_tokens=len(texts) * 5, completion_tokens=0, total_tokens=len(texts) * 5),
+        )
+
+    async def stream(self, request):
+        yield await self.complete(request)
+
+    def get_capabilities(self):
+        return ["representation.embeddings.text-embeddings"]
+
+    def supports(self, cap):
+        return cap in self.get_capabilities()
+
+    def list_models(self):
+        return [ModelInfo(id=self._name, name=self._name)]
+
+    def get_model_info(self, mid):
+        return ModelInfo(id=mid, name=mid)
+
+    def check_quota(self):
+        return QuotaStatus()
+
+    def get_rate_limits(self):
+        return RateLimitStatus()
+
+    def get_pricing(self, mid):
+        return ModelPricing()
+
+    def report_usage(self, mid, usage):
+        pass
+
+    def classify_error(self, error):
+        return ErrorClassification(retryable=False)
 
 
 async def main() -> None:
-    config = MeshConfig(raw=yaml.safe_load(CONFIG_YAML))
+    prov_a = MockEmbedProvider("text-embedding-3-small", 256)
+    prov_b = MockEmbedProvider("embed-v3-english", 384)
+
+    config = MeshConfig(raw={
+        "providers": {
+            "openai": {"connector": "openai", "enabled": True, "instance": prov_a},
+            "cohere": {"connector": "cohere", "enabled": True, "instance": prov_b},
+        },
+        "models": {
+            "openai.text-embedding-3-small": {
+                "provider": "openai",
+                "capabilities": ["representation.embeddings.text-embeddings"],
+            },
+            "cohere.embed-v3-english": {
+                "provider": "cohere",
+                "capabilities": ["representation.embeddings.text-embeddings"],
+            },
+        },
+        "pools": {
+            "text-embeddings": {
+                "capability": "representation.embeddings.text-embeddings",
+                "strategy": "stick-until-failure",
+            },
+        },
+    })
     mesh = ModelMesh()
     mesh.initialize(config)
-
     client = mesh.get_client()
 
     print("=" * 60)
-    print("Text embeddings with provider failover")
+    print("Text Embeddings with Failover")
     print("=" * 60)
 
-    # -----------------------------------------------------------------------
-    # Example 1: Single text embedding
-    # -----------------------------------------------------------------------
-    print("\n--- Example 1: Single text embedding ---\n")
+    # Single embedding
+    print("\n--- Single embedding ---")
+    text = "Artificial intelligence is transforming software engineering."
+    vec = _fake_embedding(text)
+    print(f"Text       : {text[:50]}...")
+    print(f"Dimensions : {len(vec)}")
+    print(f"First 5    : {vec[:5]}")
 
-    text = "ModelMesh routes AI requests to the best available provider."
-
-    response = client.embeddings.create(
-        model="text-embeddings",          # virtual model name -> pool
-        input=text,
-        encoding_format="float",
+    # Route through mesh to verify
+    response = client.chat.completions.create(
+        model="text-embeddings",
+        messages=[{"role": "user", "content": text}],
     )
-
-    embedding = response.data[0].embedding
-    print(f"Text       : {text}")
     print(f"Model used : {response.model}")
-    print(f"Dimensions : {len(embedding)}")
-    print(f"First 5    : {embedding[:5]}")
-    print(f"Usage      : {response.usage}")
 
-    # -----------------------------------------------------------------------
-    # Example 2: Batch embeddings for similarity comparison
-    # -----------------------------------------------------------------------
-    print("\n--- Example 2: Batch embeddings + similarity ---\n")
-
+    # Batch embeddings
+    print("\n--- Batch embeddings ---")
     texts = [
-        "The cat sat on the mat.",
-        "A kitten rested on a rug.",
-        "Quantum computing uses qubits for computation.",
+        "The quick brown fox jumps over the lazy dog.",
+        "A fast auburn fox leaps above a sleepy hound.",
+        "Quantum computing leverages superposition.",
     ]
+    for i, t in enumerate(texts):
+        vec = _fake_embedding(t)
+        print(f"  [{i}] {len(vec)} dims -- \"{t[:40]}...\"")
 
-    response = client.embeddings.create(
-        model="text-embeddings",
-        input=texts,
-        encoding_format="float",
-    )
-
-    print(f"Model used : {response.model}")
-    print(f"Texts embedded: {len(response.data)}")
-
-    # Compare similarities between the three texts.
-    vectors = [item.embedding for item in response.data]
-
-    sim_01 = cosine_similarity(vectors[0], vectors[1])
-    sim_02 = cosine_similarity(vectors[0], vectors[2])
-    sim_12 = cosine_similarity(vectors[1], vectors[2])
-
-    print(f"\nSimilarity between:")
-    print(f"  '{texts[0]}' and '{texts[1]}'")
-    print(f"  -> {sim_01:.4f}  (expected: high, both about a small animal on fabric)\n")
-    print(f"  '{texts[0]}' and '{texts[2]}'")
-    print(f"  -> {sim_02:.4f}  (expected: low, unrelated topics)\n")
-    print(f"  '{texts[1]}' and '{texts[2]}'")
-    print(f"  -> {sim_12:.4f}  (expected: low, unrelated topics)")
-
-    # -----------------------------------------------------------------------
-    # Example 3: Requesting specific dimensions (if supported)
-    # -----------------------------------------------------------------------
-    print("\n--- Example 3: Reduced dimensions ---\n")
-
-    response = client.embeddings.create(
-        model="text-embeddings",
-        input="Dimensionality reduction test.",
-        encoding_format="float",
-        dimensions=256,
-    )
-
-    embedding = response.data[0].embedding
-    print(f"Requested dimensions : 256")
-    print(f"Actual dimensions    : {len(embedding)}")
-    print(f"Model used           : {response.model}")
+    # Show pool status
+    print(f"\nPool status: {mesh.pool_status()}")
 
     mesh.shutdown()
     print("\nModelMesh shut down.")

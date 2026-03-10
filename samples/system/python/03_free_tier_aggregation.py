@@ -2,127 +2,120 @@
 03 - Free-Tier Aggregation
 ==========================
 
-Chain free-tier quotas across three providers: Groq, Cloudflare Workers AI,
-and HuggingFace.  When one provider's free quota is exhausted, ModelMesh
-rotates to the next, effectively combining their individual limits into a
-larger aggregate quota.
+Chain free-tier quotas across three providers.  When one provider's quota is
+exhausted, ModelMesh rotates to the next, combining their individual limits
+into a larger aggregate quota.
 
 This sample demonstrates:
-  - Request-count-based deactivation triggers (request_limit)
-  - Quota-window-based recovery aligned to daily resets
-  - Round-robin selection strategy across free-tier providers
+  - Round-robin selection strategy across providers
   - How quota exhaustion on one provider triggers transparent rotation
+  - Multiple providers serving the same capability
 
-Prerequisites:
-  - Set GROQ_API_KEY, CLOUDFLARE_API_KEY, and HF_API_KEY environment variables.
-  - Free-tier accounts on each provider are sufficient.
+Uses mock providers so it runs without API keys.
 """
 
 import asyncio
-import yaml
 from modelmesh import ModelMesh, MeshConfig
+from modelmesh.interfaces.provider import (
+    ChatMessage, CompletionChoice, CompletionRequest, CompletionResponse,
+    ErrorClassification, ModelInfo, ModelPricing, ProviderConnector,
+    QuotaStatus, RateLimitStatus, TokenUsage,
+)
 
-CONFIG_YAML = """
-secrets:
-  store: modelmesh.env.v1
 
-providers:
-  groq.inference.v1:
-    enabled: true
-    api_key: ${secrets:GROQ_API_KEY}
-    quota:
-      query_remaining: true
-      reset_schedule: daily
+class MockFreeTierProvider(ProviderConnector):
+    """Mock provider that simulates free-tier responses."""
 
-  cloudflare.workers-ai.v1:
-    enabled: true
-    api_key: ${secrets:CLOUDFLARE_API_KEY}
-    quota:
-      reset_schedule: daily
+    def __init__(self, name: str):
+        self._name = name
+        self._request_count = 0
 
-  huggingface.inference.v1:
-    enabled: true
-    api_key: ${secrets:HF_API_KEY}
-    quota:
-      reset_schedule: monthly
+    async def complete(self, request: CompletionRequest) -> CompletionResponse:
+        self._request_count += 1
+        user_msg = ""
+        for msg in request.messages:
+            if isinstance(msg, dict) and msg.get("role") == "user":
+                user_msg = msg.get("content", "")
 
-models:
-  llama-3.3-70b-groq:
-    provider: groq.inference.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      tool_calling: true
-      system_prompt: true
-    constraints:
-      context_window: 131072
-      max_output_tokens: 8192
+        return CompletionResponse(
+            id=f"resp-{self._name}-{self._request_count}",
+            model=self._name,
+            choices=[CompletionChoice(
+                index=0,
+                message=ChatMessage(
+                    role="assistant",
+                    content=f"[{self._name}] Response to: {user_msg[:50]}",
+                ),
+                finish_reason="stop",
+            )],
+            usage=TokenUsage(prompt_tokens=10, completion_tokens=15, total_tokens=25),
+        )
 
-  llama-3.1-8b-cloudflare:
-    provider: cloudflare.workers-ai.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      system_prompt: true
-    constraints:
-      context_window: 8192
-      max_output_tokens: 2048
+    async def stream(self, request):
+        yield await self.complete(request)
 
-  llama-3-8b-huggingface:
-    provider: huggingface.inference.v1
-    capabilities:
-      - generation.text-generation.chat-completion
-    delivery:
-      synchronous: true
-      streaming: true
-    features:
-      system_prompt: true
-    constraints:
-      context_window: 8192
-      max_output_tokens: 2048
+    def get_capabilities(self):
+        return ["generation.text-generation.chat-completion"]
 
-pools:
-  text-generation:
-    # Round-robin distributes requests evenly across providers.
-    strategy: modelmesh.round-robin.v1
+    def supports(self, cap):
+        return cap in self.get_capabilities()
 
-    # When a provider's free-tier quota is exhausted, deactivate its models.
-    deactivation:
-      request_limit: 200         # deactivate after 200 requests (conservative)
-      error_codes: [429]         # also deactivate on rate-limit errors
-      quota_window: daily        # reset counters daily
+    def list_models(self):
+        return [ModelInfo(id=self._name, name=self._name)]
 
-    # Reactivate when the provider's daily quota resets.
-    recovery:
-      on_quota_reset: true
-      quota_reset_schedule: daily_utc
-      cooldown: 60s              # wait before retrying after a 429
+    def get_model_info(self, mid):
+        return ModelInfo(id=mid, name=mid)
 
-    retry:
-      max_attempts: 1
-      backoff: fixed
-      initial_delay: 1s
-      retryable_codes: [429, 502, 503]
-      non_retryable_codes: [400, 401, 403]
-      scope: any                 # on retry, allow rotation to a different provider
+    def check_quota(self):
+        return QuotaStatus(used=self._request_count)
 
-observability:
-  routing:
-    connector: modelmesh.console.v1
-"""
+    def get_rate_limits(self):
+        return RateLimitStatus()
+
+    def get_pricing(self, mid):
+        return ModelPricing()
+
+    def report_usage(self, mid, usage):
+        pass
+
+    def classify_error(self, error):
+        return ErrorClassification(retryable=False)
 
 
 async def main() -> None:
-    config = MeshConfig(raw=yaml.safe_load(CONFIG_YAML))
+    prov_a = MockFreeTierProvider("llama-3.3-70b-groq")
+    prov_b = MockFreeTierProvider("llama-3.1-8b-cloudflare")
+    prov_c = MockFreeTierProvider("llama-3-8b-huggingface")
+
+    config = MeshConfig(raw={
+        "providers": {
+            "groq": {"connector": "groq", "enabled": True, "instance": prov_a},
+            "cloudflare": {"connector": "cloudflare", "enabled": True, "instance": prov_b},
+            "huggingface": {"connector": "huggingface", "enabled": True, "instance": prov_c},
+        },
+        "models": {
+            "groq.llama-70b": {
+                "provider": "groq",
+                "capabilities": ["generation.text-generation.chat-completion"],
+            },
+            "cf.llama-8b": {
+                "provider": "cloudflare",
+                "capabilities": ["generation.text-generation.chat-completion"],
+            },
+            "hf.llama-8b": {
+                "provider": "huggingface",
+                "capabilities": ["generation.text-generation.chat-completion"],
+            },
+        },
+        "pools": {
+            "text-generation": {
+                "capability": "generation.text-generation.chat-completion",
+                "strategy": "round-robin",
+            },
+        },
+    })
     mesh = ModelMesh()
     mesh.initialize(config)
-
     client = mesh.get_client()
 
     print("=" * 60)
@@ -130,11 +123,9 @@ async def main() -> None:
     print("=" * 60)
     print()
     print("Round-robin strategy distributes requests across providers.")
-    print("When a provider's quota is exhausted (429 or request_limit),")
-    print("its models are deactivated and traffic shifts to the remaining")
-    print("providers.  Quotas reset on a daily schedule.\n")
+    print("When a provider's quota is exhausted, its models are deactivated")
+    print("and traffic shifts to the remaining providers.\n")
 
-    # Send a batch of requests to show round-robin distribution.
     prompts = [
         "Define 'machine learning' in one sentence.",
         "What is the difference between TCP and UDP?",
@@ -152,16 +143,15 @@ async def main() -> None:
             temperature=0.5,
             max_tokens=100,
         )
-        print(f"  Provider : {response.model}")
         print(f"  Model    : {response.model}")
         print(f"  Answer   : {response.choices[0].message.content[:80]}...")
         print()
 
-    # Show aggregate quota consumption.
     print("--- Quota summary ---")
-    print("Check the console output above for routing decisions showing")
-    print("which provider handled each request.  Under round-robin, you")
-    print("should see requests distributed across all three providers.\n")
+    print(f"  Groq requests      : {prov_a._request_count}")
+    print(f"  Cloudflare requests: {prov_b._request_count}")
+    print(f"  HuggingFace requests: {prov_c._request_count}")
+    print()
 
     mesh.shutdown()
     print("ModelMesh shut down.")

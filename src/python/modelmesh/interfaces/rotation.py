@@ -70,6 +70,7 @@ class ModelState:
     deactivation_reason: Optional[DeactivationReason] = None
     last_failure_at: Optional[float] = None
     last_success_at: Optional[float] = None
+    provider_id: Optional[str] = None
 
 
 class DeactivationPolicy(ABC):
