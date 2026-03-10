@@ -505,8 +505,10 @@ class BaseProvider(ProviderConnector):
     def _http_post_stream(
         self, url: str, payload: dict, headers: dict[str, str]
     ) -> list[str]:
-        """Send a synchronous HTTP POST and return raw SSE lines.
+        """Send a synchronous HTTP POST and yield raw SSE lines.
 
+        Reads the response incrementally line-by-line rather than
+        buffering the entire body, so callers see output as it arrives.
         Uses :mod:`urllib.request` so the package has zero external
         dependencies.  Called from async code via
         :func:`asyncio.to_thread`.
@@ -515,6 +517,9 @@ class BaseProvider(ProviderConnector):
         req = urllib.request.Request(
             url, data=body, headers=headers, method="POST"
         )
+        lines: list[str] = []
         with urllib.request.urlopen(req, timeout=self._config.timeout) as resp:
-            raw = resp.read().decode("utf-8")
-        return raw.splitlines()
+            for raw_line in resp:
+                line = raw_line.decode("utf-8").rstrip("\r\n")
+                lines.append(line)
+        return lines

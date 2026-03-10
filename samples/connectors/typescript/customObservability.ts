@@ -42,41 +42,41 @@ enum LogLevel {
 
 /** A routing state-change event. */
 interface RoutingEvent {
-    event_type: EventType;
+    eventType: EventType;
     timestamp: Date;
-    model_id?: string;
-    provider_id?: string;
-    pool_id?: string;
+    modelId?: string;
+    providerId?: string;
+    poolId?: string;
     metadata: Record<string, unknown>;
 }
 
 /** A single request/response log record. */
 interface RequestLogEntry {
     timestamp: Date;
-    model_id: string;
-    provider_id: string;
+    modelId: string;
+    providerId: string;
     capability: string;
-    delivery_mode: string;
-    latency_ms: number;
-    status_code: number;
-    tokens_in: number;
-    tokens_out: number;
+    deliveryMode: string;
+    latencyMs: number;
+    statusCode: number;
+    tokensIn: number;
+    tokensOut: number;
     cost?: number;
     error?: string;
 }
 
 /** Aggregate metrics for a single model, provider, or pool over a time window. */
 interface AggregateStats {
-    requests_total: number;
-    requests_success: number;
-    requests_failed: number;
-    tokens_in: number;
-    tokens_out: number;
-    cost_total: number;
-    latency_avg: number;
-    latency_p95: number;
-    downtime_total: number;
-    rotation_events: number;
+    requestsTotal: number;
+    requestsSuccess: number;
+    requestsFailed: number;
+    tokensIn: number;
+    tokensOut: number;
+    costTotal: number;
+    latencyAvg: number;
+    latencyP95: number;
+    downtimeTotal: number;
+    rotationEvents: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,7 +193,7 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
         // Check event filter.
         if (
             this.config.slackEventFilter &&
-            !this.config.slackEventFilter.includes(event.event_type)
+            !this.config.slackEventFilter.includes(event.eventType)
         ) {
             return;
         }
@@ -201,11 +201,11 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
         // Also write the event to the JSON log for completeness.
         this.appendToLogFile({
             type: "event",
-            event_type: event.event_type,
+            eventType: event.eventType,
             timestamp: event.timestamp.toISOString(),
-            model_id: event.model_id,
-            provider_id: event.provider_id,
-            pool_id: event.pool_id,
+            modelId: event.modelId,
+            providerId: event.providerId,
+            poolId: event.poolId,
             metadata: event.metadata,
         });
 
@@ -232,14 +232,14 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
         const logRecord: Record<string, unknown> = {
             type: "request",
             timestamp: entry.timestamp.toISOString(),
-            model_id: entry.model_id,
-            provider_id: entry.provider_id,
+            modelId: entry.modelId,
+            providerId: entry.providerId,
             capability: entry.capability,
-            delivery_mode: entry.delivery_mode,
-            latency_ms: entry.latency_ms,
-            status_code: entry.status_code,
-            tokens_in: entry.tokens_in,
-            tokens_out: entry.tokens_out,
+            deliveryMode: entry.deliveryMode,
+            latencyMs: entry.latencyMs,
+            statusCode: entry.statusCode,
+            tokensIn: entry.tokensIn,
+            tokensOut: entry.tokensOut,
         };
 
         // Include cost if present.
@@ -257,7 +257,7 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
         // Alert on slow requests if threshold is configured.
         if (
             this.config.slowRequestThresholdMs &&
-            entry.latency_ms > this.config.slowRequestThresholdMs
+            entry.latencyMs > this.config.slowRequestThresholdMs
         ) {
             this.sendSlowRequestAlert(entry);
         }
@@ -305,9 +305,9 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
 
     /** Format a routing event into a rich Slack Block Kit message. */
     private formatEventForSlack(event: RoutingEvent): SlackMessage {
-        const emoji = this.getEventEmoji(event.event_type);
-        const severity = this.getEventSeverity(event.event_type);
-        const title = this.formatEventTitle(event.event_type);
+        const emoji = this.getEventEmoji(event.eventType);
+        const severity = this.getEventSeverity(event.eventType);
+        const title = this.formatEventTitle(event.eventType);
 
         const blocks: SlackBlock[] = [
             {
@@ -323,7 +323,7 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
                 fields: [
                     {
                         type: "mrkdwn",
-                        text: `*Event:*\n${event.event_type}`,
+                        text: `*Event:*\n${event.eventType}`,
                     },
                     {
                         type: "mrkdwn",
@@ -335,22 +335,22 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
 
         // Add model/provider/pool info if present.
         const infoFields: Array<{ type: string; text: string }> = [];
-        if (event.model_id) {
+        if (event.modelId) {
             infoFields.push({
                 type: "mrkdwn",
-                text: `*Model:*\n\`${event.model_id}\``,
+                text: `*Model:*\n\`${event.modelId}\``,
             });
         }
-        if (event.provider_id) {
+        if (event.providerId) {
             infoFields.push({
                 type: "mrkdwn",
-                text: `*Provider:*\n\`${event.provider_id}\``,
+                text: `*Provider:*\n\`${event.providerId}\``,
             });
         }
-        if (event.pool_id) {
+        if (event.poolId) {
             infoFields.push({
                 type: "mrkdwn",
-                text: `*Pool:*\n\`${event.pool_id}\``,
+                text: `*Pool:*\n\`${event.poolId}\``,
             });
         }
         if (infoFields.length > 0) {
@@ -408,19 +408,19 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
         // Add a section for each scope.
         for (const [scopeId, scopeStats] of Object.entries(stats)) {
             const successRate =
-                scopeStats.requests_total > 0
-                    ? ((scopeStats.requests_success / scopeStats.requests_total) * 100).toFixed(1)
+                scopeStats.requestsTotal > 0
+                    ? ((scopeStats.requestsSuccess / scopeStats.requestsTotal) * 100).toFixed(1)
                     : "N/A";
 
             blocks.push({
                 type: "section",
                 fields: [
                     { type: "mrkdwn", text: `*Scope:*\n\`${scopeId}\`` },
-                    { type: "mrkdwn", text: `*Requests:*\n${scopeStats.requests_total}` },
+                    { type: "mrkdwn", text: `*Requests:*\n${scopeStats.requestsTotal}` },
                     { type: "mrkdwn", text: `*Success Rate:*\n${successRate}%` },
-                    { type: "mrkdwn", text: `*Avg Latency:*\n${scopeStats.latency_avg.toFixed(0)}ms` },
-                    { type: "mrkdwn", text: `*P95 Latency:*\n${scopeStats.latency_p95.toFixed(0)}ms` },
-                    { type: "mrkdwn", text: `*Cost:*\n$${scopeStats.cost_total.toFixed(4)}` },
+                    { type: "mrkdwn", text: `*Avg Latency:*\n${scopeStats.latencyAvg.toFixed(0)}ms` },
+                    { type: "mrkdwn", text: `*P95 Latency:*\n${scopeStats.latencyP95.toFixed(0)}ms` },
+                    { type: "mrkdwn", text: `*Cost:*\n$${scopeStats.costTotal.toFixed(4)}` },
                 ],
             });
         }
@@ -446,15 +446,15 @@ class SlackJsonObservabilityConnector implements ObservabilityConnector {
                     type: "section",
                     text: {
                         type: "mrkdwn",
-                        text: `*Slow Request Alert*\nModel \`${entry.model_id}\` via \`${entry.provider_id}\` took *${entry.latency_ms.toFixed(0)}ms* (threshold: ${this.config.slowRequestThresholdMs}ms)`,
+                        text: `*Slow Request Alert*\nModel \`${entry.modelId}\` via \`${entry.providerId}\` took *${entry.latencyMs.toFixed(0)}ms* (threshold: ${this.config.slowRequestThresholdMs}ms)`,
                     },
                 },
                 {
                     type: "section",
                     fields: [
                         { type: "mrkdwn", text: `*Capability:*\n${entry.capability}` },
-                        { type: "mrkdwn", text: `*Status:*\n${entry.status_code}` },
-                        { type: "mrkdwn", text: `*Tokens:*\n${entry.tokens_in} in / ${entry.tokens_out} out` },
+                        { type: "mrkdwn", text: `*Status:*\n${entry.statusCode}` },
+                        { type: "mrkdwn", text: `*Tokens:*\n${entry.tokensIn} in / ${entry.tokensOut} out` },
                     ],
                 },
             ],

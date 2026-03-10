@@ -42,7 +42,7 @@ pip install modelmesh-lite[yaml]
 ```bash
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
-pip install -e "src/python[yaml]"
+pip install -e ".[yaml]"
 ```
 
 ### 2. Set API Keys

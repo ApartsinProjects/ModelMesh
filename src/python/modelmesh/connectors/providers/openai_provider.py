@@ -60,15 +60,15 @@ _DEFAULT_MODELS: list[ModelInfo] = [
         ),
     ),
     ModelInfo(
-        id="gpt-3.5-turbo",
-        name="GPT-3.5 Turbo",
+        id="gpt-4o-mini",
+        name="GPT-4o Mini",
         capabilities=["generation.text-generation.chat-completion"],
-        features={"tool_calling": True, "vision": False, "system_prompt": True},
-        context_window=16_385,
-        max_output_tokens=4_096,
+        features={"tool_calling": True, "vision": True, "system_prompt": True},
+        context_window=128_000,
+        max_output_tokens=16_384,
         pricing=ModelPricing(
-            input_per_1k_tokens=0.0005,
-            output_per_1k_tokens=0.0015,
+            input_per_1k_tokens=0.00015,
+            output_per_1k_tokens=0.0006,
         ),
     ),
 ]

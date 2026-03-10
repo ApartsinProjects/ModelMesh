@@ -13,6 +13,8 @@ import * as os from 'os';
 // ---------------------------------------------------------------------------
 
 describe('MeshConfig', () => {
+  // -- Construction -----------------------------------------------------------
+
   it('should create with default empty raw', () => {
     const cfg = new MeshConfig();
     expect(cfg.raw).toEqual({});
@@ -48,6 +50,35 @@ describe('MeshConfig', () => {
     fs.rmdirSync(tmpDir);
   });
 
+  it('should load via fromJson alias', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'modelmesh-'));
+    const filePath = path.join(tmpDir, 'config.json');
+    fs.writeFileSync(filePath, JSON.stringify({ providers: { a: 1 } }));
+
+    const cfg = MeshConfig.fromJson(filePath);
+    expect(cfg.providers).toEqual({ a: 1 });
+
+    fs.unlinkSync(filePath);
+    fs.rmdirSync(tmpDir);
+  });
+
+  it('should throw for non-existent file', () => {
+    expect(() => MeshConfig.fromFile('/nonexistent/path/config.json')).toThrow();
+  });
+
+  it('should throw for invalid JSON file', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'modelmesh-'));
+    const filePath = path.join(tmpDir, 'bad.json');
+    fs.writeFileSync(filePath, 'not valid json {{{');
+
+    expect(() => MeshConfig.fromFile(filePath)).toThrow();
+
+    fs.unlinkSync(filePath);
+    fs.rmdirSync(tmpDir);
+  });
+
+  // -- Section accessors ------------------------------------------------------
+
   it('should return empty objects for missing sections', () => {
     const cfg = new MeshConfig();
     expect(cfg.providers).toEqual({});
@@ -58,6 +89,38 @@ describe('MeshConfig', () => {
     expect(cfg.storage).toEqual({});
   });
 
+  it('should return providers section', () => {
+    const cfg = MeshConfig.fromDict({ providers: { a: { enabled: true } } });
+    expect(cfg.providers).toEqual({ a: { enabled: true } });
+  });
+
+  it('should return models section', () => {
+    const cfg = MeshConfig.fromDict({ models: { 'openai.gpt-4o': { provider: 'openai' } } });
+    expect(cfg.models).toEqual({ 'openai.gpt-4o': { provider: 'openai' } });
+  });
+
+  it('should return pools section', () => {
+    const cfg = MeshConfig.fromDict({ pools: { chat: { capability: 'gen' } } });
+    expect(cfg.pools).toEqual({ chat: { capability: 'gen' } });
+  });
+
+  it('should return secrets section', () => {
+    const cfg = MeshConfig.fromDict({ secrets: { store: 'env' } });
+    expect(cfg.secrets).toEqual({ store: 'env' });
+  });
+
+  it('should return observability section', () => {
+    const cfg = MeshConfig.fromDict({ observability: { connector: 'console' } });
+    expect(cfg.observability).toEqual({ connector: 'console' });
+  });
+
+  it('should return storage section', () => {
+    const cfg = MeshConfig.fromDict({ storage: { type: 'memory' } });
+    expect(cfg.storage).toEqual({ type: 'memory' });
+  });
+
+  // -- get() ------------------------------------------------------------------
+
   it('should support get with default', () => {
     const cfg = MeshConfig.fromDict({ foo: 'bar' });
     expect(cfg.get('foo')).toBe('bar');
@@ -65,7 +128,18 @@ describe('MeshConfig', () => {
     expect(cfg.get('missing')).toBeUndefined();
   });
 
-  // -- Merge ---------------------------------------------------------------
+  it('should get nested objects', () => {
+    const cfg = MeshConfig.fromDict({ nested: { key: 'value' } });
+    const nested = cfg.get('nested') as Record<string, string>;
+    expect(nested.key).toBe('value');
+  });
+
+  it('should return default for null-ish values', () => {
+    const cfg = MeshConfig.fromDict({});
+    expect(cfg.get('missing', 42)).toBe(42);
+  });
+
+  // -- Merge ------------------------------------------------------------------
 
   it('should merge top-level keys', () => {
     const base = MeshConfig.fromDict({
@@ -90,7 +164,32 @@ describe('MeshConfig', () => {
     expect(base.providers).toEqual({ a: 1 });
   });
 
-  // -- Validation ----------------------------------------------------------
+  it('should overwrite arrays on merge', () => {
+    const base = MeshConfig.fromDict({ tags: ['a', 'b'] });
+    const merged = base.merge({ tags: ['c'] });
+    expect(merged.get('tags')).toEqual(['c']);
+  });
+
+  it('should handle merging with null value', () => {
+    const base = MeshConfig.fromDict({ providers: { a: 1 } });
+    const merged = base.merge({ providers: null as unknown as Record<string, unknown> });
+    expect(merged.get('providers')).toBeNull();
+  });
+
+  it('should add new keys on merge', () => {
+    const base = MeshConfig.fromDict({ providers: {} });
+    const merged = base.merge({ newKey: 'newValue' });
+    expect(merged.get('newKey')).toBe('newValue');
+  });
+
+  it('should return a new MeshConfig instance on merge', () => {
+    const base = MeshConfig.fromDict({ providers: {} });
+    const merged = base.merge({});
+    expect(merged).not.toBe(base);
+    expect(merged).toBeInstanceOf(MeshConfig);
+  });
+
+  // -- Validation -------------------------------------------------------------
 
   it('should validate valid config', () => {
     const cfg = MeshConfig.fromDict({
@@ -144,6 +243,41 @@ describe('MeshConfig', () => {
     const cfg = MeshConfig.fromDict({ providers: {} });
     expect(cfg.validate()).toEqual([]);
   });
+
+  it('should validate empty config', () => {
+    const cfg = new MeshConfig();
+    expect(cfg.validate()).toEqual([]);
+  });
+
+  it('should report multiple validation errors', () => {
+    const cfg = MeshConfig.fromDict({
+      providers: 'bad' as unknown,
+      models: 123 as unknown,
+      pools: false as unknown,
+    });
+    const errors = cfg.validate();
+    expect(errors.length).toBe(3);
+  });
+
+  it('should catch multiple unknown model references', () => {
+    const cfg = MeshConfig.fromDict({
+      models: { 'openai.gpt-4o': { provider: 'openai.llm.v1' } },
+      pools: {
+        pool1: { models: ['unknown1'] },
+        pool2: { models: ['unknown2'] },
+      },
+    });
+    const errors = cfg.validate();
+    expect(errors.length).toBe(2);
+  });
+
+  it('should validate pools without models array (capability-based)', () => {
+    const cfg = MeshConfig.fromDict({
+      models: { 'openai.gpt-4o': { provider: 'openai.llm.v1' } },
+      pools: { chat: { capability: 'generation.text-generation' } },
+    });
+    expect(cfg.validate()).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -184,6 +318,17 @@ describe('detectProviders', () => {
     expect(detected[0].name).toBe('openai');
   });
 
+  it('should filter by multiple provider names', () => {
+    process.env.OPENAI_API_KEY = 'sk-openai';
+    process.env.ANTHROPIC_API_KEY = 'sk-anthropic';
+    process.env.GROQ_API_KEY = 'sk-groq';
+    const detected = detectProviders({ names: ['openai', 'groq'] });
+    expect(detected.length).toBe(2);
+    const names = detected.map(d => d.name);
+    expect(names).toContain('openai');
+    expect(names).toContain('groq');
+  });
+
   it('should use explicit apiKeys over environment', () => {
     process.env.OPENAI_API_KEY = 'from-env';
     const detected = detectProviders({
@@ -207,6 +352,9 @@ describe('detectProviders', () => {
     for (const envVar of Object.keys(PROVIDER_REGISTRY)) {
       delete process.env[envVar];
     }
+    for (const envVar of Object.keys(LOCAL_PROVIDER_REGISTRY)) {
+      delete process.env[envVar];
+    }
     const detected = detectProviders();
     expect(detected.length).toBe(0);
   });
@@ -217,6 +365,54 @@ describe('detectProviders', () => {
     const openai = detected.find((d) => d.name === 'openai')!;
     expect(openai.defaultModels.length).toBeGreaterThan(0);
     expect(openai.defaultModels[0].id).toContain('openai.');
+  });
+
+  it('should include baseUrl for detected providers', () => {
+    process.env.OPENAI_API_KEY = 'sk-test';
+    const detected = detectProviders();
+    const openai = detected.find(d => d.name === 'openai')!;
+    expect(openai.baseUrl).toBe('https://api.openai.com');
+  });
+
+  it('should include envVar for detected providers', () => {
+    process.env.ANTHROPIC_API_KEY = 'sk-test';
+    const detected = detectProviders();
+    const anthropic = detected.find(d => d.name === 'anthropic')!;
+    expect(anthropic.envVar).toBe('ANTHROPIC_API_KEY');
+  });
+
+  it('should not detect providers without keys even if names specified', () => {
+    delete process.env.OPENAI_API_KEY;
+    const detected = detectProviders({ names: ['openai'] });
+    expect(detected.length).toBe(0);
+  });
+
+  it('should detect local provider when host is set', () => {
+    process.env.OLLAMA_HOST = 'http://my-server:11434';
+    const detected = detectProviders();
+    const ollama = detected.find(d => d.name === 'ollama');
+    expect(ollama).toBeDefined();
+    expect(ollama!.baseUrl).toBe('http://my-server:11434');
+    expect(ollama!.apiKey).toBe('');
+    delete process.env.OLLAMA_HOST;
+  });
+
+  it('should detect local provider via apiKeys', () => {
+    const detected = detectProviders({
+      apiKeys: { OLLAMA_HOST: 'http://custom:11434' },
+    });
+    const ollama = detected.find(d => d.name === 'ollama');
+    expect(ollama).toBeDefined();
+    expect(ollama!.baseUrl).toBe('http://custom:11434');
+  });
+
+  it('should detect local provider via name in apiKeys', () => {
+    const detected = detectProviders({
+      apiKeys: { ollama: 'http://by-name:11434' },
+    });
+    const ollama = detected.find(d => d.name === 'ollama');
+    expect(ollama).toBeDefined();
+    expect(ollama!.baseUrl).toBe('http://by-name:11434');
   });
 });
 
@@ -236,7 +432,7 @@ describe('PROVIDER_REGISTRY', () => {
   });
 
   it('should have default models with dot-notation capabilities', () => {
-    for (const [envVar, entry] of Object.entries(PROVIDER_REGISTRY)) {
+    for (const [_envVar, entry] of Object.entries(PROVIDER_REGISTRY)) {
       for (const model of entry.defaultModels) {
         for (const cap of model.capabilities) {
           expect(cap).toContain('.');
@@ -264,6 +460,47 @@ describe('PROVIDER_REGISTRY', () => {
     expect(names).toContain('jina');
     expect(names).toContain('firecrawl');
     expect(names).toContain('assemblyai');
+  });
+
+  it('should have unique provider names', () => {
+    const names = Object.values(PROVIDER_REGISTRY).map(e => e.name);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('should have unique connector IDs', () => {
+    const connectors = Object.values(PROVIDER_REGISTRY).map(e => e.connector);
+    expect(new Set(connectors).size).toBe(connectors.length);
+  });
+
+  it('should have non-empty baseUrl for all entries', () => {
+    for (const entry of Object.values(PROVIDER_REGISTRY)) {
+      expect(entry.baseUrl).toBeTruthy();
+      expect(entry.baseUrl.startsWith('https://')).toBe(true);
+    }
+  });
+
+  it('should have models with valid contextWindow', () => {
+    for (const entry of Object.values(PROVIDER_REGISTRY)) {
+      for (const model of entry.defaultModels) {
+        expect(model.contextWindow).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('should have models with valid maxOutputTokens', () => {
+    for (const entry of Object.values(PROVIDER_REGISTRY)) {
+      for (const model of entry.defaultModels) {
+        expect(model.maxOutputTokens).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('should have models with dot-prefixed IDs matching provider name', () => {
+    for (const entry of Object.values(PROVIDER_REGISTRY)) {
+      for (const model of entry.defaultModels) {
+        expect(model.id.startsWith(entry.name + '.')).toBe(true);
+      }
+    }
   });
 });
 
@@ -296,5 +533,21 @@ describe('LOCAL_PROVIDER_REGISTRY', () => {
     const names = detected.map((d: DetectedProvider) => d.name);
     expect(names).toContain('ollama');
     delete process.env.OLLAMA_HOST;
+  });
+
+  it('should have localhost baseUrls', () => {
+    for (const entry of Object.values(LOCAL_PROVIDER_REGISTRY)) {
+      expect(entry.baseUrl).toContain('localhost');
+    }
+  });
+
+  it('should have unique connector IDs', () => {
+    const connectors = Object.values(LOCAL_PROVIDER_REGISTRY).map(e => e.connector);
+    expect(new Set(connectors).size).toBe(connectors.length);
+  });
+
+  it('should have unique provider names', () => {
+    const names = Object.values(LOCAL_PROVIDER_REGISTRY).map(e => e.name);
+    expect(new Set(names).size).toBe(names.length);
   });
 });

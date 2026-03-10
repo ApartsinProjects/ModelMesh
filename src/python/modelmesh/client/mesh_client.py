@@ -240,6 +240,23 @@ class _StreamIterator:
             self._cleanup()
             raise StopIteration
 
+    # -- Context manager protocol for safe resource cleanup ----------------
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def close(self) -> None:
+        """Explicitly shut down the background loop and thread.
+
+        Prefer using the context manager (``with``) or calling
+        ``close()`` instead of relying on garbage collection.
+        """
+        self._cleanup()
+
     def _cleanup(self) -> None:
         """Shut down the background loop and thread."""
         if self._loop is not None:

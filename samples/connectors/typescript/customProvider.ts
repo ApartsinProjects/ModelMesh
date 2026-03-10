@@ -31,16 +31,16 @@ enum AuthMethod {
 
 /** Token consumption for a single completion request. */
 interface TokenUsage {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
 }
 
 /** Per-unit pricing for a model. */
 interface ModelPricing {
-    input_per_1k_tokens: number;
-    output_per_1k_tokens: number;
-    per_request?: number;
+    inputPer1kTokens: number;
+    outputPer1kTokens: number;
+    perRequest?: number;
 }
 
 /** Descriptor for a single model exposed by a provider. */
@@ -48,8 +48,8 @@ interface ModelInfo {
     id: string;
     name: string;
     capabilities: string[];
-    context_window: number;
-    max_output_tokens: number;
+    contextWindow: number;
+    maxOutputTokens: number;
     pricing?: ModelPricing;
 }
 
@@ -58,7 +58,7 @@ interface CompletionRequest {
     model: string;
     messages: Record<string, unknown>[];
     temperature?: number;
-    max_tokens?: number;
+    maxTokens?: number;
     tools?: Record<string, unknown>[];
     stream: boolean;
 }
@@ -76,21 +76,21 @@ interface QuotaStatus {
     used: number;
     remaining?: number;
     limit?: number;
-    resets_at?: Date;
+    resetsAt?: Date;
 }
 
 /** Current rate-limit headroom for a provider. */
 interface RateLimitStatus {
-    requests_remaining?: number;
-    tokens_remaining?: number;
-    reset_seconds?: number;
+    requestsRemaining?: number;
+    tokensRemaining?: number;
+    resetSeconds?: number;
 }
 
 /** Result of classifying a provider error. */
 interface ErrorClassificationResult {
     retryable: boolean;
     category: string;
-    retry_after?: number;
+    retryAfter?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -298,7 +298,11 @@ class VllmProviderConnector implements ProviderConnector {
         const vllmResponse: VllmChatResponse = await response.json();
 
         // Track usage for quota and cost reporting.
-        this.trackUsage(request.model, vllmResponse.usage);
+        this.trackUsage(request.model, {
+            promptTokens: vllmResponse.usage.prompt_tokens,
+            completionTokens: vllmResponse.usage.completion_tokens,
+            totalTokens: vllmResponse.usage.total_tokens,
+        });
 
         return this.translateFromVllmResponse(vllmResponse);
     }
@@ -334,9 +338,9 @@ class VllmProviderConnector implements ProviderConnector {
         const decoder = new TextDecoder();
         let buffer = "";
         let accumulatedUsage: TokenUsage = {
-            prompt_tokens: 0,
-            completion_tokens: 0,
-            total_tokens: 0,
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
         };
 
         try {
@@ -362,9 +366,9 @@ class VllmProviderConnector implements ProviderConnector {
                     // If the final chunk includes aggregated usage, capture it.
                     if (chunk.usage) {
                         accumulatedUsage = {
-                            prompt_tokens: chunk.usage.prompt_tokens,
-                            completion_tokens: chunk.usage.completion_tokens,
-                            total_tokens: chunk.usage.total_tokens,
+                            promptTokens: chunk.usage.prompt_tokens,
+                            completionTokens: chunk.usage.completion_tokens,
+                            totalTokens: chunk.usage.total_tokens,
                         };
                     }
 
@@ -374,15 +378,15 @@ class VllmProviderConnector implements ProviderConnector {
                         choices: chunk.choices.map((c) => ({
                             index: c.index,
                             delta: c.delta,
-                            finish_reason: c.finish_reason,
+                            finishReason: c.finish_reason,
                         })),
                         usage: chunk.usage
                             ? {
-                                  prompt_tokens: chunk.usage.prompt_tokens,
-                                  completion_tokens: chunk.usage.completion_tokens,
-                                  total_tokens: chunk.usage.total_tokens,
+                                  promptTokens: chunk.usage.prompt_tokens,
+                                  completionTokens: chunk.usage.completion_tokens,
+                                  totalTokens: chunk.usage.total_tokens,
                               }
-                            : { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+                            : { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
                     };
                 }
             }
@@ -391,7 +395,7 @@ class VllmProviderConnector implements ProviderConnector {
         }
 
         // Report accumulated usage once the stream completes.
-        if (accumulatedUsage.total_tokens > 0) {
+        if (accumulatedUsage.totalTokens > 0) {
             this.trackUsage(request.model, accumulatedUsage);
         }
     }
@@ -469,7 +473,7 @@ class VllmProviderConnector implements ProviderConnector {
             used: this.usageToday.requests,
             remaining: limit !== undefined ? Math.max(0, limit - this.usageToday.requests) : undefined,
             limit,
-            resets_at: this.usageToday.resetAt,
+            resetsAt: this.usageToday.resetAt,
         };
     }
 
@@ -497,9 +501,9 @@ class VllmProviderConnector implements ProviderConnector {
         const resetSeconds = (this.usageToday.resetAt.getTime() - Date.now()) / 1000;
 
         return {
-            requests_remaining: requestsRemaining,
-            tokens_remaining: tokensRemaining,
-            reset_seconds: Math.max(0, resetSeconds),
+            requestsRemaining: requestsRemaining,
+            tokensRemaining: tokensRemaining,
+            resetSeconds: Math.max(0, resetSeconds),
         };
     }
 
@@ -520,9 +524,9 @@ class VllmProviderConnector implements ProviderConnector {
         const costPerToken = this.gpuHourCost / (tokensPerSecond * 3600);
 
         return {
-            input_per_1k_tokens: costPerToken * 1000,
-            output_per_1k_tokens: costPerToken * 1500, // output is ~1.5x more expensive (decode vs prefill)
-            per_request: 0, // no per-request overhead for self-hosted
+            inputPer1kTokens: costPerToken * 1000,
+            outputPer1kTokens: costPerToken * 1500, // output is ~1.5x more expensive (decode vs prefill)
+            perRequest: 0, // no per-request overhead for self-hosted
         };
     }
 
@@ -533,8 +537,8 @@ class VllmProviderConnector implements ProviderConnector {
      * and cost reporting.
      */
     reportUsage(modelId: string, usage: TokenUsage): void {
-        this.usageToday.tokensIn += usage.prompt_tokens;
-        this.usageToday.tokensOut += usage.completion_tokens;
+        this.usageToday.tokensIn += usage.promptTokens;
+        this.usageToday.tokensOut += usage.completionTokens;
     }
 
     // -----------------------------------------------------------------------
@@ -555,14 +559,14 @@ class VllmProviderConnector implements ProviderConnector {
 
         // Network-level errors (DNS failure, connection refused, timeout).
         if (error.name === "AbortError" || error.message.includes("timeout")) {
-            return { retryable: true, category: "timeout", retry_after: 5 };
+            return { retryable: true, category: "timeout", retryAfter: 5 };
         }
         if (
             error.message.includes("ECONNREFUSED") ||
             error.message.includes("ENOTFOUND") ||
             error.message.includes("fetch failed")
         ) {
-            return { retryable: true, category: "network_error", retry_after: 10 };
+            return { retryable: true, category: "network_error", retryAfter: 10 };
         }
 
         // Unknown errors are not retryable by default.
@@ -594,8 +598,8 @@ class VllmProviderConnector implements ProviderConnector {
         if (request.temperature !== undefined) {
             body.temperature = request.temperature;
         }
-        if (request.max_tokens !== undefined) {
-            body.max_tokens = request.max_tokens;
+        if (request.maxTokens !== undefined) {
+            body.max_tokens = request.maxTokens;
         }
         if (request.tools && request.tools.length > 0) {
             body.tools = request.tools;
@@ -617,12 +621,12 @@ class VllmProviderConnector implements ProviderConnector {
             choices: vllm.choices.map((c) => ({
                 index: c.index,
                 message: c.message,
-                finish_reason: c.finish_reason,
+                finishReason: c.finish_reason,
             })),
             usage: {
-                prompt_tokens: vllm.usage.prompt_tokens,
-                completion_tokens: vllm.usage.completion_tokens,
-                total_tokens: vllm.usage.total_tokens,
+                promptTokens: vllm.usage.prompt_tokens,
+                completionTokens: vllm.usage.completion_tokens,
+                totalTokens: vllm.usage.total_tokens,
             },
         };
     }
@@ -662,12 +666,12 @@ class VllmProviderConnector implements ProviderConnector {
             id: def.id,
             name: def.name,
             capabilities: def.capabilities,
-            context_window: def.contextWindow,
-            max_output_tokens: def.maxOutputTokens,
+            contextWindow: def.contextWindow,
+            maxOutputTokens: def.maxOutputTokens,
             pricing: {
-                input_per_1k_tokens: costPerToken * 1000,
-                output_per_1k_tokens: costPerToken * 1500,
-                per_request: 0,
+                inputPer1kTokens: costPerToken * 1000,
+                outputPer1kTokens: costPerToken * 1500,
+                perRequest: 0,
             },
         };
     }
@@ -675,11 +679,11 @@ class VllmProviderConnector implements ProviderConnector {
     /** Track usage from a completed request. */
     private trackUsage(
         modelId: string,
-        usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number },
+        usage: { promptTokens: number; completionTokens: number; totalTokens: number },
     ): void {
         this.usageToday.requests += 1;
-        this.usageToday.tokensIn += usage.prompt_tokens;
-        this.usageToday.tokensOut += usage.completion_tokens;
+        this.usageToday.tokensIn += usage.promptTokens;
+        this.usageToday.tokensOut += usage.completionTokens;
     }
 
     /** Roll over daily quota counters if past midnight UTC. */
@@ -700,7 +704,7 @@ class VllmProviderConnector implements ProviderConnector {
         switch (error.statusCode) {
             // Rate-limited (vLLM can return 429 when request queue is full).
             case 429:
-                return { retryable: true, category: "rate_limited", retry_after: 15 };
+                return { retryable: true, category: "rate_limited", retryAfter: 15 };
 
             // Bad request — malformed prompt or unsupported parameter.
             case 400:
@@ -717,23 +721,23 @@ class VllmProviderConnector implements ProviderConnector {
 
             // Server overloaded or CUDA out-of-memory.
             case 503:
-                return { retryable: true, category: "server_overloaded", retry_after: 30 };
+                return { retryable: true, category: "server_overloaded", retryAfter: 30 };
 
             // Internal server error (possible CUDA crash).
             case 500:
                 // Check for CUDA OOM in the response body.
                 if (error.responseBody.includes("CUDA out of memory")) {
-                    return { retryable: true, category: "gpu_oom", retry_after: 60 };
+                    return { retryable: true, category: "gpu_oom", retryAfter: 60 };
                 }
-                return { retryable: true, category: "internal_error", retry_after: 10 };
+                return { retryable: true, category: "internal_error", retryAfter: 10 };
 
             // Bad gateway / gateway timeout (reverse proxy issues).
             case 502:
             case 504:
-                return { retryable: true, category: "gateway_error", retry_after: 10 };
+                return { retryable: true, category: "gateway_error", retryAfter: 10 };
 
             default:
-                return { retryable: false, category: "unknown", retry_after: undefined };
+                return { retryable: false, category: "unknown", retryAfter: undefined };
         }
     }
 

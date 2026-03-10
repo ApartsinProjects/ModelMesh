@@ -18,6 +18,7 @@ import {
   ErrorClassification,
   ModelInfo,
   ModelPricing,
+  ProviderConnector,
   QuotaStatus,
   RateLimitStatus,
   TokenUsage,
@@ -93,19 +94,19 @@ export class BrowserHttpError extends Error {
  *   proxyUrl: 'http://localhost:3000/proxy/',
  * }));
  */
-export class BrowserBaseProvider {
+export class BrowserBaseProvider implements ProviderConnector {
   static readonly RUNTIME: RuntimeEnvironment = RuntimeEnvironment.UNIVERSAL;
 
   protected _config: BrowserProviderConfig;
   protected _requestCount: number = 0;
   protected _tokensUsed: number = 0;
-  protected _modelsByid: Map<string, ModelInfo>;
+  protected _modelsById: Map<string, ModelInfo>;
 
   constructor(config: BrowserProviderConfig) {
     this._config = config;
-    this._modelsByid = new Map();
+    this._modelsById = new Map();
     for (const m of config.models) {
-      this._modelsByid.set(m.id, m);
+      this._modelsById.set(m.id, m);
     }
   }
 
@@ -195,7 +196,7 @@ export class BrowserBaseProvider {
   }
 
   getModelInfo(modelId: string): ModelInfo {
-    const info = this._modelsByid.get(modelId);
+    const info = this._modelsById.get(modelId);
     if (!info) {
       throw new Error(`Model not found: ${modelId}`);
     }

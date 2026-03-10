@@ -301,13 +301,13 @@ Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.html
 | Policy | Description |
 | --- | --- |
 | **`rotation.modelmesh.stick-until-failure.v1`** | Use the current model until it fails, then rotate. Default policy. |
-| **`rotation.modelmesh.priority-selection.v1`** | Follow an ordered model/provider preference list; fall back on exhaust. |
-| **`rotation.modelmesh.round-robin.v1`** | Cycle through active models in sequence. |
-| **`rotation.modelmesh.cost-first.v1`** | Select the cheapest active model for each request. |
-| **`rotation.modelmesh.latency-first.v1`** | Select the model with the lowest observed latency. |
-| **`rotation.modelmesh.session-stickiness.v1`** | Route all requests in a session to the same model. |
-| **`rotation.modelmesh.rate-limit-aware.v1`** | Switch models preemptively before hitting rate limits. |
-| **`rotation.modelmesh.load-balanced.v1`** | Distribute requests proportionally to each model's rate-limit headroom. |
+| **`rotation.modelmesh.priority-selection.v1`** | *(Planned)* Follow an ordered model/provider preference list; fall back on exhaust. |
+| **`rotation.modelmesh.round-robin.v1`** | *(Planned)* Cycle through active models in sequence. |
+| **`rotation.modelmesh.cost-first.v1`** | *(Planned)* Select the cheapest active model for each request. |
+| **`rotation.modelmesh.latency-first.v1`** | *(Planned)* Select the model with the lowest observed latency. |
+| **`rotation.modelmesh.session-stickiness.v1`** | *(Planned)* Route all requests in a session to the same model. |
+| **`rotation.modelmesh.rate-limit-aware.v1`** | *(Planned)* Switch models preemptively before hitting rate limits. |
+| **`rotation.modelmesh.load-balanced.v1`** | *(Planned)* Distribute requests proportionally to each model's rate-limit headroom. |
 
 ---
 
@@ -319,10 +319,10 @@ Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#se
 | --- | --- | --- | --- |
 | **`secret-store.modelmesh.env.v1`** | Reads secrets from environment variables. Default store. | Built-in | - |
 | **`secret-store.modelmesh.dotenv.v1`** | Loads secrets from `.env` files. Ideal for local development. | Built-in | - |
-| **`secret-store.aws.secrets-manager.v1`** | Managed secret storage with automatic rotation and IAM integration | 30-day trial; then $0.40/secret/month + $0.05/10K calls | [aws.amazon.com/secrets-manager](https://aws.amazon.com/secrets-manager) |
-| **`secret-store.google.secret-manager.v1`** | Google Cloud managed secrets with IAM and audit logging | 6 active versions free; 10K access ops/month free | [cloud.google.com/secret-manager](https://cloud.google.com/secret-manager) |
-| **`secret-store.microsoft.key-vault.v1`** | Microsoft cloud secret, key, and certificate management | 10K operations/month free (Standard tier) | [azure.microsoft.com/en-us/products/key-vault](https://azure.microsoft.com/en-us/products/key-vault) |
-| **`secret-store.1password.connect.v1`** | Secrets Automation API for CI/CD and server-side use | No free API tier; requires Business or Enterprise plan | [developer.1password.com](https://developer.1password.com) |
+| **`secret-store.aws.secrets-manager.v1`** | *(Planned)* Managed secret storage with automatic rotation and IAM integration | 30-day trial; then $0.40/secret/month + $0.05/10K calls | [aws.amazon.com/secrets-manager](https://aws.amazon.com/secrets-manager) |
+| **`secret-store.google.secret-manager.v1`** | *(Planned)* Google Cloud managed secrets with IAM and audit logging | 6 active versions free; 10K access ops/month free | [cloud.google.com/secret-manager](https://cloud.google.com/secret-manager) |
+| **`secret-store.microsoft.key-vault.v1`** | *(Planned)* Microsoft cloud secret, key, and certificate management | 10K operations/month free (Standard tier) | [azure.microsoft.com/en-us/products/key-vault](https://azure.microsoft.com/en-us/products/key-vault) |
+| **`secret-store.1password.connect.v1`** | *(Planned)* Secrets Automation API for CI/CD and server-side use | No free API tier; requires Business or Enterprise plan | [developer.1password.com](https://developer.1password.com) |
 | **`secret-store.modelmesh.json-secrets.v1`** | Reads secrets from a local JSON file. Keys are top-level object keys; values are strings. Supports dot-notation for nested keys. | Built-in | - |
 | **`secret-store.modelmesh.memory-secrets.v1`** | Holds secrets in an in-memory dictionary. Ideal for testing, scripting, and user-provided keys. Supports runtime add/remove via SecretManagement interface. | Built-in | - |
 | **`secret-store.modelmesh.encrypted-file.v1`** | AES-256-GCM encrypted JSON file. Secrets are decrypted at initialization using a passphrase (PBKDF2) or raw key. Supports save/load round-trips. | Built-in | - |
@@ -435,9 +435,9 @@ Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage
 | Connector | Backend | Concurrency | Free Tier | Best For | Docs |
 | --- | --- | --- | --- | --- | --- |
 | **`storage.modelmesh.local-file.v1`** | local disk | single-process only | Built-in | development, single-instance deploys | - |
-| **`storage.aws.s3.v1`** | AWS S3 | conditional writes | 5 GB, 20K GET, 2K PUT/month (12 months) | multi-instance, serverless | [aws.amazon.com/s3](https://aws.amazon.com/s3) |
-| **`storage.google.drive.v1`** | Google Drive | revision-based | 15 GB free (shared across Google services) | shared team state, client-side apps | [developers.google.com/drive](https://developers.google.com/drive) |
-| **`storage.redis.redis.v1`** | Redis | atomic operations | Redis Cloud 30 MB free; self-hosted open-source | low-latency multi-instance sync | [redis.io](https://redis.io) |
+| **`storage.aws.s3.v1`** | *(Planned)* AWS S3 | conditional writes | 5 GB, 20K GET, 2K PUT/month (12 months) | multi-instance, serverless | [aws.amazon.com/s3](https://aws.amazon.com/s3) |
+| **`storage.google.drive.v1`** | *(Planned)* Google Drive | revision-based | 15 GB free (shared across Google services) | shared team state, client-side apps | [developers.google.com/drive](https://developers.google.com/drive) |
+| **`storage.redis.redis.v1`** | *(Planned)* Redis | atomic operations | Redis Cloud 30 MB free; self-hosted open-source | low-latency multi-instance sync | [redis.io](https://redis.io) |
 | **`storage.modelmesh.sqlite.v1`** | SQLite | single-process only | Built-in | structured local storage, queryable state | - |
 | **`storage.modelmesh.memory.v1`** | in-memory | single-process only | Built-in | testing, ephemeral workloads, no persistence | - |
 | **`storage.modelmesh.localstorage.v1`** | browser localStorage | single-tab | Built-in (TS only) | browser apps, small state (~5-10 MB) | - |

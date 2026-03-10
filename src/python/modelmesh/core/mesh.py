@@ -7,6 +7,8 @@ Applications typically interact through the ``MeshClient`` returned by
 """
 from __future__ import annotations
 
+import asyncio
+import inspect
 import logging
 from typing import TYPE_CHECKING, AsyncIterator, Optional
 
@@ -158,12 +160,26 @@ class ModelMesh:
     def shutdown(self) -> None:
         """Graceful shutdown.
 
-        Marks the mesh as uninitialized. Future calls to :meth:`route`
-        or :meth:`get_client` will raise ``RuntimeError``.
+        Closes all registered provider connectors and marks the mesh as
+        uninitialized. Future calls to :meth:`route` or
+        :meth:`get_client` will raise ``RuntimeError``.
         """
-        self._trace("INFO", "mesh", "ModelMesh shut down")
+        self._trace("INFO", "mesh", "ModelMesh shutting down")
+        for pid, provider in self._providers.items():
+            try:
+                result = provider.close()
+                # Handle async close() methods gracefully
+                if inspect.isawaitable(result):
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(result)
+                    except RuntimeError:
+                        asyncio.run(result)
+            except Exception:
+                logger.debug("Error closing provider %s", pid, exc_info=True)
         self._initialized = False
         self._router = None
+        self._providers.clear()
         logger.info("ModelMesh shut down")
 
     # -- Routing -------------------------------------------------------------

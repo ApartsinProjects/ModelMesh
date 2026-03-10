@@ -40,37 +40,37 @@ enum DeprecationAction {
 
 /** Outcome of a registry synchronization run. */
 interface SyncResult {
-    new_models: string[];
-    deprecated_models: string[];
-    updated_models: string[];
+    newModels: string[];
+    deprecatedModels: string[];
+    updatedModels: string[];
     errors: string[];
 }
 
 /** Current status of the registry synchronization process. */
 interface SyncStatus {
-    last_sync?: Date;
-    next_sync?: Date;
-    models_synced: number;
+    lastSync?: Date;
+    nextSync?: Date;
+    modelsSynced: number;
     status: string;
 }
 
 /** Health assessment for a single provider over a monitoring window. */
 interface HealthReport {
-    provider_id: string;
+    providerId: string;
     available: boolean;
-    latency_ms?: number;
-    status_code?: number;
+    latencyMs?: number;
+    statusCode?: number;
     error?: string;
-    availability_score: number;
+    availabilityScore: number;
     timestamp: Date;
 }
 
 /** Result of a single health probe against a provider. */
 interface ProbeResult {
-    provider_id: string;
+    providerId: string;
     success: boolean;
-    latency_ms?: number;
-    status_code?: number;
+    latencyMs?: number;
+    statusCode?: number;
     error?: string;
 }
 
@@ -115,14 +115,14 @@ interface YamlModelEntry {
     name: string;
     provider: string;
     capabilities: string[];
-    context_window: number;
-    max_output_tokens: number;
+    contextWindow: number;
+    maxOutputTokens: number;
     status: "active" | "deprecated" | "preview";
-    health_endpoint?: string;
+    healthEndpoint?: string;
     pricing?: {
-        input_per_1k_tokens: number;
-        output_per_1k_tokens: number;
-        per_request?: number;
+        inputPer1kTokens: number;
+        outputPer1kTokens: number;
+        perRequest?: number;
     };
     metadata?: Record<string, unknown>;
 }
@@ -131,10 +131,10 @@ interface YamlModelEntry {
 interface YamlProviderEntry {
     id: string;
     name: string;
-    base_url: string;
-    health_endpoint: string;
-    health_method?: string;
-    health_expected_status?: number;
+    baseUrl: string;
+    healthEndpoint: string;
+    healthMethod?: string;
+    healthExpectedStatus?: number;
     models: string[];
 }
 
@@ -191,7 +191,7 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 
     /** Sync status tracking. */
     private syncStatus: SyncStatus = {
-        models_synced: 0,
+        modelsSynced: 0,
         status: "idle",
     };
 

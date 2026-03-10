@@ -45,7 +45,7 @@ class RoutingEvent:
     model_id: Optional[str] = None
     provider_id: Optional[str] = None
     pool_id: Optional[str] = None
-    metadata: dict = None
+    metadata: Optional[dict] = None
 
     def __post_init__(self) -> None:
         if self.metadata is None:
@@ -103,7 +103,7 @@ class TraceEntry:
     timestamp: datetime
     component: str  # e.g. "router", "pool.text-generation", "provider.openai"
     message: str
-    metadata: dict = None
+    metadata: Optional[dict] = None
     error: Optional[str] = None
 
     def __post_init__(self) -> None:

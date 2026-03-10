@@ -31,7 +31,7 @@ import * as path from "node:path";
 interface SecretValue {
     value: string;
     version?: string;
-    expires_at?: Date;
+    expiresAt?: Date;
 }
 
 // ---------------------------------------------------------------------------

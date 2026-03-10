@@ -7,6 +7,10 @@ Observability, and Discovery.
 from __future__ import annotations
 
 from modelmesh.interfaces.provider import (
+    AudioSpeechRequest,
+    AudioSpeechResponse,
+    AudioTranscriptionRequest,
+    AudioTranscriptionResponse,
     ChatMessage,
     CompletionChoice,
     CompletionRequest,
@@ -74,6 +78,10 @@ from modelmesh.interfaces.discovery import (
 
 __all__ = [
     # Provider
+    "AudioSpeechRequest",
+    "AudioSpeechResponse",
+    "AudioTranscriptionRequest",
+    "AudioTranscriptionResponse",
     "ChatMessage",
     "CompletionChoice",
     "CompletionRequest",

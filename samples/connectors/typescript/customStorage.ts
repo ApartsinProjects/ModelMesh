@@ -46,16 +46,16 @@ interface StorageEntry {
 interface EntryMetadata {
     key: string;
     size: number;
-    last_modified: Date;
-    content_type?: string;
+    lastModified: Date;
+    contentType?: string;
 }
 
 /** Handle representing an acquired advisory lock on a stored entry. */
 interface LockHandle {
     key: string;
-    lock_id: string;
-    acquired_at: Date;
-    expires_at?: Date;
+    lockId: string;
+    acquiredAt: Date;
+    expiresAt?: Date;
 }
 
 // ---------------------------------------------------------------------------
@@ -333,8 +333,8 @@ class SqliteStorageConnector implements StorageConnector, Locking {
         return {
             key: row.key as string,
             size: row.size as number,
-            last_modified: new Date(row.last_modified as string),
-            content_type: (row.content_type as string) ?? undefined,
+            lastModified: new Date(row.last_modified as string),
+            contentType: (row.content_type as string) ?? undefined,
         };
     }
 
@@ -382,9 +382,9 @@ class SqliteStorageConnector implements StorageConnector, Locking {
 
                 return {
                     key,
-                    lock_id: lockId,
-                    acquired_at: now,
-                    expires_at: expiresAt,
+                    lockId: lockId,
+                    acquiredAt: now,
+                    expiresAt: expiresAt,
                 };
             } catch (err: unknown) {
                 // If the insert failed due to a conflict, another lock is held.
@@ -411,7 +411,7 @@ class SqliteStorageConnector implements StorageConnector, Locking {
      * accidentally releasing a lock that was re-acquired by another process.
      */
     async release(lock: LockHandle): Promise<void> {
-        this.stmtReleaseLock.run(lock.key, lock.lock_id);
+        this.stmtReleaseLock.run(lock.key, lock.lockId);
     }
 
     /**

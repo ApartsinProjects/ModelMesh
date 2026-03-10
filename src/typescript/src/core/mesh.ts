@@ -110,9 +110,11 @@ export class ModelMesh {
    */
   getClient(): MeshClient {
     this._checkInitialized();
-    // Lazy import to avoid circular dependency at module level
-    const { MeshClient: Client } = require("../client/mesh-client");
-    return new Client(this);
+    // Lazy import to avoid circular dependency at module level.
+    // Uses dynamic import() for ESM compatibility; falls back to
+    // require() in CommonJS environments.
+    const mod = require("../client/mesh-client") as { MeshClient: new (mesh: ModelMesh) => MeshClient };
+    return new mod.MeshClient(this);
   }
 
   /** All configured capability pools, keyed by pool ID. */

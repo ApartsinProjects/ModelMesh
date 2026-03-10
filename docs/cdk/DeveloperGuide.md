@@ -1590,7 +1590,7 @@ A chatbot that answers questions about anything. You type a question, the chatbo
 
 ### What you need
 
-- **Python 3.10 or later** -- check by running `python --version` in your terminal
+- **Python 3.11 or later** -- check by running `python --version` in your terminal
 - **A free API key** from one of these providers:
   - [OpenAI](https://platform.openai.com/api-keys) -- sign up and create a key starting with `sk-`
   - [Groq](https://console.groq.com/keys) -- sign up for free and create a key starting with `gsk_`
@@ -1600,10 +1600,10 @@ A chatbot that answers questions about anything. You type a question, the chatbo
 Open your terminal (Command Prompt on Windows, Terminal on Mac/Linux) and run:
 
 ```bash
-pip install modelmesh
+pip install modelmesh-lite
 ```
 
-If that does not work, try `pip3 install modelmesh` or `python -m pip install modelmesh`.
+If that does not work, try `pip3 install modelmesh-lite` or `python -m pip install modelmesh-lite`.
 
 ### Step 2: Set your API key
 

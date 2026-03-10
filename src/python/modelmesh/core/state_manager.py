@@ -84,7 +84,10 @@ class StateManager:
     def record_failure(self, model_id: str) -> None:
         """Record a failed request.
 
-        Increments failure count and updates error rate.
+        Increments failure count and updates error rate using a rolling
+        window approach. The ``error_rate`` reflects the ratio of
+        *recent consecutive* failures to the last ``_ERROR_WINDOW``
+        requests, providing a meaningful signal for deactivation logic.
 
         Args:
             model_id: Dot-notated model identifier.
@@ -93,9 +96,15 @@ class StateManager:
         state.failure_count += 1
         state.total_requests += 1
         state.last_failure_at = time.time()
-        if state.total_requests > 0:
-            state.error_rate = state.failure_count / state.total_requests
+        # Use a rolling window to compute a meaningful error rate.
+        # failure_count tracks consecutive failures (reset on success),
+        # so ratio against a window gives actionable signal.
+        window = min(state.total_requests, self._ERROR_WINDOW)
+        state.error_rate = state.failure_count / window if window > 0 else 0.0
         self._dirty = True
+
+    _ERROR_WINDOW: int = 20
+    """Rolling window size for error rate calculation."""
 
     def deactivate(self, model_id: str) -> None:
         """Move a model to standby status.
