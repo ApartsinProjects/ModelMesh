@@ -9,8 +9,7 @@ Connector ID: ``modelmesh.memory-secrets.v1``
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 from modelmesh.cdk.base_secret_store import BaseSecretStore, BaseSecretStoreConfig
 from modelmesh.interfaces.secret_store import SecretManagement

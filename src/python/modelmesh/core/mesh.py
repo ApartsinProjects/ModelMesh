@@ -22,7 +22,6 @@ from modelmesh.interfaces.provider import (
     CompletionResponse,
     ProviderConnector,
 )
-from modelmesh.interfaces.rotation import ModelStatus
 
 if TYPE_CHECKING:
     from modelmesh.client.mesh_client import MeshClient

@@ -30,7 +30,7 @@ def _run_sync(coro):
         Any exception raised by the coroutine.
     """
     try:
-        loop = asyncio.get_running_loop()
+        asyncio.get_running_loop()
     except RuntimeError:
         # No running loop — safe to use asyncio.run()
         return asyncio.run(coro)

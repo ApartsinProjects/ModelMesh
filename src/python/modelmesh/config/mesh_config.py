@@ -8,7 +8,7 @@ or constructed by the convenience layer's auto-detection logic.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 __all__ = ["MeshConfig"]
 

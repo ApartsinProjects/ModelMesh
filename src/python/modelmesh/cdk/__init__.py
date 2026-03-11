@@ -35,12 +35,12 @@ from modelmesh.cdk.base_rotation import (
 
 # Alias for backward compatibility with samples/docs
 BaseRotationPolicyConfig = BaseRotationConfig
-from modelmesh.cdk.base_secret_store import BaseSecretStore, BaseSecretStoreConfig
-from modelmesh.cdk.base_storage import BaseStorage, BaseStorageConfig
+from modelmesh.cdk.base_secret_store import BaseSecretStore, BaseSecretStoreConfig  # noqa: E402
+from modelmesh.cdk.base_storage import BaseStorage, BaseStorageConfig  # noqa: E402
 
 # -- Mixins ------------------------------------------------------------------
 
-from modelmesh.cdk.mixins import (
+from modelmesh.cdk.mixins import (  # noqa: E402
     CacheMixin,
     CacheStats,
     CircuitBreakerMixin,
@@ -59,7 +59,7 @@ from modelmesh.cdk.mixins import (
 
 # -- Specialized classes -----------------------------------------------------
 
-from modelmesh.cdk.specialized import (
+from modelmesh.cdk.specialized import (  # noqa: E402
     CallbackObservability,
     CallbackObservabilityConfig,
     ConsoleObservability,

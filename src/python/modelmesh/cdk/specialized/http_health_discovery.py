@@ -15,7 +15,6 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from typing import Optional
 
 from modelmesh.cdk.base_discovery import BaseDiscovery, BaseDiscoveryConfig
 from modelmesh.interfaces.discovery import ProbeResult

@@ -16,6 +16,7 @@
   <a href="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/codeql.yml"><img src="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
   <a href="docs/guides/FAQ.md"><img src="https://img.shields.io/badge/FAQ-21%20questions-orange" alt="FAQ"></a>
+  <a href="docs/guides/ProviderKeys.md"><img src="https://img.shields.io/badge/providers-22%20supported-8A2BE2" alt="22 Providers"></a>
 </p>
 
 ---
@@ -192,6 +193,7 @@ Ten reasons to add ModelMesh to your next project.
 | **[System Services](docs/SystemServices.md)** | Runtime objects: Router, Pool, Model, State |
 | **[Proxy Guide](docs/guides/ProxyGuide.md)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
 | **[AI Agent Integration](docs/ForAIAgent.md)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
+| **[Provider Keys Guide](docs/guides/ProviderKeys.md)** | How to obtain API keys for all 22 providers |
 | **[Troubleshooting](docs/guides/Troubleshooting.md)** | Common issues and solutions |
 
 ### CDK (Connector Development Kit)

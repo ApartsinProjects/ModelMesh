@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 import os
 import threading
-import time
 from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:

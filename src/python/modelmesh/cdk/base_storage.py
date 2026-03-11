@@ -11,7 +11,6 @@ import asyncio
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 from modelmesh.interfaces.storage import (
     EntryMetadata,

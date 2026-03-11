@@ -8,11 +8,10 @@ fields and sets appropriate defaults.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from modelmesh.cdk.base_provider import BaseProvider, BaseProviderConfig
-from modelmesh.interfaces.provider import ModelInfo
 
 __all__ = [
     "OpenAICompatibleConfig",

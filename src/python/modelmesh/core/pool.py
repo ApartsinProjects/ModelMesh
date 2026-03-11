@@ -7,11 +7,10 @@ to a pluggable SelectionStrategy.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from modelmesh.interfaces.rotation import (
-    DeactivationReason,
     ModelState,
     ModelStatus,
     SelectionStrategy,

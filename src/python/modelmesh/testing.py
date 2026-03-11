@@ -30,7 +30,6 @@ from typing import Optional
 from modelmesh.interfaces.provider import (
     ChatMessage,
     CompletionChoice,
-    CompletionRequest,
     CompletionResponse,
     TokenUsage,
 )

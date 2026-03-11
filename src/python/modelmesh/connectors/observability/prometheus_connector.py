@@ -10,7 +10,6 @@ Connector ID: ``modelmesh.prometheus.v1``
 from __future__ import annotations
 
 import threading
-import time
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -20,7 +19,6 @@ from modelmesh.interfaces.observability import (
     ObservabilityConnector,
     RequestLogEntry,
     RoutingEvent,
-    Severity,
     TraceEntry,
 )
 

@@ -16,7 +16,6 @@ import urllib.request
 import urllib.error
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
 
 from modelmesh.interfaces.observability import (
     AggregateStats,

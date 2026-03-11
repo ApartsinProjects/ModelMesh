@@ -9,8 +9,7 @@ Connector ID: ``modelmesh.priority-selection.v1``
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 from modelmesh.cdk.base_rotation import (
     BaseDeactivationPolicy,

@@ -9,7 +9,6 @@ Connector ID: ``modelmesh.keyring.v1``
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from modelmesh.cdk.base_secret_store import BaseSecretStore, BaseSecretStoreConfig
 

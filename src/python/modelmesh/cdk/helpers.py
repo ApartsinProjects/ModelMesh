@@ -6,15 +6,11 @@ tests without real HTTP traffic or live AI providers.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from modelmesh.interfaces.provider import (
-    ChatMessage,
-    CompletionChoice,
     CompletionRequest,
     CompletionResponse,
-    TokenUsage,
 )
 from modelmesh.interfaces.rotation import ModelState, ModelStatus
 

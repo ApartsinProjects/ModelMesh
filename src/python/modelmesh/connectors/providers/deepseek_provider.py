@@ -7,7 +7,6 @@ registered as ``deepseek.api.v1`` and requires only an API key to use.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from modelmesh.cdk.specialized.openai_compatible import (
     OpenAICompatibleConfig,

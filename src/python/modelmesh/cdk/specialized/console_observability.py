@@ -7,7 +7,7 @@ to stdout with color coding by type.
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from modelmesh.cdk.base_observability import (
     BaseObservability,
@@ -172,7 +172,7 @@ class ConsoleObservability(BaseObservability):
         else:
             status_color = _Colors.GREEN
 
-        parts.append(self._colorize(f"LOG", _Colors.BLUE, bold=True))
+        parts.append(self._colorize("LOG", _Colors.BLUE, bold=True))
         parts.append(
             self._colorize(str(entry.status_code), status_color)
         )

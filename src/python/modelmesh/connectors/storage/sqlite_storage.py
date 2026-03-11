@@ -13,7 +13,6 @@ import json
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Optional
 
 from modelmesh.interfaces.storage import (
     EntryMetadata,

@@ -15,7 +15,6 @@ import json
 import os
 import secrets as _secrets
 from dataclasses import dataclass
-from typing import Optional
 
 from modelmesh.cdk.base_secret_store import BaseSecretStore, BaseSecretStoreConfig
 from modelmesh.interfaces.secret_store import SecretManagement

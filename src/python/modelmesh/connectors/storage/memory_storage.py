@@ -9,7 +9,6 @@ Connector ID: ``modelmesh.memory.v1``
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Optional
 
 from modelmesh.interfaces.storage import (
     EntryMetadata,

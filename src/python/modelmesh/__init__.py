@@ -264,7 +264,6 @@ def _build_auto_config(
 
     # Build providers and models sections from detected providers
     for prov in detected_providers:
-        provider_name = prov["name"]
         connector_id = prov["connector"]
 
         providers_section[connector_id] = {

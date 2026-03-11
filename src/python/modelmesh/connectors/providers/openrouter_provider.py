@@ -8,13 +8,12 @@ to use.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from modelmesh.cdk.specialized.openai_compatible import (
     OpenAICompatibleConfig,
     OpenAICompatibleProvider,
 )
-from modelmesh.interfaces.provider import ModelInfo, ModelPricing
+from modelmesh.interfaces.provider import ModelInfo
 
 __all__ = [
     "OpenRouterProviderConfig",

@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Optional
 
 from modelmesh.interfaces.provider import CompletionRequest, CompletionResponse
 

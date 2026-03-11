@@ -19,7 +19,6 @@ from modelmesh.interfaces.rotation import (
     ModelState,
     ModelStatus,
     RecoveryPolicy,
-    RecoveryTrigger,
     SelectionStrategy,
 )
 

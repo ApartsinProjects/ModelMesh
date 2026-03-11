@@ -17,8 +17,7 @@ import signal
 import threading
 import time
 import uuid
-from collections import defaultdict
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Optional
 
