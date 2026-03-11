@@ -1,0 +1,19 @@
+# ModelMesh configuration — edit to match your setup
+# Docs: https://github.com/ApartsinProjects/ModelMesh/blob/master/docs/SystemConfiguration.md
+
+providers:
+  openai.llm.v1:
+    connector: openai.llm.v1
+    config:
+      api_key: "${secrets:OPENAI_API_KEY}"
+
+models:
+  openai.gpt-4o-mini:
+    provider: openai.llm.v1
+    capabilities:
+      - generation.text-generation.chat-completion
+
+pools:
+  chat-completion:
+    capability: generation.text-generation.chat-completion
+    strategy: stick-until-failure

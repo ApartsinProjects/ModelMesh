@@ -1,0 +1,54 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (don't actually publish)"
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    name: Publish Python Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/project/modelmesh-lite/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Run tests
+        run: |
+          pip install pytest pytest-asyncio
+          cd src/python && python -m pytest ../../tests/ -v
+
+      - name: Build package
+        run: cd src/python && python -m build
+
+      - name: Check package
+        run: cd src/python && twine check dist/*
+
+      - name: Publish to PyPI
+        if: ${{ !inputs.dry_run }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: src/python/dist/
+
+      - name: Dry run — show package contents
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "Would publish these files:"
+          ls -la src/python/dist/

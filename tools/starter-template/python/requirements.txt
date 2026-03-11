@@ -1,0 +1,3 @@
+modelmesh-lite[yaml]
+python-dotenv
+pytest

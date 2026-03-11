@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          # Extract the section for this version from CHANGELOG.md
+          VERSION=${{ steps.version.outputs.version }}
+          CHANGELOG=$(awk "/^## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Verify version consistency
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          PY_VER=$(grep '^version' src/python/pyproject.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          TS_VER=$(node -p "require('./src/typescript/package.json').version")
+          echo "Tag: $VERSION, Python: $PY_VER, TypeScript: $TS_VER"
+          [ "$PY_VER" = "$VERSION" ] || { echo "ERROR: Python version mismatch!"; exit 1; }
+          [ "$TS_VER" = "$VERSION" ] || { echo "ERROR: TypeScript version mismatch!"; exit 1; }
+
+      - name: Build Python package
+        run: |
+          pip install build
+          cd src/python && python -m build
+
+      - name: Build TypeScript package
+        run: |
+          cd src/typescript
+          npm ci
+          npm run build
+          npm pack
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "ModelMesh v${{ steps.version.outputs.version }}"
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          files: |
+            src/python/dist/*.whl
+            src/python/dist/*.tar.gz
+            src/typescript/*.tgz

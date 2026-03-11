@@ -1,0 +1,55 @@
+name: Coverage
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  python-coverage:
+    name: Python Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install pytest pytest-asyncio pytest-cov
+      - name: Run tests with coverage
+        run: |
+          cd src/python && python -m pytest ../../tests/ \
+            --cov=modelmesh \
+            --cov-report=xml:../../coverage-python.xml \
+            --cov-report=term-missing \
+            -v
+      - name: Upload Python coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage-python.xml
+          flags: python
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  typescript-coverage:
+    name: TypeScript Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: cd src/typescript && npm ci
+      - name: Run tests with coverage
+        run: cd src/typescript && npx jest --coverage --coverageReporters=text --coverageReporters=cobertura
+      - name: Upload TypeScript coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: src/typescript/coverage/cobertura-coverage.xml
+          flags: typescript
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

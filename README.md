@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/tests.yml"><img src="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/codeql.yml"><img src="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
   <a href="docs/guides/FAQ.md"><img src="https://img.shields.io/badge/FAQ-21%20questions-orange" alt="FAQ"></a>
 </p>
@@ -191,6 +192,7 @@ Ten reasons to add ModelMesh to your next project.
 | **[System Services](docs/SystemServices.md)** | Runtime objects: Router, Pool, Model, State |
 | **[Proxy Guide](docs/guides/ProxyGuide.md)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
 | **[AI Agent Integration](docs/ForAIAgent.md)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
+| **[Troubleshooting](docs/guides/Troubleshooting.md)** | Common issues and solutions |
 
 ### CDK (Connector Development Kit)
 
@@ -294,6 +296,27 @@ See the **[Proxy Guide](docs/guides/ProxyGuide.md)** for full configuration, CLI
 | `scripts/install-typescript.sh` | Install TypeScript package |
 | `scripts/test-all.sh` | Run full test suite (Python + TypeScript) |
 | `scripts/bump-version.sh` | Bump version in both Python and TypeScript |
+| `scripts/check-licenses.sh` | Verify license headers in source files |
+
+## Starter Template
+
+Get a new project running with ModelMesh in 30 seconds:
+
+```bash
+# Python
+cp -r tools/starter-template/python/ my-project/ && cd my-project
+pip install -r requirements.txt && python main.py
+
+# TypeScript
+cp -r tools/starter-template/typescript/ my-project/ && cd my-project
+npm install && npx tsx main.ts
+```
+
+See **[tools/starter-template/](tools/starter-template/)** for details.
+
+## Security
+
+See **[SECURITY.md](SECURITY.md)** for vulnerability reporting.
 
 ## License
 

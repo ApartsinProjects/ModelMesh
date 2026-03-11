@@ -1,0 +1,44 @@
+version: 2
+updates:
+  # Python dependencies (pyproject.toml)
+  - package-ecosystem: "pip"
+    directory: "/src/python"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "python"]
+    commit-message:
+      prefix: "chore(deps):"
+    open-pull-requests-limit: 5
+
+  # TypeScript dependencies (package.json)
+  - package-ecosystem: "npm"
+    directory: "/src/typescript"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "typescript"]
+    commit-message:
+      prefix: "chore(deps):"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(ci):"
+    open-pull-requests-limit: 3
+
+  # Docker base image
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker):"
+    open-pull-requests-limit: 2

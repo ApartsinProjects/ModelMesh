@@ -1,0 +1,50 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (don't actually publish)"
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    name: Publish TypeScript Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install and build
+        run: |
+          cd src/typescript
+          npm ci
+          npm run build
+
+      - name: Run tests
+        run: cd src/typescript && npm test
+
+      - name: Verify package contents
+        run: cd src/typescript && npm pack --dry-run
+
+      - name: Publish to npm
+        if: ${{ !inputs.dry_run }}
+        run: cd src/typescript && npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run publish
+        if: ${{ inputs.dry_run }}
+        run: cd src/typescript && npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

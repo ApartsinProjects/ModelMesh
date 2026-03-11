@@ -1,0 +1,27 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "../../docs/api/typescript",
+  "name": "ModelMesh TypeScript API",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Core",
+    "Configuration",
+    "Connectors",
+    "Routing",
+    "Capabilities",
+    "Middleware",
+    "Testing",
+    "Exceptions",
+    "*"
+  ],
+  "navigationLinks": {
+    "GitHub": "https://github.com/ApartsinProjects/ModelMesh",
+    "Docs": "https://apartsinprojects.github.io/ModelMesh/"
+  }
+}

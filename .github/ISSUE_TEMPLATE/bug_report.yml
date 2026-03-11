@@ -1,0 +1,88 @@
+name: Bug Report
+description: Report something that isn't working correctly
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this bug! Please fill in as much detail as possible.
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language / Runtime
+      description: Which SDK are you using?
+      options:
+        - Python
+        - TypeScript / Node.js
+        - Docker Proxy
+        - Both Python and TypeScript
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: ModelMesh Version
+      description: "Run `pip show modelmesh-lite` or check package.json"
+      placeholder: "0.2.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Minimal code or steps to reproduce the issue.
+      placeholder: |
+        1. Install modelmesh-lite
+        2. Configure with this YAML...
+        3. Call client.chat.completions.create(...)
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include full error messages and tracebacks.
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: "Your YAML config or programmatic setup (redact API keys!)"
+      render: yaml
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        - OS: [e.g. Windows 11, macOS 14, Ubuntu 22.04]
+        - Python version: [e.g. 3.12.0]
+        - Node.js version: [e.g. 20.10.0]
+      placeholder: |
+        - OS: Windows 11
+        - Python: 3.12.0
+        - Node.js: 20.10.0

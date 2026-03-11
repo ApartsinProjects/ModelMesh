@@ -1,0 +1,67 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement! Please describe your idea clearly.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem does this feature solve? What are you trying to do?
+      placeholder: "I'm trying to ... but currently I have to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this to work? Include API examples if possible.
+      placeholder: |
+        ```python
+        # Ideal usage:
+        client = modelmesh.create("chat-completion", feature=True)
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What workarounds have you tried? Are there other approaches?
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: What area does this affect?
+      options:
+        - Core library (routing, pools, models)
+        - Connectors (providers, rotation, storage, etc.)
+        - Configuration (YAML, programmatic)
+        - Docker Proxy
+        - Documentation
+        - Testing / Developer Experience
+        - CDK (Connector Development Kit)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: Which SDK should this be implemented in?
+      options:
+        - Both Python and TypeScript
+        - Python only
+        - TypeScript only
+        - Docker / Proxy
+        - Documentation only
+    validations:
+      required: true

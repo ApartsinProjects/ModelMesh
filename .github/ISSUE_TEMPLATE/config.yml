@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://apartsinprojects.github.io/ModelMesh/
+    about: Check the docs before opening an issue
+  - name: FAQ
+    url: https://github.com/ApartsinProjects/ModelMesh/blob/master/docs/guides/FAQ.md
+    about: Answers to the 21 most common questions

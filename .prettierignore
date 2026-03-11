@@ -1,0 +1,10 @@
+dist/
+node_modules/
+coverage/
+*.tgz
+*.whl
+package-lock.json
+src/typescript/dist/
+src/typescript/node_modules/
+__pycache__/
+*.egg-info/

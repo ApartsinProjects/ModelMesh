@@ -17,6 +17,26 @@ All notable changes to ModelMesh are documented here.
 - **`.editorconfig`** — consistent formatting across editors
 - **`scripts/bump-version.sh`** — atomic version sync between Python and TypeScript
 - Docker healthcheck in Dockerfile and docker-compose.yaml
+- **GitHub Issue Templates** — structured bug report and feature request forms
+- **GitHub Pull Request Template** — checklist for tests, docs, changelog
+- **SECURITY.md** — vulnerability disclosure policy
+- **VS Code Dev Container** (`.devcontainer/`) — one-click dev environment
+- **Dependabot** — automated dependency updates for Python, npm, Docker, Actions
+- **CodeQL security scanning** — weekly + PR security analysis
+- **Test coverage reporting** — pytest-cov + Jest coverage → Codecov CI workflow
+- **Prettier + ESLint** — TypeScript code formatting and linting
+- **mypy type checking** — Python type checking in CI
+- **TypeDoc configuration** — auto-generated TypeScript API docs
+- **Troubleshooting Guide** (`docs/guides/Troubleshooting.md`)
+- **npm publish workflow** — GitHub Actions → npm with provenance
+- **PyPI publish workflow** — GitHub Actions → PyPI with trusted publishing
+- **GitHub Release workflow** — auto-create releases from tags with assets
+- **Docker multi-platform build** — linux/amd64 + linux/arm64 images
+- **Integration test suite** (`tests/integration/`) — end-to-end routing tests
+- **Performance benchmark suite** (`tests/benchmarks/`) — routing latency tests
+- **Pre-commit hooks** (`.pre-commit-config.yaml`) — ruff, prettier, gitleaks
+- **Starter templates** (`tools/starter-template/`) — Python and TypeScript project starters
+- **License compliance check** (`scripts/check-licenses.sh`)
 
 ### Fixed
 - Dockerfile `COPY` path corrected (was referencing root-level `pyproject.toml`)
