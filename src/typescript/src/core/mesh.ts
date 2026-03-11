@@ -51,6 +51,14 @@ export class ModelMesh {
   private _observability: ObservabilityConnector | null = null;
   private _initialized = false;
 
+  /** Access the underlying Router instance. */
+  get router(): Router {
+    if (!this._router) {
+      throw new Error('ModelMesh not initialized. Call initialize() first.');
+    }
+    return this._router;
+  }
+
   // -- Lifecycle -----------------------------------------------------------
 
   /**

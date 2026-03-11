@@ -51,7 +51,7 @@ export class Router {
   private readonly _emitter: EventEmitter;
   private readonly _observability: ObservabilityConnector | null;
   private readonly _maxRetries: number;
-  private readonly _middleware: MiddlewareStack | null;
+  private _middleware: MiddlewareStack | null;
 
   constructor(
     pools: Record<string, CapabilityPool>,
@@ -69,6 +69,11 @@ export class Router {
     this._observability = observability ?? null;
     this._maxRetries = maxRetries;
     this._middleware = middleware ?? null;
+  }
+
+  /** Replace the middleware stack. Called by create() when middleware is provided. */
+  setMiddleware(stack: MiddlewareStack): void {
+    this._middleware = stack;
   }
 
   private _trace(

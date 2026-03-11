@@ -17,6 +17,10 @@ Re-exports:
 """
 from __future__ import annotations
 
+from modelmesh.cdk.specialized.callback_observability import (
+    CallbackObservability,
+    CallbackObservabilityConfig,
+)
 from modelmesh.cdk.specialized.console_observability import (
     ConsoleObservability,
     ConsoleObservabilityConfig,
@@ -74,6 +78,8 @@ __all__ = [
     "KeyValueStorageConfig",
     "KeyValueStorage",
     # Observability
+    "CallbackObservabilityConfig",
+    "CallbackObservability",
     "ConsoleObservabilityConfig",
     "ConsoleObservability",
     "FileObservabilityConfig",

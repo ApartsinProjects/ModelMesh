@@ -60,6 +60,8 @@ from modelmesh.cdk.mixins import (
 # -- Specialized classes -----------------------------------------------------
 
 from modelmesh.cdk.specialized import (
+    CallbackObservability,
+    CallbackObservabilityConfig,
     ConsoleObservability,
     ConsoleObservabilityConfig,
     FileObservability,
@@ -132,6 +134,8 @@ __all__ = [
     "FileSecretStore",
     "KeyValueStorageConfig",
     "KeyValueStorage",
+    "CallbackObservabilityConfig",
+    "CallbackObservability",
     "ConsoleObservabilityConfig",
     "ConsoleObservability",
     "FileObservabilityConfig",

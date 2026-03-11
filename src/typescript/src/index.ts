@@ -199,6 +199,8 @@ export interface CreateOptions {
   strategy?: string;
   apiKeys?: Record<string, string>;
   config?: string | Record<string, unknown> | MeshConfig;
+  /** Middleware instances to attach to the router. */
+  middleware?: Middleware[];
 }
 
 /**
@@ -247,6 +249,7 @@ export function create(...args: unknown[]): MeshClient {
     strategy = 'stick-until-failure',
     apiKeys,
     config,
+    middleware: middlewareList,
   } = options;
 
   const mesh = new ModelMesh();
@@ -262,7 +265,11 @@ export function create(...args: unknown[]): MeshClient {
       meshConfig = MeshConfig.fromDict(config);
     }
     mesh.initialize(meshConfig);
-    return mesh.getClient();
+    const client = mesh.getClient();
+    if (middlewareList && middlewareList.length > 0) {
+      mesh.router.setMiddleware(new MiddlewareStack(middlewareList));
+    }
+    return client;
   }
 
   if (capabilities.length === 0 && pool === undefined) {
@@ -325,5 +332,9 @@ export function create(...args: unknown[]): MeshClient {
     pools: poolsSection,
     observability: { connector: 'modelmesh.null.v1' },
   }));
-  return mesh.getClient();
+  const client = mesh.getClient();
+  if (middlewareList && middlewareList.length > 0) {
+    mesh.router.setMiddleware(new MiddlewareStack(middlewareList));
+  }
+  return client;
 }

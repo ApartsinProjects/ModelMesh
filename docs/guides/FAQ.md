@@ -310,9 +310,9 @@ expect(client.calls.length).toBe(1);
 Debug routing decisions without making API calls:
 
 ```python
-explanation = client.explain()
-print(explanation["selectedModel"])   # Which model would be selected
-print(explanation["reason"])          # Why
+explanation = client.explain(model="chat-completion")
+print(explanation["selected_model"])   # Which model would be selected
+print(explanation["reason"])           # Why
 ```
 
 See the [Mock Client and Testing](Testing.md) guide.
@@ -458,6 +458,49 @@ provider = CorpLLMProvider(BaseProviderConfig(
 ```
 
 Override only what differs: `_get_completion_endpoint()` for the URL path, `_build_headers()` for authentication, `_build_request_payload()` to translate the request format, and `_parse_response()` to translate the response back. For streaming, also override `_parse_sse_chunk()`.
+
+**Custom rotation policy:**
+
+Inherit from `BaseRotationPolicy` and override `select()` to control how models are chosen, `should_deactivate()` to control when a model is taken offline, or `should_recover()` to control when it comes back.
+
+```python
+from modelmesh.cdk import BaseRotationPolicy, BaseRotationConfig
+from modelmesh.interfaces.rotation import ModelState
+from modelmesh.interfaces.provider import CompletionRequest
+from typing import Optional
+
+class CostAwarePolicy(BaseRotationPolicy):
+    """Pick the cheapest model that hasn't exceeded its error threshold."""
+
+    def select(
+        self,
+        candidates: list[ModelState],
+        request: CompletionRequest,
+    ) -> Optional[ModelState]:
+        if not candidates:
+            return None
+        # Sort by cost (lowest first), break ties by error rate
+        return min(candidates, key=lambda c: (c.total_cost, c.error_rate))
+```
+
+Register the policy in YAML by pointing `strategy` at your custom class, or pass it programmatically:
+
+```yaml
+pools:
+  chat:
+    capability: generation.text-generation.chat-completion
+    strategy: my_app.policies.CostAwarePolicy
+```
+
+```python
+# Or register programmatically
+from modelmesh.cdk import ThresholdRotationPolicy, ThresholdRotationConfig
+
+policy = CostAwarePolicy(BaseRotationConfig(
+    failure_threshold=5,
+    cooldown_seconds=120,
+))
+```
 
 Six connector types are extensible this way: providers, rotation policies, secret stores, storage backends, observability sinks, and discovery connectors.
 

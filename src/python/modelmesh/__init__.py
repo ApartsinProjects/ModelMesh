@@ -78,6 +78,7 @@ def create(
     strategy: str = "stick-until-failure",
     api_keys: dict[str, str] | None = None,
     config: str | dict | MeshConfig | None = None,
+    middleware: list[Middleware] | None = None,
 ) -> MeshClient:
     """Create an OpenAI SDK-compatible client with ModelMesh routing.
 
@@ -109,6 +110,8 @@ def create(
         config: Full configuration -- YAML file path, dict, or
             ``MeshConfig`` object. When provided, auto-detection is
             skipped.
+        middleware: List of :class:`Middleware` instances to attach to the
+            router. Middleware runs before and after each provider call.
 
     Returns:
         ``MeshClient``: OpenAI SDK-compatible client with ModelMesh
@@ -158,7 +161,10 @@ def create(
                 f"{type(config).__name__}"
             )
         mesh.initialize(mesh_config)
-        return mesh.get_client()
+        client = mesh.get_client()
+        if middleware:
+            mesh._router._middleware = MiddlewareStack(middleware)
+        return client
 
     if not capabilities and pool is None:
         raise ValueError(
@@ -183,7 +189,10 @@ def create(
         strategy=strategy,
     )
     mesh.initialize(MeshConfig(raw=raw_config))
-    return mesh.get_client()
+    client = mesh.get_client()
+    if middleware:
+        mesh._router._middleware = MiddlewareStack(middleware)
+    return client
 
 
 # Well-known short names mapped to full capability tree paths.
