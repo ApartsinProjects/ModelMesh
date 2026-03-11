@@ -174,6 +174,7 @@ import { ModelMesh } from './core/mesh';
 import { MeshClient } from './client/mesh-client';
 import { MeshConfig } from './config/mesh-config';
 import { detectProviders } from './config/auto-detect';
+import { Middleware, MiddlewareStack } from './middleware';
 
 /** Well-known short names mapped to full capability tree paths. */
 const CAPABILITY_ALIASES: Record<string, string> = {

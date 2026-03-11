@@ -22,7 +22,7 @@ jobs:
       - name: Python type check (mypy)
         run: pip install mypy && cd src/python && mypy modelmesh --ignore-missing-imports --no-error-summary || true
       - name: TypeScript lint (tsc --noEmit)
-        run: cd src/typescript && npm ci && npm run lint
+        run: npm ci && npm run --workspace src/typescript lint
       - name: Version consistency check
         run: |
           PY_VER=$(grep '^version' src/python/pyproject.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
@@ -55,7 +55,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: cd src/typescript && npm ci && npm test
+      - run: npm ci && npm test --workspace src/typescript
 
   docker:
     name: Docker Build

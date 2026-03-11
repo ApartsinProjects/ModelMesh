@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: "20"
       - name: Install dependencies
-        run: cd src/typescript && npm ci
+        run: npm ci
       - name: Run tests with coverage
         run: cd src/typescript && npx jest --coverage --coverageReporters=text --coverageReporters=cobertura
       - name: Upload TypeScript coverage

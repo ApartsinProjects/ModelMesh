@@ -46,8 +46,8 @@ jobs:
 
       - name: Build TypeScript package
         run: |
-          cd src/typescript
           npm ci
+          cd src/typescript
           npm run build
           npm pack
 

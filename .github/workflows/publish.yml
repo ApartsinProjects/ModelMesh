@@ -54,7 +54,6 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
       - name: Install dependencies
-        working-directory: src/typescript
         run: npm ci
       - name: Build
         working-directory: src/typescript

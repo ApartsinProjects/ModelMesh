@@ -35,7 +35,8 @@ Thumbs.db
 # Node.js
 node_modules/
 *.tgz
-package-lock.json
+**/node_modules/**/package-lock.json
+!/package-lock.json
 !/src/typescript/package-lock.json
 
 # Test output
