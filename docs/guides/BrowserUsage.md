@@ -1,6 +1,6 @@
 # Browser Usage Guide
 
-ModelMesh TypeScript works in browsers, calling AI provider APIs directly from client-side JavaScript. This guide covers setup, CORS handling, and security.
+ModelMesh TypeScript works in browsers, calling AI provider APIs directly from client-side JavaScript. This guide covers setup, CORS handling, and security. For the full list of browser-compatible connectors (storage, secret stores, providers), see the [Connector Catalogue](../ConnectorCatalogue.html). For the CORS proxy deployment, see the [Proxy Guide](ProxyGuide.html).
 
 ## Architecture
 

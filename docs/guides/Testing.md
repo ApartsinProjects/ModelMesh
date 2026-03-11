@@ -1,6 +1,6 @@
 # Testing with ModelMesh
 
-ModelMesh provides a built-in mock client for unit testing without live API calls. The mock client has the same interface as the real `MeshClient`, so your tests use the exact same code paths your application uses.
+ModelMesh provides a built-in mock client for unit testing without live API calls. The mock client has the same interface as the real [`MeshClient`](../SystemServices.html), so your tests use the exact same code paths your application uses. For error simulation, see the [Error Handling](ErrorHandling.html) guide for the complete exception hierarchy.
 
 ## Quick Start
 

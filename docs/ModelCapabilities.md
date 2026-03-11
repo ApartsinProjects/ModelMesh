@@ -5,7 +5,7 @@ title: "Model Capability Taxonomy"
 
 # Model Capability Taxonomy
 
-**The complete capability hierarchy for ModelMesh Lite.** Models register at leaf nodes; pools target any node and include all descendants. The hierarchy is extensible — custom categories, subcategories, and leaf nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones.
+**The complete capability hierarchy for ModelMesh Lite.** Models register at leaf nodes; pools target any node and include all descendants. The hierarchy is extensible — custom categories, subcategories, and leaf nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. For the programmatic discovery API, see [Capability Discovery](guides/Capabilities.html). For which providers support which capabilities, see [Connector Catalogue](ConnectorCatalogue.html).
 
 ---
 
@@ -147,4 +147,8 @@ Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-cont
 
 ## Extending the Hierarchy
 
-Custom categories, subcategories, and leaf nodes can be added at any level (e.g., `compliance` → `pii-detection`, `regulatory-review`). Custom nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. Extension points are defined via configuration or at runtime through the API.
+Custom categories, subcategories, and leaf nodes can be added at any level (e.g., `compliance` → `pii-detection`, `regulatory-review`). Custom nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. Extension points are defined via [YAML configuration](SystemConfiguration.html) or at runtime through the API — see [Capability Discovery](guides/Capabilities.html) for both approaches.
+
+---
+
+See also: [System Concept](SystemConcept.html) · [Capability Discovery Guide](guides/Capabilities.html) · [Connector Catalogue](ConnectorCatalogue.html) · [FAQ](guides/FAQ.html)

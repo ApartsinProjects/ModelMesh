@@ -1,6 +1,6 @@
 # Capability Discovery
 
-ModelMesh uses a hierarchical capability system to route requests. Instead of memorizing full dotted paths like `generation.text-generation.chat-completion`, you can use short aliases and the discovery API.
+ModelMesh uses a hierarchical capability system to route requests. Instead of memorizing full dotted paths like `generation.text-generation.chat-completion`, you can use short aliases and the discovery API. For the complete hierarchy tree, see [Model Capabilities](../ModelCapabilities.html). For how capabilities map to [pools and routing](../SystemConcept.html), see the architecture overview.
 
 ## Capability Aliases
 

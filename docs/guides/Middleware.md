@@ -1,6 +1,6 @@
 # Middleware
 
-ModelMesh middleware lets you intercept requests and responses without modifying library internals. Use middleware for logging, request transforms, response enrichment, caching, or custom error handling.
+ModelMesh middleware lets you intercept requests and responses without modifying library internals. Use middleware for logging, request transforms, response enrichment, caching, or custom [error handling](ErrorHandling.html). Middleware runs inside the [router's](../SystemConcept.html) request pipeline, after pool selection and before/after provider execution.
 
 ## Quick Start
 

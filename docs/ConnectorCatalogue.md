@@ -240,7 +240,7 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 | **BaseProvider** | Node.js | `http`/`https` | Node.js streams | Server-side applications, CLI tools, backend services |
 | **BrowserBaseProvider** | Browser, Deno, Bun, Workers | Fetch API | `ReadableStream` | Single-page apps, browser extensions, edge runtimes |
 
-Both classes expose the same provider interface and the same protected hooks for subclassing. See [cdk/BaseClasses.md](cdk/BaseClasses.html#browserbAseprovider) for details and [guides/BrowserUsage.md](guides/BrowserUsage.html) for browser setup.
+Both classes expose the same provider interface and the same protected hooks for subclassing. See [cdk/BaseClasses](cdk/BaseClasses.html#browserbaseprovider) for details and [guides/BrowserUsage](guides/BrowserUsage.html) for browser setup.
 
 ### Runtime Environment Metadata
 
@@ -646,3 +646,7 @@ Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.html#disco
 | --- | --- |
 | **`discovery.modelmesh.registry-sync.v1`** | Synchronizes the local model catalogue with provider APIs on a configurable schedule. Detects new models, deprecated models, and pricing changes. Sync frequency and auto-registration are configurable per provider. |
 | **`discovery.modelmesh.health-monitor.v1`** | Probes providers at a configurable interval. Records latency, success/failure, and error codes; maintains rolling availability scores; feeds results into rotation policies for proactive deactivation. |
+
+---
+
+See also: [FAQ](guides/FAQ.html) · [Connector Interfaces](ConnectorInterfaces.html) · [CDK Base Classes](cdk/BaseClasses.html) · [System Configuration](SystemConfiguration.html)

@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-Ten questions developers ask before adopting ModelMesh, each answered with a short explanation and working code.
+Ten questions developers ask before adopting ModelMesh, each answered with a short explanation and working code. For architecture details, see [System Concept](../SystemConcept.html). For the YAML reference, see [System Configuration](../SystemConfiguration.html).
 
 ---
 
@@ -25,7 +25,7 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-**How does this work?** Setting `OPENAI_API_KEY` triggers auto-discovery: ModelMesh finds the OpenAI provider, registers its models, and groups them into **capability pools** by what each model can do. `create("chat-completion")` returns a client wired to the pool containing all chat-capable models. The shortcut `"chat-completion"` resolves to the full dot-notation path `generation.text-generation.chat-completion` automatically (see [Q5](#5-what-does-request-capabilities-not-model-names-mean)).
+**How does this work?** Setting `OPENAI_API_KEY` triggers auto-discovery: ModelMesh finds the OpenAI provider, registers its models, and groups them into **[capability pools](../SystemConcept.html#capability-based-model-pools)** by what each model can do. `create("chat-completion")` returns a client wired to the pool containing all chat-capable models. The shortcut `"chat-completion"` resolves to the full dot-notation path `generation.text-generation.chat-completion` automatically (see [Q5](#5-what-does-request-capabilities-not-model-names-mean)).
 
 When you need more control, add a YAML file or pass options programmatically. All three layers compose: env vars for secrets, YAML for topology, code for runtime overrides.
 
@@ -111,7 +111,7 @@ for i in range(100):
 
 Your code makes the same call every time. The library handles detection, pooling, and rotation internally.
 
-**How are pools formed?** Each provider registers its models with capability tags (e.g. `generation.text-generation.chat-completion`). ModelMesh groups all models sharing a capability into a single pool. When you call `create("chat-completion")`, you get a client backed by every chat-capable model across all discovered providers. Adding a new API key adds that provider's models to the existing pools automatically.
+**How are pools formed?** Each provider registers its models with [capability tags](../ModelCapabilities.html) (e.g. `generation.text-generation.chat-completion`). ModelMesh groups all models sharing a capability into a single pool. When you call `create("chat-completion")`, you get a client backed by every chat-capable model across all discovered providers. Adding a new API key adds that provider's models to the existing pools automatically.
 
 See the [Free-Tier Aggregation](QuickStart.html) guide.
 
@@ -119,7 +119,7 @@ See the [Free-Tier Aggregation](QuickStart.html) guide.
 
 ## 4. What happens when a provider goes down?
 
-ModelMesh retries with backoff, then rotates to the next model in the pool. All within the same request. Your code never sees the failure.
+ModelMesh retries with backoff, then [rotates](../SystemConcept.html) to the next model in the pool. All within the same request. Your code never sees the failure (see [Error Handling](ErrorHandling.html) for the full exception hierarchy).
 
 ```python
 import modelmesh
@@ -209,7 +209,7 @@ matches = modelmesh.capabilities.search("text")
 client = modelmesh.create("chat-completion")
 ```
 
-**Shortcuts vs dot-notation:** Every capability has a full dot-notation path reflecting its position in the hierarchy tree (e.g. `generation.text-generation.chat-completion`). Shortcuts like `"chat-completion"` are leaf-node aliases that resolve automatically. Both forms work everywhere: `create("chat-completion")` and `create("generation.text-generation.chat-completion")` are equivalent. Providers tag their models with full paths; you use whichever form is convenient.
+**Shortcuts vs dot-notation:** Every capability has a full dot-notation path reflecting its position in the [hierarchy tree](../ModelCapabilities.html) (e.g. `generation.text-generation.chat-completion`). Shortcuts like `"chat-completion"` are leaf-node aliases that resolve automatically. Both forms work everywhere: `create("chat-completion")` and `create("generation.text-generation.chat-completion")` are equivalent. Providers tag their models with full paths; you use whichever form is convenient.
 
 When a new model launches or an old one is deprecated, update your config. Your application code stays the same.
 
@@ -219,7 +219,7 @@ See the [Capability Discovery](Capabilities.html) guide.
 
 ## 6. How do I prevent surprise AI bills?
 
-Set daily or monthly spending limits in your configuration. ModelMesh tracks cost per request in real time and raises `BudgetExceededError` before the breaching request is sent.
+Set daily or monthly spending limits in your [configuration](../SystemConfiguration.html#providers). ModelMesh tracks cost per request in real time and raises [`BudgetExceededError`](ErrorHandling.html) before the breaching request is sent.
 
 ```yaml
 providers:
@@ -271,7 +271,7 @@ See the [Budget Enforcement](QuickStart.html#usage-tracking) guide and [System C
 
 ## 7. Can I use ModelMesh with my existing stack?
 
-Yes. ModelMesh ships as a Python library, a TypeScript library, and a Docker image. Each exposes the same OpenAI-compatible API. Pick the one that fits your stack.
+Yes. ModelMesh ships as a Python library, a TypeScript library, and a [Docker proxy](ProxyGuide.html). Each exposes the same OpenAI-compatible API. Pick the one that fits your stack.
 
 **Python backend:**
 ```bash
@@ -297,9 +297,9 @@ curl http://localhost:8080/v1/chat/completions \
   -d '{"model":"chat-completion","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
-All three share the same YAML configuration format. Zero core dependencies in the Python and TypeScript libraries.
+All three share the same [YAML configuration format](../SystemConfiguration.html). Zero core dependencies in the Python and TypeScript libraries. For browser usage with TypeScript, see the [Browser Guide](BrowserUsage.html).
 
-See the [Full-Stack Deployment](QuickStart.html) guide.
+See the [Full-Stack Deployment](QuickStart.html) guide and [Proxy Guide](ProxyGuide.html).
 
 ---
 
@@ -952,3 +952,24 @@ pools:
 ```
 
 See the [Connector Catalogue](../ConnectorCatalogue.html) for all pre-shipped connectors and [Connector Interfaces](../ConnectorInterfaces.html) for interface specifications.
+
+---
+
+## Reference
+
+| Document | What it covers |
+|----------|---------------|
+| [System Concept](../SystemConcept.html) | Architecture overview — routing pipeline, pools, providers |
+| [Model Capabilities](../ModelCapabilities.html) | Complete capability hierarchy tree |
+| [System Configuration](../SystemConfiguration.html) | YAML schema reference for all sections |
+| [System Services](../SystemServices.html) | Runtime objects — Router, Pool, Model, StateManager |
+| [Connector Catalogue](../ConnectorCatalogue.html) | All 54 pre-shipped connectors with config schemas |
+| [Connector Interfaces](../ConnectorInterfaces.html) | Interface specs for all 6 connector types |
+| [Quick Start](QuickStart.html) | 5-minute hands-on tutorial |
+| [Error Handling](ErrorHandling.html) | Exception hierarchy and retry guidance |
+| [Middleware](Middleware.html) | Request/response interception patterns |
+| [Testing](Testing.html) | Mock client for unit tests |
+| [Capabilities](Capabilities.html) | Capability discovery API |
+| [Secret Stores](SecretStores.html) | Secret store configuration and usage |
+| [Browser Usage](BrowserUsage.html) | Browser-specific setup and CORS |
+| [Proxy Guide](ProxyGuide.html) | Docker proxy deployment |

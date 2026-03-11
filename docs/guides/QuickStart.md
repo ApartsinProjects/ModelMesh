@@ -1,6 +1,6 @@
 # Developer Quick Start
 
-Get productive with ModelMesh in 5 minutes. This guide covers everything a developer needs for day-to-day usage: making requests, handling errors, testing, debugging routing, and tracking costs.
+Get productive with ModelMesh in 5 minutes. This guide covers everything a developer needs for day-to-day usage: making requests, [handling errors](ErrorHandling.html), [testing](Testing.html), debugging routing, and tracking costs. For the full [YAML configuration reference](../SystemConfiguration.html), see the configuration docs.
 
 ## 1. First Request
 

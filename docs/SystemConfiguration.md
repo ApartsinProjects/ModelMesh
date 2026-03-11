@@ -5,7 +5,7 @@ title: "System Configuration"
 
 # System Configuration
 
-**YAML configuration reference for ModelMesh Lite.** The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [storage connectors](ConnectorInterfaces.html#storage) for centralized management and sharing across instances. For the runtime objects that consume this configuration see [SystemServices.md](SystemServices.html).
+**YAML configuration reference for ModelMesh Lite.** The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [storage connectors](ConnectorInterfaces.html#storage) for centralized management and sharing across instances. For the runtime objects that consume this configuration see [SystemServices.md](SystemServices.html). For a tutorial-style introduction, see the [FAQ](guides/FAQ.html) and [Quick Start](guides/QuickStart.html).
 
 ---
 
@@ -652,3 +652,7 @@ Request: "parse 500 invoice PDFs, return structured JSON"
 5. Strategy application      → cost-first → Claude Sonnet (Anthropic)
 6. Intelligent retry         → on transient failure, retry with backoff → rotate to GPT-4o (OpenAI)
 ```
+
+---
+
+See also: [FAQ](guides/FAQ.html) · [Quick Start](guides/QuickStart.html) · [Connector Catalogue](ConnectorCatalogue.html) · [Connector Interfaces](ConnectorInterfaces.html) · [System Concept](SystemConcept.html)

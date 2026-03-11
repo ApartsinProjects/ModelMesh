@@ -5,7 +5,7 @@ title: "Proxy Guide"
 
 # Proxy Guide
 
-**Deploy ModelMesh as an OpenAI-compatible HTTP proxy.** The proxy exposes a standard OpenAI REST API on a configurable port. Internally it leverages all ModelMesh capabilities: multi-provider routing, automatic failover, pool strategies, budget controls, and free-tier aggregation. Any OpenAI SDK client, `curl`, or plain `fetch()` call can talk to the proxy without modification.
+**Deploy ModelMesh as an OpenAI-compatible HTTP proxy.** The proxy exposes a standard OpenAI REST API on a configurable port. Internally it leverages all ModelMesh capabilities: multi-provider [routing](../SystemConcept.html), automatic [failover](ErrorHandling.html), [pool strategies](FAQ.html#4-what-happens-when-a-provider-goes-down), [budget controls](FAQ.html#6-how-do-i-prevent-surprise-ai-bills), and free-tier aggregation. Any OpenAI SDK client, `curl`, or plain `fetch()` call can talk to the proxy without modification.
 
 ---
 
@@ -214,14 +214,16 @@ See [ConnectorCatalogue](../ConnectorCatalogue.html) for all connectors and conf
 
 | Strategy | Connector ID | Behaviour |
 |---|---|---|
-| Stick-until-failure | `modelmesh.stick-until-failure.v1` | Use one model until it fails, then rotate |
-| Round-robin | `modelmesh.round-robin.v1` | Distribute requests evenly |
-| Cost-first | `modelmesh.cost-first.v1` | Prefer cheapest model |
-| Latency-first | `modelmesh.latency-first.v1` | Prefer fastest model |
-| Random | `modelmesh.random.v1` | Random selection |
-| Priority | `modelmesh.priority.v1` | Explicit priority ordering |
-| Weighted | `modelmesh.weighted.v1` | Weighted random distribution |
-| Quota-aware | `modelmesh.quota-aware.v1` | Prefer models with remaining quota |
+| Stick-until-failure | `modelmesh.stick-until-failure.v1` | Use one model until it fails, then rotate (default) |
+| Round-robin | `modelmesh.round-robin.v1` | Cycle through models in sequence |
+| Cost-first | `modelmesh.cost-first.v1` | Always pick the model with lowest accumulated cost |
+| Latency-first | `modelmesh.latency-first.v1` | Always pick the model with lowest observed latency |
+| Priority | `modelmesh.priority-selection.v1` | Follow an ordered preference list with fallback |
+| Session-stickiness | `modelmesh.session-stickiness.v1` | Route same-session requests to the same model |
+| Rate-limit-aware | `modelmesh.rate-limit-aware.v1` | Track per-model quotas, switch before exhaustion |
+| Load-balanced | `modelmesh.load-balanced.v1` | Distribute requests using weighted round-robin |
+
+For custom strategies, see the [FAQ — CDK extension guide](FAQ.html#10-what-if-the-pre-built-connectors-dont-cover-my-use-case). For full strategy config options, see the [Connector Catalogue](../ConnectorCatalogue.html).
 
 ### Secret Stores
 

@@ -5,7 +5,7 @@ title: "Connector Interfaces"
 
 # Connector Interfaces
 
-**Interface overview for every ModelMesh Lite connector type.** Each section describes the connector's purpose and the interfaces it exposes. This is a conceptual overview, not a full specification. Full interface definitions with code are in [interfaces/](interfaces/Provider.html). Pre-shipped implementations are listed in [ConnectorCatalogue.md](ConnectorCatalogue.html).
+**Interface overview for every ModelMesh Lite connector type.** Each section describes the connector's purpose and the interfaces it exposes. This is a conceptual overview, not a full specification. Full interface definitions with code are in [interfaces/](interfaces/Provider.html). Pre-shipped implementations are listed in [ConnectorCatalogue.md](ConnectorCatalogue.html). For a tutorial on building custom connectors, see the [FAQ — CDK guide](guides/FAQ.html#10-what-if-the-pre-built-connectors-dont-cover-my-use-case).
 
 > **CDK:** Base classes with sensible defaults for each interface are available in the [Connector Development Kit](cdk/Overview.html). See [cdk/BaseClasses.md](cdk/BaseClasses.html) for implementations.
 
@@ -251,4 +251,8 @@ The `MeshClient` exposes audio through an OpenAI SDK-compatible namespace:
 | `client.audio.speech.create()` | `generation.audio.text-to-speech` | Generate speech from text. Routes to TTS providers (ElevenLabs, OpenAI, Google Cloud). |
 | `client.audio.transcriptions.create()` | `understanding.audio.speech-to-text` | Transcribe audio to text. Routes to STT providers (AssemblyAI, OpenAI Whisper, Groq). |
 
-Audio requests follow the same routing pipeline as text requests: capability resolution, pool selection, rotation policy, retry, and failover. Pools targeting `generation.audio` or `understanding.audio` collect all audio-capable models automatically.
+Audio requests follow the same routing pipeline as text requests: capability resolution, pool selection, [rotation policy](guides/FAQ.html#4-what-happens-when-a-provider-goes-down), retry, and failover. Pools targeting `generation.audio` or `understanding.audio` collect all audio-capable models automatically.
+
+---
+
+See also: [FAQ](guides/FAQ.html) · [Connector Catalogue](ConnectorCatalogue.html) · [CDK Base Classes](cdk/BaseClasses.html) · [System Configuration](SystemConfiguration.html)
