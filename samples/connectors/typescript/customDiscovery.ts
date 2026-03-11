@@ -237,9 +237,9 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
             errors.push(`Failed to load registry file: ${message}`);
             this.syncStatus.status = "error";
             return {
-                new_models: [],
-                deprecated_models: [],
-                updated_models: [],
+                newModels: [],
+                deprecatedModels: [],
+                updatedModels: [],
                 errors,
             };
         }
@@ -291,16 +291,16 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
         // Update sync status.
         const now = new Date();
         this.syncStatus = {
-            last_sync: now,
-            next_sync: new Date(now.getTime() + this.syncIntervalMs),
-            models_synced: modelsToSync.length,
+            lastSync: now,
+            nextSync: new Date(now.getTime() + this.syncIntervalMs),
+            modelsSynced: modelsToSync.length,
             status: errors.length > 0 ? "completed_with_errors" : "idle",
         };
 
         return {
-            new_models: newModels,
-            deprecated_models: [...new Set(deprecatedModels)], // deduplicate
-            updated_models: updatedModels,
+            newModels: newModels,
+            deprecatedModels: [...new Set(deprecatedModels)], // deduplicate
+            updatedModels: updatedModels,
             errors,
         };
     }
@@ -333,7 +333,7 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 
         if (!provider) {
             const result: ProbeResult = {
-                provider_id: providerId,
+                providerId: providerId,
                 success: false,
                 error: `Provider "${providerId}" not found in registry`,
             };
@@ -342,8 +342,8 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
         }
 
         const healthUrl = this.buildHealthUrl(provider);
-        const method = (provider.health_method ?? "GET").toUpperCase();
-        const expectedStatus = provider.health_expected_status ?? 200;
+        const method = (provider.healthMethod ?? "GET").toUpperCase();
+        const expectedStatus = provider.healthExpectedStatus ?? 200;
 
         const startTime = performance.now();
 
@@ -369,10 +369,10 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
             const success = response.status === expectedStatus;
 
             const result: ProbeResult = {
-                provider_id: providerId,
+                providerId: providerId,
                 success,
-                latency_ms: Math.round(latencyMs * 100) / 100,
-                status_code: response.status,
+                latencyMs: Math.round(latencyMs * 100) / 100,
+                statusCode: response.status,
                 error: success
                     ? undefined
                     : `Unexpected status ${response.status} (expected ${expectedStatus})`,
@@ -397,9 +397,9 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
             }
 
             const result: ProbeResult = {
-                provider_id: providerId,
+                providerId: providerId,
                 success: false,
-                latency_ms: Math.round(latencyMs * 100) / 100,
+                latencyMs: Math.round(latencyMs * 100) / 100,
                 error: errorDescription,
             };
 
@@ -493,8 +493,8 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
         current: YamlModelEntry,
     ): boolean {
         if (previous.status !== current.status) return true;
-        if (previous.context_window !== current.context_window) return true;
-        if (previous.max_output_tokens !== current.max_output_tokens) return true;
+        if (previous.contextWindow !== current.contextWindow) return true;
+        if (previous.maxOutputTokens !== current.maxOutputTokens) return true;
 
         // Compare capabilities arrays.
         if (previous.capabilities.length !== current.capabilities.length) return true;
@@ -506,8 +506,8 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
         // Compare pricing if present.
         if (previous.pricing && current.pricing) {
             if (
-                previous.pricing.input_per_1k_tokens !== current.pricing.input_per_1k_tokens ||
-                previous.pricing.output_per_1k_tokens !== current.pricing.output_per_1k_tokens
+                previous.pricing.inputPer1kTokens !== current.pricing.inputPer1kTokens ||
+                previous.pricing.outputPer1kTokens !== current.pricing.outputPer1kTokens
             ) {
                 return true;
             }
@@ -530,19 +530,19 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 
     /** Build the full health endpoint URL for a provider. */
     private buildHealthUrl(provider: YamlProviderEntry): string {
-        const base = provider.base_url.replace(/\/+$/, "");
-        const endpoint = provider.health_endpoint.startsWith("/")
-            ? provider.health_endpoint
-            : `/${provider.health_endpoint}`;
+        const base = provider.baseUrl.replace(/\/+$/, "");
+        const endpoint = provider.healthEndpoint.startsWith("/")
+            ? provider.healthEndpoint
+            : `/${provider.healthEndpoint}`;
         return `${base}${endpoint}`;
     }
 
     /** Record a probe result in the rolling history. */
     private recordProbeResult(result: ProbeResult): void {
-        let history = this.probeHistory.get(result.provider_id);
+        let history = this.probeHistory.get(result.providerId);
         if (!history) {
             history = [];
-            this.probeHistory.set(result.provider_id, history);
+            this.probeHistory.set(result.providerId, history);
         }
 
         // Add to the front (newest first).
@@ -570,9 +570,9 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 
         if (history.length === 0) {
             return {
-                provider_id: providerId,
+                providerId: providerId,
                 available: true, // assume available until proven otherwise
-                availability_score: 1.0,
+                availabilityScore: 1.0,
                 timestamp: now,
             };
         }
@@ -597,23 +597,23 @@ class YamlDiscoveryConnector implements DiscoveryConnector {
 
         // Compute average latency from successful probes.
         const successfulProbes = history.filter(
-            (r) => r.success && r.latency_ms !== undefined,
+            (r) => r.success && r.latencyMs !== undefined,
         );
         const avgLatency =
             successfulProbes.length > 0
-                ? successfulProbes.reduce((sum, r) => sum + (r.latency_ms ?? 0), 0) /
+                ? successfulProbes.reduce((sum, r) => sum + (r.latencyMs ?? 0), 0) /
                   successfulProbes.length
                 : undefined;
 
         return {
-            provider_id: providerId,
+            providerId: providerId,
             available,
-            latency_ms: avgLatency !== undefined
+            latencyMs: avgLatency !== undefined
                 ? Math.round(avgLatency * 100) / 100
-                : latest.latency_ms,
-            status_code: latest.status_code,
+                : latest.latencyMs,
+            statusCode: latest.statusCode,
             error: latest.error,
-            availability_score: Math.round(availabilityScore * 1000) / 1000,
+            availabilityScore: Math.round(availabilityScore * 1000) / 1000,
             timestamp: now,
         };
     }

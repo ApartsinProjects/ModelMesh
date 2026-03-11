@@ -47,24 +47,24 @@ enum RecoveryTrigger {
 
 /** Point-in-time snapshot of a model's operational state. */
 interface ModelSnapshot {
-    model_id: string;
-    provider_id: string;
+    modelId: string;
+    providerId: string;
     status: ModelStatus;
-    failure_count: number;
-    error_rate: number;
-    cooldown_remaining?: number;
-    quota_used: number;
-    tokens_used: number;
-    cost_accumulated: number;
-    latency_avg?: number;
-    last_request?: Date;
-    last_failure?: Date;
+    failureCount: number;
+    errorRate: number;
+    cooldownRemaining?: number;
+    quotaUsed: number;
+    tokensUsed: number;
+    costAccumulated: number;
+    latencyAvg?: number;
+    lastRequest?: Date;
+    lastFailure?: Date;
 }
 
 /** Result of the selection strategy choosing a model for a request. */
 interface SelectionResult {
-    model_id: string;
-    provider_id: string;
+    modelId: string;
+    providerId: string;
     score: number;
     reason: string;
 }
@@ -74,7 +74,7 @@ interface CompletionRequest {
     model: string;
     messages: Record<string, unknown>[];
     temperature?: number;
-    max_tokens?: number;
+    maxTokens?: number;
     tools?: Record<string, unknown>[];
     stream: boolean;
 }
@@ -196,15 +196,15 @@ class TimeOfDayRotationPolicy
      */
     shouldDeactivate(snapshot: ModelSnapshot): boolean {
         // Always deactivate on health issues.
-        if (snapshot.error_rate >= this.config.errorRateThreshold) {
+        if (snapshot.errorRate >= this.config.errorRateThreshold) {
             return true;
         }
-        if (snapshot.failure_count >= this.config.maxConsecutiveFailures) {
+        if (snapshot.failureCount >= this.config.maxConsecutiveFailures) {
             return true;
         }
 
         // Time-based deactivation.
-        const tier = this.getModelTier(snapshot.model_id);
+        const tier = this.getModelTier(snapshot.modelId);
         const now = this.currentTimeInTimezone();
 
         if (tier === ModelTier.PREMIUM && this.isInWindow(now, this.config.offPeakHours)) {
@@ -225,14 +225,14 @@ class TimeOfDayRotationPolicy
      * Provides a specific reason that will appear in observability events.
      */
     getReason(snapshot: ModelSnapshot): DeactivationReason | null {
-        if (snapshot.error_rate >= this.config.errorRateThreshold) {
+        if (snapshot.errorRate >= this.config.errorRateThreshold) {
             return DeactivationReason.ERROR_THRESHOLD;
         }
-        if (snapshot.failure_count >= this.config.maxConsecutiveFailures) {
+        if (snapshot.failureCount >= this.config.maxConsecutiveFailures) {
             return DeactivationReason.ERROR_THRESHOLD;
         }
 
-        const tier = this.getModelTier(snapshot.model_id);
+        const tier = this.getModelTier(snapshot.modelId);
         const now = this.currentTimeInTimezone();
 
         if (tier === ModelTier.PREMIUM && this.isInWindow(now, this.config.offPeakHours)) {
@@ -258,18 +258,18 @@ class TimeOfDayRotationPolicy
     shouldRecover(snapshot: ModelSnapshot): boolean {
         // If still cooling down from error-based deactivation, do not recover.
         if (
-            snapshot.cooldown_remaining !== undefined &&
-            snapshot.cooldown_remaining > 0
+            snapshot.cooldownRemaining !== undefined &&
+            snapshot.cooldownRemaining > 0
         ) {
             return false;
         }
 
         // If the model still has a high error rate, do not recover yet.
-        if (snapshot.error_rate >= this.config.errorRateThreshold) {
+        if (snapshot.errorRate >= this.config.errorRateThreshold) {
             return false;
         }
 
-        const tier = this.getModelTier(snapshot.model_id);
+        const tier = this.getModelTier(snapshot.modelId);
         const now = this.currentTimeInTimezone();
 
         // Premium models recover at the start of business hours.
@@ -288,7 +288,7 @@ class TimeOfDayRotationPolicy
         }
 
         // Models deactivated for errors can recover once cooldown expires.
-        if (snapshot.failure_count > 0 && (snapshot.cooldown_remaining ?? 0) <= 0) {
+        if (snapshot.failureCount > 0 && (snapshot.cooldownRemaining ?? 0) <= 0) {
             return true;
         }
 
@@ -302,15 +302,15 @@ class TimeOfDayRotationPolicy
      * so models come online right when they are needed.
      */
     getRecoverySchedule(snapshot: ModelSnapshot): Date | null {
-        const tier = this.getModelTier(snapshot.model_id);
+        const tier = this.getModelTier(snapshot.modelId);
         const now = this.currentTimeInTimezone();
 
         // If the model has a remaining cooldown, schedule recovery after it.
         if (
-            snapshot.cooldown_remaining !== undefined &&
-            snapshot.cooldown_remaining > 0
+            snapshot.cooldownRemaining !== undefined &&
+            snapshot.cooldownRemaining > 0
         ) {
-            return new Date(Date.now() + snapshot.cooldown_remaining * 1000);
+            return new Date(Date.now() + snapshot.cooldownRemaining * 1000);
         }
 
         // Premium models: schedule for the next business hours start.
@@ -356,15 +356,15 @@ class TimeOfDayRotationPolicy
             }
         }
 
-        const tier = this.getModelTier(bestCandidate.model_id);
+        const tier = this.getModelTier(bestCandidate.modelId);
         const now = this.currentTimeInTimezone();
         const windowName = this.isInWindow(now, this.config.businessHours)
             ? "business_hours"
             : "off_peak";
 
         return {
-            model_id: bestCandidate.model_id,
-            provider_id: bestCandidate.provider_id,
+            modelId: bestCandidate.modelId,
+            providerId: bestCandidate.providerId,
             score: bestScore,
             reason: `Selected ${tier} model for ${windowName} (score: ${bestScore.toFixed(3)})`,
         };
@@ -383,8 +383,8 @@ class TimeOfDayRotationPolicy
      * Standard models receive a neutral cost score at all times.
      */
     score(candidate: ModelSnapshot, request: CompletionRequest): number {
-        const tier = this.getModelTier(candidate.model_id);
-        const tierMapping = this.getTierMapping(candidate.model_id);
+        const tier = this.getModelTier(candidate.modelId);
+        const tierMapping = this.getTierMapping(candidate.modelId);
         const now = this.currentTimeInTimezone();
         const isBusinessHours = this.isInWindow(now, this.config.businessHours);
 
@@ -421,12 +421,12 @@ class TimeOfDayRotationPolicy
         // --- Latency score (0.0 to 1.0) ---
         // Map latency from [0ms, 10000ms] to [1.0, 0.0].
         const maxLatency = 10_000; // 10 seconds as the worst-case benchmark
-        const avgLatency = candidate.latency_avg ?? 500; // default 500ms
+        const avgLatency = candidate.latencyAvg ?? 500; // default 500ms
         const latencyScore = Math.max(0, 1.0 - avgLatency / maxLatency);
 
         // --- Error score (0.0 to 1.0) ---
         // Lower error rate is better.
-        const errorScore = 1.0 - Math.min(candidate.error_rate, 1.0);
+        const errorScore = 1.0 - Math.min(candidate.errorRate, 1.0);
 
         // --- Weighted combination ---
         const totalScore =

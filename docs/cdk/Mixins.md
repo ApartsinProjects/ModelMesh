@@ -1636,3 +1636,89 @@ class CachedHttpProvider {
     }
 }
 ```
+
+---
+
+## CircuitBreakerMixin
+
+Implements the circuit breaker pattern to prevent cascading failures when a provider becomes unhealthy. When a provider's error count exceeds the failure threshold, the circuit opens and requests fail fast without calling the provider. After a reset timeout, a single probe request is allowed; if it succeeds, the circuit closes.
+
+### States
+
+| State | Description |
+| --- | --- |
+| `CLOSED` | Normal operation. Requests pass through. |
+| `OPEN` | Provider is unhealthy. Requests fail fast with `CircuitOpenError`. |
+| `HALF_OPEN` | Probe mode. A limited number of requests pass through to test recovery. |
+
+### Methods
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `configure_circuit_breaker` | `(failure_threshold, reset_timeout, half_open_max, success_threshold)` | Set circuit breaker parameters. |
+| `check_circuit` | `()` | Verify the circuit allows a request. Raises `CircuitOpenError` if open. |
+| `record_success` | `()` | Record a successful request. Closes circuit in half-open state. |
+| `record_failure` | `()` | Record a failed request. Opens circuit when threshold is reached. |
+| `reset_circuit` | `()` | Manually reset the circuit to CLOSED. |
+| `circuit_breaker_stats` | `()` | Return current state, failure count, and config. |
+
+### Configuration
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `failure_threshold` | `int` | `5` | Consecutive failures to trip the circuit. |
+| `reset_timeout` | `float` | `60.0` | Seconds before OPEN transitions to HALF_OPEN. |
+| `half_open_max` | `int` | `1` | Max probe requests in HALF_OPEN state. |
+| `success_threshold` | `int` | `1` | Successes in HALF_OPEN needed to close. |
+
+---
+
+## TimeoutMixin
+
+Enforces per-request timeouts by wrapping async operations with `asyncio.wait_for`. Raises `RequestTimeoutError` when exceeded.
+
+### Methods
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `configure_timeout` | `(default, streaming, streaming_total, connect)` | Set timeout values in seconds. |
+| `with_timeout` | `(coro, timeout?, operation?)` | Execute a coroutine with a timeout. |
+| `with_stream_timeout` | `(aiter, first_chunk_timeout?, total_timeout?)` | Wrap a streaming async iterator with timeouts. |
+
+### Configuration
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `default` | `float` | `30.0` | Non-streaming request timeout. |
+| `streaming` | `float` | `60.0` | First-chunk timeout for streams. |
+| `streaming_total` | `float` | `300.0` | Total stream duration timeout. |
+| `connect` | `float` | `10.0` | Connection establishment timeout. |
+
+---
+
+## StreamingCheckpointMixin
+
+Tracks streaming response progress so that interrupted streams can be detected and potentially resumed. Buffers content and token counts per active stream.
+
+### Methods
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `configure_checkpoints` | `(max_buffer_tokens, checkpoint_interval, max_checkpoints)` | Set checkpoint parameters. |
+| `create_checkpoint` | `(request_id, model_id?)` | Create and register a new stream checkpoint. |
+| `get_checkpoint` | `(request_id)` | Retrieve a checkpoint by request ID. |
+| `remove_checkpoint` | `(request_id)` | Remove a completed checkpoint. |
+| `active_checkpoints` | `()` | Return all incomplete checkpoints. |
+| `checkpoint_stats` | `()` | Return summary statistics. |
+
+### StreamCheckpoint
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `request_id` | `str` | Unique request identifier. |
+| `model_id` | `str` | Model generating the stream. |
+| `tokens_received` | `int` | Total tokens received. |
+| `content_buffer` | `str` | Accumulated text. |
+| `is_complete` | `bool` | Whether the stream finished normally. |
+| `duration` | `float` | Elapsed time in seconds (property). |
+| `tokens_per_second` | `float` | Throughput metric (property). |

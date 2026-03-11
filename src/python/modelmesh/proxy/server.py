@@ -13,9 +13,11 @@ from __future__ import annotations
 
 import json
 import logging
+import signal
 import threading
 import time
 import uuid
+from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Optional
@@ -30,7 +32,87 @@ from modelmesh.interfaces.provider import (
 
 logger = logging.getLogger("modelmesh.proxy")
 
-__all__ = ["ProxyServer", "ServerStatus"]
+__all__ = ["ProxyServer", "ServerStatus", "RateLimitConfig"]
+
+_VERSION = "0.1.1"
+
+
+# ---------------------------------------------------------------------------
+# Rate limiting
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class RateLimitConfig:
+    """Token-bucket rate limiter configuration.
+
+    Attributes:
+        requests_per_minute: Maximum sustained request rate.
+        burst_size: Maximum burst size above sustained rate.
+        per_ip: If True, limits are applied per client IP.
+    """
+
+    requests_per_minute: int = 60
+    burst_size: int = 20
+    per_ip: bool = True
+
+
+class _TokenBucket:
+    """Simple token-bucket rate limiter."""
+
+    def __init__(self, rpm: int, burst: int) -> None:
+        self._rate = rpm / 60.0  # tokens per second
+        self._burst = burst
+        self._tokens = float(burst)
+        self._last = time.monotonic()
+        self._lock = threading.Lock()
+
+    def allow(self) -> bool:
+        """Return True if a request is allowed."""
+        with self._lock:
+            now = time.monotonic()
+            elapsed = now - self._last
+            self._last = now
+            self._tokens = min(
+                self._burst, self._tokens + elapsed * self._rate
+            )
+            if self._tokens >= 1.0:
+                self._tokens -= 1.0
+                return True
+            return False
+
+    def retry_after(self) -> float:
+        """Return seconds until next token is available."""
+        with self._lock:
+            if self._tokens >= 1.0:
+                return 0.0
+            return (1.0 - self._tokens) / self._rate
+
+
+class _RateLimiter:
+    """Per-key rate limiter using token buckets."""
+
+    def __init__(self, config: RateLimitConfig) -> None:
+        self._config = config
+        self._buckets: dict[str, _TokenBucket] = {}
+        self._lock = threading.Lock()
+
+    def allow(self, key: str = "global") -> bool:
+        bucket = self._get_bucket(key)
+        return bucket.allow()
+
+    def retry_after(self, key: str = "global") -> float:
+        bucket = self._get_bucket(key)
+        return bucket.retry_after()
+
+    def _get_bucket(self, key: str) -> _TokenBucket:
+        with self._lock:
+            if key not in self._buckets:
+                self._buckets[key] = _TokenBucket(
+                    self._config.requests_per_minute,
+                    self._config.burst_size,
+                )
+            return self._buckets[key]
 
 
 # ---------------------------------------------------------------------------
@@ -79,6 +161,10 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
 
     def _begin_request(self) -> None:
         state = self.server.proxy_state  # type: ignore[attr-defined]
+        # Generate or pass through request ID
+        self._request_id = (
+            self.headers.get("X-Request-Id") or uuid.uuid4().hex
+        )
         with state.lock:
             state.active_connections += 1
             state.total_requests += 1
@@ -87,6 +173,31 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
         state = self.server.proxy_state  # type: ignore[attr-defined]
         with state.lock:
             state.active_connections -= 1
+
+    def _check_rate_limit(self) -> bool:
+        """Return True if request is within rate limits."""
+        state = self.server.proxy_state  # type: ignore[attr-defined]
+        if state.rate_limiter is None:
+            return True
+        key = self.client_address[0] if state.rate_limit_config.per_ip else "global"
+        if not state.rate_limiter.allow(key):
+            retry = state.rate_limiter.retry_after(key)
+            self.send_response(429)
+            self.send_header("Retry-After", str(int(retry) + 1))
+            self.send_header("Content-Type", "application/json")
+            self._send_cors_headers()
+            payload = json.dumps({
+                "error": {
+                    "message": "Rate limit exceeded",
+                    "type": "rate_limit_error",
+                    "code": 429,
+                }
+            }).encode()
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+            return False
+        return True
 
     # -- CORS helpers --------------------------------------------------------
 
@@ -133,6 +244,7 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
         payload = json.dumps(body).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        self.send_header("X-Request-Id", getattr(self, "_request_id", ""))
         self._send_cors_headers()
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
@@ -146,6 +258,7 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
                     "message": message,
                     "type": "error",
                     "code": status,
+                    "request_id": getattr(self, "_request_id", ""),
                 }
             },
         )
@@ -179,13 +292,31 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         self._begin_request()
         try:
+            if not self._check_rate_limit():
+                return
+
+            # Health/ready/metrics don't require auth
+            if self.path == "/health":
+                self._handle_health()
+                return
+            if self.path == "/ready":
+                self._handle_ready()
+                return
+            if self.path == "/metrics":
+                self._handle_metrics()
+                return
+            if self.path == "/":
+                self._handle_info()
+                return
+
             if not self._check_auth():
                 return
 
             if self.path == "/v1/models":
                 self._handle_models()
-            elif self.path == "/health":
-                self._handle_health()
+            elif self.path.startswith("/v1/models/"):
+                model_id = self.path[len("/v1/models/"):]
+                self._handle_model_detail(model_id)
             else:
                 self._send_json_error(404, f"Not found: {self.path}")
         except Exception as exc:
@@ -197,7 +328,15 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         self._begin_request()
         try:
+            if not self._check_rate_limit():
+                return
             if not self._check_auth():
+                return
+            # Check body size limit (10 MB default)
+            length = int(self.headers.get("Content-Length", 0))
+            state = self.server.proxy_state  # type: ignore[attr-defined]
+            if length > state.max_body_size:
+                self._send_json_error(413, "Request body too large")
                 return
 
             if self.path == "/v1/chat/completions":
@@ -220,8 +359,76 @@ class _ProxyRequestHandler(BaseHTTPRequestHandler):
 
     def _handle_health(self) -> None:
         state = self.server.proxy_state  # type: ignore[attr-defined]
-        status = state.get_status()
-        self._send_json_response(200, asdict(status))
+        uptime = time.time() - state.start_time if state.start_time else 0
+        self._send_json_response(200, {
+            "status": "healthy",
+            "uptime": round(uptime, 2),
+            "version": _VERSION,
+        })
+
+    def _handle_ready(self) -> None:
+        state = self.server.proxy_state  # type: ignore[attr-defined]
+        mesh = state.mesh
+        pools = mesh.pools
+        providers = mesh.providers
+        models = mesh.list_models()
+        self._send_json_response(200, {
+            "ready": True,
+            "pools": len(pools),
+            "providers": len(providers),
+            "models": len(models),
+        })
+
+    def _handle_metrics(self) -> None:
+        state = self.server.proxy_state  # type: ignore[attr-defined]
+        obs = state.mesh.observability
+        # Check if it's a PrometheusConnector
+        if hasattr(obs, "render_metrics"):
+            text = obs.render_metrics()
+            payload = text.encode("utf-8")
+            self.send_response(200)
+            self.send_header(
+                "Content-Type",
+                "text/plain; version=0.0.4; charset=utf-8",
+            )
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+        else:
+            self._send_json_response(200, {
+                "message": "Prometheus connector not configured. "
+                "Set observability.connector to "
+                "modelmesh.prometheus.v1 for metrics."
+            })
+
+    def _handle_info(self) -> None:
+        self._send_json_response(200, {
+            "name": "ModelMesh Proxy",
+            "version": _VERSION,
+            "endpoints": [
+                "GET /health",
+                "GET /ready",
+                "GET /metrics",
+                "GET /v1/models",
+                "GET /v1/models/{id}",
+                "POST /v1/chat/completions",
+                "POST /v1/embeddings",
+                "POST /v1/audio/speech",
+                "POST /v1/audio/transcriptions",
+            ],
+        })
+
+    def _handle_model_detail(self, model_id: str) -> None:
+        """GET /v1/models/{id} -- retrieve a single model."""
+        state = self.server.proxy_state  # type: ignore[attr-defined]
+        mesh = state.mesh
+        models = mesh.list_models()
+        for m in models:
+            if m["id"] == model_id:
+                m["created"] = int(state.start_time) if state.start_time else 0
+                self._send_json_response(200, m)
+                return
+        self._send_json_error(404, f"Model '{model_id}' not found")
 
     def _handle_models(self) -> None:
         """GET /v1/models -- list virtual models (pool IDs)."""
@@ -470,6 +677,9 @@ class _ProxyState:
     active_connections: int = 0
     total_requests: int = 0
     lock: threading.Lock = field(default_factory=threading.Lock)
+    rate_limiter: Optional[_RateLimiter] = None
+    rate_limit_config: Optional[RateLimitConfig] = None
+    max_body_size: int = 10 * 1024 * 1024  # 10 MB
 
     def get_status(self) -> ServerStatus:
         uptime = (
@@ -540,6 +750,8 @@ class ProxyServer:
         host: str = "0.0.0.0",
         port: int = 8080,
         token: Optional[str] = None,
+        rate_limit: Optional[RateLimitConfig] = None,
+        max_body_size: int = 10 * 1024 * 1024,
     ) -> None:
         # Resolve config
         if isinstance(config, str):
@@ -562,14 +774,19 @@ class ProxyServer:
         self._port = port
         self._token = token
 
+        rl = _RateLimiter(rate_limit) if rate_limit else None
         self._state = _ProxyState(
             mesh=self._mesh,
             auth_token=token,
             host=host,
             port=port,
+            rate_limiter=rl,
+            rate_limit_config=rate_limit,
+            max_body_size=max_body_size,
         )
         self._httpd: Optional[_MeshHTTPServer] = None
         self._thread: Optional[threading.Thread] = None
+        self._shutting_down = False
 
     @property
     def mesh(self) -> ModelMesh:
@@ -594,6 +811,14 @@ class ProxyServer:
             "ModelMesh proxy listening on %s:%d", self._host, self._port
         )
 
+        # Register signal handlers for graceful shutdown
+        def _graceful_shutdown(signum, frame):
+            logger.info("Received signal %d, initiating graceful shutdown", signum)
+            self._shutting_down = True
+            threading.Thread(target=self.stop, daemon=True).start()
+
+        signal.signal(signal.SIGTERM, _graceful_shutdown)
+
         if block:
             try:
                 self._httpd.serve_forever()
@@ -608,8 +833,26 @@ class ProxyServer:
             )
             self._thread.start()
 
-    def stop(self) -> None:
-        """Stop the HTTP server and shut down the mesh."""
+    def stop(self, timeout: float = 30.0) -> None:
+        """Stop the HTTP server and shut down the mesh.
+
+        Waits up to *timeout* seconds for in-flight requests to
+        complete before forcing shutdown.
+        """
+        self._shutting_down = True
+        logger.info("Stopping proxy server (waiting for in-flight requests)...")
+
+        # Wait for in-flight requests
+        deadline = time.time() + timeout
+        while self._state.active_connections > 0 and time.time() < deadline:
+            time.sleep(0.1)
+
+        if self._state.active_connections > 0:
+            logger.warning(
+                "Forcing shutdown with %d in-flight requests",
+                self._state.active_connections,
+            )
+
         if self._httpd is not None:
             self._httpd.shutdown()
             self._httpd.server_close()

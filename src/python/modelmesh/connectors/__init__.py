@@ -59,6 +59,16 @@ from modelmesh.connectors.providers.localai_provider import LocalAIProvider
 from modelmesh.connectors.rotation.stick_until_failure import (
     StickUntilFailurePolicy,
 )
+from modelmesh.connectors.rotation.cost_first import CostFirstPolicy
+from modelmesh.connectors.rotation.latency_first import LatencyFirstPolicy
+from modelmesh.connectors.rotation.round_robin import RoundRobinPolicy
+from modelmesh.connectors.rotation.priority_selection import PrioritySelectionPolicy
+from modelmesh.connectors.rotation.session_stickiness import SessionStickinessPolicy
+from modelmesh.connectors.rotation.rate_limit_aware import RateLimitAwarePolicy
+from modelmesh.connectors.rotation.load_balanced import LoadBalancedPolicy
+from modelmesh.connectors.observability.prometheus_connector import (
+    PrometheusConnector,
+)
 from modelmesh.connectors.secret_stores.dotenv_store import DotenvSecretStore
 from modelmesh.connectors.secret_stores.encrypted_file_store import (
     EncryptedFileSecretStore,
@@ -67,6 +77,7 @@ from modelmesh.connectors.secret_stores.env_store import EnvSecretStore
 from modelmesh.connectors.secret_stores.json_store import JsonSecretStore
 from modelmesh.connectors.secret_stores.keyring_store import KeyringSecretStore
 from modelmesh.connectors.secret_stores.memory_store import MemorySecretStore
+from modelmesh.connectors.discovery.auto_discovery import AutoDiscovery
 from modelmesh.connectors.storage.local_file import LocalFileStorage
 from modelmesh.connectors.storage.memory_storage import MemoryStorage
 from modelmesh.connectors.storage.sqlite_storage import SqliteStorage
@@ -112,10 +123,21 @@ CONNECTOR_REGISTRY: dict[str, type] = {
     CallbackConnector.CONNECTOR_ID: CallbackConnector,
     # Rotation
     StickUntilFailurePolicy.CONNECTOR_ID: StickUntilFailurePolicy,
+    CostFirstPolicy.CONNECTOR_ID: CostFirstPolicy,
+    LatencyFirstPolicy.CONNECTOR_ID: LatencyFirstPolicy,
+    RoundRobinPolicy.CONNECTOR_ID: RoundRobinPolicy,
+    PrioritySelectionPolicy.CONNECTOR_ID: PrioritySelectionPolicy,
+    SessionStickinessPolicy.CONNECTOR_ID: SessionStickinessPolicy,
+    RateLimitAwarePolicy.CONNECTOR_ID: RateLimitAwarePolicy,
+    LoadBalancedPolicy.CONNECTOR_ID: LoadBalancedPolicy,
+    # Observability (advanced)
+    PrometheusConnector.CONNECTOR_ID: PrometheusConnector,
     # Storage
     LocalFileStorage.CONNECTOR_ID: LocalFileStorage,
     SqliteStorage.CONNECTOR_ID: SqliteStorage,
     MemoryStorage.CONNECTOR_ID: MemoryStorage,
+    # Discovery
+    AutoDiscovery.CONNECTOR_ID: AutoDiscovery,
 }
 
 __all__ = [
@@ -155,6 +177,15 @@ __all__ = [
     "WebhookConnector",
     "CallbackConnector",
     "StickUntilFailurePolicy",
+    "CostFirstPolicy",
+    "LatencyFirstPolicy",
+    "RoundRobinPolicy",
+    "PrioritySelectionPolicy",
+    "SessionStickinessPolicy",
+    "RateLimitAwarePolicy",
+    "LoadBalancedPolicy",
+    "PrometheusConnector",
+    "AutoDiscovery",
     "LocalFileStorage",
     "SqliteStorage",
     "MemoryStorage",

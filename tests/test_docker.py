@@ -555,7 +555,7 @@ class TestProxyLiveHTTP(unittest.TestCase):
     def test_health_endpoint(self):
         status, data = self._get("/health")
         self.assertEqual(status, 200)
-        self.assertTrue(data["running"])
+        self.assertEqual(data["status"], "healthy")
 
     def test_models_endpoint(self):
         status, data = self._get("/v1/models")

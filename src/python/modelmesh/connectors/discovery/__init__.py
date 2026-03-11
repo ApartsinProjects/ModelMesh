@@ -1,9 +1,20 @@
 """Discovery connectors for ModelMesh Lite.
 
-This package is reserved for future discovery connector implementations
-(e.g., registry-sync, health-monitor). No pre-shipped connectors are
-included yet.
+Provides auto-discovery and model registry connectors for automatic
+provider and model enumeration.
 """
 from __future__ import annotations
 
-__all__: list[str] = []
+from modelmesh.connectors.discovery.auto_discovery import (
+    AutoDiscovery,
+    DiscoveredModel,
+    DiscoveryConfig,
+    ModelRegistry,
+)
+
+__all__ = [
+    "AutoDiscovery",
+    "DiscoveredModel",
+    "DiscoveryConfig",
+    "ModelRegistry",
+]
