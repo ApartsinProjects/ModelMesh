@@ -1,0 +1,88 @@
+# ModelMesh proxy configuration — multi-provider pool with auto-failover
+#
+# Copy this file:  cp modelmesh.example.yaml modelmesh.yaml
+# Then fill in your API keys in .env (or set them as environment variables).
+#
+# The proxy exposes a standard OpenAI REST API on the configured port.
+# Internally, ModelMesh routes to the best available provider in the pool,
+# automatically failing over when a provider is down or rate-limited.
+
+# ── Secret Store ────────────────────────────────────────────────────────
+# Resolves ${secrets:VAR_NAME} references from environment variables.
+secrets:
+  store: modelmesh.env.v1
+
+# ── Providers ───────────────────────────────────────────────────────────
+# Enable only the providers you have API keys for.
+# At least one provider is required.
+providers:
+  openai.llm.v1:
+    api_key: ${secrets:OPENAI_API_KEY}
+    # budget:
+    #   daily_limit: 10.00    # optional: cap daily spend
+
+  # Uncomment if you have an Anthropic key:
+  # anthropic.claude.v1:
+  #   api_key: ${secrets:ANTHROPIC_API_KEY}
+  #   budget:
+  #     daily_limit: 10.00
+
+  # Uncomment if you have a Groq key:
+  # groq.api.v1:
+  #   api_key: ${secrets:GROQ_API_KEY}
+
+# ── Models ──────────────────────────────────────────────────────────────
+# Register models with their capabilities and constraints.
+models:
+  gpt-4o-mini:
+    provider: openai.llm.v1
+    capabilities:
+      - generation.text-generation.chat-completion
+    delivery:
+      synchronous: true
+      streaming: true
+    features:
+      tool_calling: true
+      structured_output: true
+      json_mode: true
+      system_prompt: true
+    constraints:
+      context_window: 128000
+      max_output_tokens: 16384
+
+  # claude-3-5-haiku:
+  #   provider: anthropic.claude.v1
+  #   capabilities:
+  #     - generation.text-generation.chat-completion
+  #   delivery:
+  #     synchronous: true
+  #     streaming: true
+  #   features:
+  #     tool_calling: true
+  #     system_prompt: true
+  #   constraints:
+  #     context_window: 200000
+  #     max_output_tokens: 8192
+
+  # llama-3.3-70b:
+  #   provider: groq.api.v1
+  #   capabilities:
+  #     - generation.text-generation.chat-completion
+  #   delivery:
+  #     synchronous: true
+  #     streaming: true
+  #   features:
+  #     tool_calling: true
+  #     system_prompt: true
+  #   constraints:
+  #     context_window: 131072
+  #     max_output_tokens: 32768
+
+# ── Pools ───────────────────────────────────────────────────────────────
+# Pools group models by capability. The rotation strategy decides which
+# model to use and when to rotate on failure.
+pools:
+  text-generation:
+    strategy: modelmesh.stick-until-failure.v1
+    capability: generation.text-generation
+    # on_budget_exceeded: rotate   # "rotate" | "error" (default: "error")

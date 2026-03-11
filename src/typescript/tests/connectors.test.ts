@@ -1275,13 +1275,12 @@ describe('Docker Infrastructure', () => {
       expect(content).toMatch(/^FROM python:/m);
     });
 
-    test('copies source and pyproject', () => {
+    test('copies source', () => {
       expect(content).toContain('src/python');
-      expect(content).toContain('pyproject.toml');
     });
 
-    test('installs pyyaml', () => {
-      expect(content.toLowerCase()).toContain('pyyaml');
+    test('installs with yaml extra', () => {
+      expect(content.toLowerCase()).toContain('yaml');
     });
 
     test('exposes port 8080', () => {
@@ -1381,7 +1380,11 @@ describe('Docker Infrastructure', () => {
     test('keys are empty (template)', () => {
       const dataLines = content.split('\n')
         .filter(l => l.includes('=') && !l.trim().startsWith('#'))
-        .map(l => l.split('=')[1]?.trim());
+        .map(l => {
+          const value = l.split('=')[1] ?? '';
+          // Strip inline comments (e.g., "  # set if you have an OpenAI key")
+          return value.split('#')[0].trim();
+        });
       dataLines.forEach(v => {
         expect(v).toBe('');
       });

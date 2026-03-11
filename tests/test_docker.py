@@ -51,10 +51,10 @@ class TestDockerfile(unittest.TestCase):
         source_copied = any("src/python" in l for l in copy_lines)
         self.assertTrue(source_copied, "Dockerfile should copy src/python/")
 
-    def test_copies_pyproject(self):
+    def test_copies_python_source(self):
         copy_lines = [l for l in self.lines if l.startswith("COPY")]
-        pyproject_copied = any("pyproject.toml" in l for l in copy_lines)
-        self.assertTrue(pyproject_copied, "Dockerfile should copy pyproject.toml")
+        src_copied = any("src/python" in l for l in copy_lines)
+        self.assertTrue(src_copied, "Dockerfile should copy src/python/ (which contains pyproject.toml)")
 
     def test_pip_install(self):
         run_lines = [l for l in self.lines if l.startswith("RUN")]
@@ -64,8 +64,8 @@ class TestDockerfile(unittest.TestCase):
     def test_pyyaml_installed(self):
         """PyYAML must be installed for YAML config loading."""
         run_lines = [l for l in self.lines if l.startswith("RUN")]
-        yaml_found = any("pyyaml" in l.lower() for l in run_lines)
-        self.assertTrue(yaml_found, "Dockerfile should install pyyaml")
+        yaml_found = any("yaml" in l.lower() for l in run_lines)
+        self.assertTrue(yaml_found, "Dockerfile should install with yaml extra")
 
     def test_exposes_port(self):
         expose_lines = [l for l in self.lines if l.startswith("EXPOSE")]
@@ -78,11 +78,27 @@ class TestDockerfile(unittest.TestCase):
         self.assertIn("modelmesh.proxy", entry_lines[0], "ENTRYPOINT should run modelmesh.proxy")
 
     def test_cmd_defaults(self):
-        cmd_lines = [l for l in self.lines if l.startswith("CMD")]
+        # Find CMD lines that are NOT part of HEALTHCHECK
+        cmd_lines = []
+        in_healthcheck = False
+        for l in self.content.splitlines():
+            stripped = l.strip()
+            if stripped.startswith("HEALTHCHECK"):
+                in_healthcheck = True
+            elif stripped.startswith("CMD") and not in_healthcheck:
+                cmd_lines.append(stripped)
+            elif stripped.startswith(("FROM", "RUN", "COPY", "EXPOSE", "ENTRYPOINT", "CMD", "ENV", "WORKDIR")):
+                in_healthcheck = False
+                if stripped.startswith("CMD"):
+                    cmd_lines.append(stripped)
         self.assertGreaterEqual(len(cmd_lines), 1, "Dockerfile should have CMD defaults")
-        cmd_text = cmd_lines[0]
-        self.assertIn("0.0.0.0", cmd_text, "CMD should default to 0.0.0.0")
+        cmd_text = cmd_lines[-1]  # Last CMD is the real one
+        self.assertIn("0.0.0.0", cmd_text, "CMD should default to host 0.0.0.0")
         self.assertIn("8080", cmd_text, "CMD should default to port 8080")
+
+    def test_healthcheck(self):
+        healthcheck_lines = [l for l in self.lines if "HEALTHCHECK" in l]
+        self.assertGreaterEqual(len(healthcheck_lines), 1, "Dockerfile should have HEALTHCHECK")
 
 
 # ---------------------------------------------------------------------------
@@ -224,13 +240,15 @@ class TestEnvExample(unittest.TestCase):
         self.assertIn("GROQ_API_KEY", self.content)
 
     def test_no_real_keys(self):
-        """Template should not contain actual API keys."""
+        """Template should not contain actual API keys — values should be empty or comments."""
         for line in self.lines:
             if "=" in line and not line.strip().startswith("#"):
                 key, _, value = line.partition("=")
+                # Strip inline comments (e.g., "  # set if you have an OpenAI key")
+                value_clean = value.split("#")[0].strip()
                 self.assertEqual(
-                    value.strip(), "",
-                    f"Template key {key.strip()} should be empty, got: {value.strip()}",
+                    value_clean, "",
+                    f"Template key {key.strip()} should be empty, got: {value_clean}",
                 )
 
 

@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C879%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/tests.yml"><img src="https://github.com/ApartsinProjects/ModelMesh/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
   <a href="docs/guides/FAQ.md"><img src="https://img.shields.io/badge/FAQ-21%20questions-orange" alt="FAQ"></a>
 </p>
@@ -212,6 +212,30 @@ Ten reasons to add ModelMesh to your next project.
 | **[Custom Connectors](samples/connectors/)** | Full custom connector examples for all 6 types |
 | **[Proxy Test](samples/proxy-test/)** | Vanilla JS browser test page for the OpenAI proxy |
 
+## Running Samples
+
+**Python:**
+
+```bash
+# Install the package first (editable mode for development)
+pip install -e "./src/python[yaml]"
+
+# Run any sample
+python samples/quickstart/python/00_hello.py
+```
+
+**TypeScript:**
+
+```bash
+# Install workspace dependencies (from repo root)
+npm install
+
+# Run any sample with tsx
+npx tsx samples/quickstart/typescript/00_hello.ts
+```
+
+Most quickstart and CDK samples use built-in mock providers and run **without API keys**. System integration samples require real provider API keys.
+
 ## Development
 
 ```bash
@@ -219,16 +243,19 @@ Ten reasons to add ModelMesh to your next project.
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
 
-# Run Python tests (1,166 tests)
-pip install pytest
-cd src/python && python -m pytest ../../tests/ -v
+# Install all dependencies
+pip install -e "./src/python[yaml,dev]"
+cd src/typescript && npm install && cd ../..
 
-# Run TypeScript tests (713 tests)
-cd src/typescript && npm install && npm test
-
-# Or use the automation script
+# Run the full test suite (1,879 tests)
 ./scripts/test-all.sh
+
+# Or use make
+make install
+make test
 ```
+
+See **[CONTRIBUTING.md](CONTRIBUTING.md)** for full setup guide and contribution guidelines.
 
 ## Docker
 
@@ -242,7 +269,8 @@ docker run -p 8080:8080 \
   ghcr.io/apartsinprojects/modelmesh:latest
 
 # Or build from source with Docker Compose
-cp .env.example .env    # then add your API keys
+cp .env.example .env                      # add your API keys
+cp modelmesh.example.yaml modelmesh.yaml   # customize config (optional)
 docker compose up --build
 
 # Test the running proxy
@@ -265,6 +293,7 @@ See the **[Proxy Guide](docs/guides/ProxyGuide.md)** for full configuration, CLI
 | `scripts/install-python.sh` | Install Python package (dev or prod) |
 | `scripts/install-typescript.sh` | Install TypeScript package |
 | `scripts/test-all.sh` | Run full test suite (Python + TypeScript) |
+| `scripts/bump-version.sh` | Bump version in both Python and TypeScript |
 
 ## License
 

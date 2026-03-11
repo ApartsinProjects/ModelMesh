@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "name": "modelmesh-monorepo",
+  "description": "ModelMesh monorepo — workspace root",
+  "workspaces": [
+    "src/typescript",
+    "samples"
+  ],
+  "scripts": {
+    "build": "cd src/typescript && npm run build",
+    "test": "cd src/typescript && npm test",
+    "test:all": "./scripts/test-all.sh",
+    "lint": "cd src/typescript && npm run lint"
+  }
+}

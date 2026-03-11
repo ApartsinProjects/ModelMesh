@@ -5,5 +5,12 @@ services:
       - "8080:8080"
     env_file: .env
     volumes:
+      # Optional: mount a custom YAML config (copy modelmesh.example.yaml to modelmesh.yaml first)
       - ./modelmesh.yaml:/app/modelmesh.yaml:ro
     command: ["--config", "/app/modelmesh.yaml", "--host", "0.0.0.0", "--port", "8080"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/v1/models')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped

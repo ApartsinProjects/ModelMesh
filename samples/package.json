@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "name": "modelmesh-samples",
+  "description": "ModelMesh sample code — quickstart, system, CDK, connectors",
+  "dependencies": {
+    "@nistrapa/modelmesh-core": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.0.0"
+  },
+  "scripts": {
+    "quickstart": "tsx quickstart/typescript/00_hello.ts",
+    "run": "tsx"
+  }
+}

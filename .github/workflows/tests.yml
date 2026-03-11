@@ -6,6 +6,28 @@ on:
     branches: [master]
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Python lint (ruff)
+        run: pip install ruff && cd src/python && ruff check .
+      - name: TypeScript lint (tsc --noEmit)
+        run: cd src/typescript && npm ci && npm run lint
+      - name: Version consistency check
+        run: |
+          PY_VER=$(grep '^version' src/python/pyproject.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          TS_VER=$(node -p "require('./src/typescript/package.json').version")
+          echo "Python: $PY_VER, TypeScript: $TS_VER"
+          [ "$PY_VER" = "$TS_VER" ] || { echo "ERROR: Version mismatch!"; exit 1; }
+
   python:
     name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest

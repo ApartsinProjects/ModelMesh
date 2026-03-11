@@ -7,36 +7,43 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./browser": {
       "types": "./dist/cdk/browser-provider.d.ts",
+      "import": "./dist/cdk/browser-provider.js",
       "require": "./dist/cdk/browser-provider.js",
       "default": "./dist/cdk/browser-provider.js"
     },
     "./testing": {
       "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js",
       "require": "./dist/testing.js",
       "default": "./dist/testing.js"
     },
     "./capabilities": {
       "types": "./dist/capabilities.d.ts",
+      "import": "./dist/capabilities.js",
       "require": "./dist/capabilities.js",
       "default": "./dist/capabilities.js"
     },
     "./middleware": {
       "types": "./dist/middleware.d.ts",
+      "import": "./dist/middleware.js",
       "require": "./dist/middleware.js",
       "default": "./dist/middleware.js"
     },
     "./exceptions": {
       "types": "./dist/exceptions.d.ts",
+      "import": "./dist/exceptions.js",
       "require": "./dist/exceptions.js",
       "default": "./dist/exceptions.js"
     },
     "./usage": {
       "types": "./dist/usage.d.ts",
+      "import": "./dist/usage.js",
       "require": "./dist/usage.js",
       "default": "./dist/usage.js"
     }

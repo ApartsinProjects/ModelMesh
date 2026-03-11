@@ -25,12 +25,12 @@ done
 echo "Installing ModelMesh Python package ($MODE mode)..."
 
 if [ "$MODE" = "dev" ]; then
-  pip install -e ".[yaml,dev]"
+  pip install -e "./src/python[yaml,dev]"
   echo ""
   echo "Installed in editable mode with yaml + dev extras."
   echo "Run tests:  cd src/python && python -m pytest ../../tests/ -v"
 else
-  pip install ".[yaml]"
+  pip install "./src/python[yaml]"
   echo ""
   echo "Installed modelmesh-lite with YAML support."
 fi

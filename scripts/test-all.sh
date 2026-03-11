@@ -49,6 +49,7 @@ if [ -n "$RUN_TS" ]; then
   echo "  TypeScript tests"
   echo "═══════════════════════════════════════════"
   cd src/typescript
+  npm install --prefer-offline --no-audit 2>/dev/null || npm install
   if npm test; then
     echo "TypeScript: ALL PASSED"
   else
