@@ -200,6 +200,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 
 | Document | Description |
 |---|---|
+| **[FAQ](guides/FAQ.html)** | Ten questions developers ask before adopting, each with a working code tutorial |
 | **[Developer Quick Start](guides/QuickStart.html)** | Get productive in 5 minutes: all features walkthrough with cheat sheet |
 | **[Error Handling](guides/ErrorHandling.html)** | Exception hierarchy, catch patterns, retry guidance |
 | **[Middleware](guides/Middleware.html)** | Write custom middleware: logging, transforms, caching, error fallbacks |
