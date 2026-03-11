@@ -25,6 +25,8 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
+**How does this work?** Setting `OPENAI_API_KEY` triggers auto-discovery: ModelMesh finds the OpenAI provider, registers its models, and groups them into **capability pools** by what each model can do. `create("chat-completion")` returns a client wired to the pool containing all chat-capable models. The shortcut `"chat-completion"` resolves to the full dot-notation path `generation.text-generation.chat-completion` automatically (see [Q5](#5-what-does-request-capabilities-not-model-names-mean)).
+
 When you need more control, add a YAML file or pass options programmatically. All three layers compose: env vars for secrets, YAML for topology, code for runtime overrides.
 
 ```python
@@ -109,6 +111,8 @@ for i in range(100):
 
 Your code makes the same call every time. The library handles detection, pooling, and rotation internally.
 
+**How are pools formed?** Each provider registers its models with capability tags (e.g. `generation.text-generation.chat-completion`). ModelMesh groups all models sharing a capability into a single pool. When you call `create("chat-completion")`, you get a client backed by every chat-capable model across all discovered providers. Adding a new API key adds that provider's models to the existing pools automatically.
+
 See the [Free-Tier Aggregation](QuickStart.md) guide.
 
 ---
@@ -174,6 +178,8 @@ matches = modelmesh.capabilities.search("text")
 # Use the alias directly when creating a client
 client = modelmesh.create("chat-completion")
 ```
+
+**Shortcuts vs dot-notation:** Every capability has a full dot-notation path reflecting its position in the hierarchy tree (e.g. `generation.text-generation.chat-completion`). Shortcuts like `"chat-completion"` are leaf-node aliases that resolve automatically. Both forms work everywhere: `create("chat-completion")` and `create("generation.text-generation.chat-completion")` are equivalent. Providers tag their models with full paths; you use whichever form is convenient.
 
 When a new model launches or an old one is deprecated, update your config. Your application code stays the same.
 
@@ -390,6 +396,68 @@ policy = ThresholdRotationPolicy(ThresholdRotationConfig(
     cooldown_seconds=120,
 ))
 ```
+
+**Custom provider for a non-OpenAI API:**
+
+When your API doesn't follow the OpenAI format, inherit from `BaseProvider` and override four hook methods. BaseProvider handles HTTP transport, retries, and error classification; you only translate the request and response formats.
+
+```python
+from modelmesh.cdk import BaseProvider, BaseProviderConfig
+from modelmesh.interfaces.provider import (
+    ModelInfo, CompletionRequest, CompletionResponse,
+    CompletionChoice, ChatMessage, TokenUsage,
+)
+
+class CorpLLMProvider(BaseProvider):
+    """Provider for a custom internal API."""
+
+    def _get_completion_endpoint(self) -> str:
+        return f"{self._config.base_url.rstrip('/')}/api/generate"
+
+    def _build_headers(self) -> dict[str, str]:
+        return {
+            "Content-Type": "application/json",
+            "X-Corp-Token": self._config.api_key,
+        }
+
+    def _build_request_payload(self, request: CompletionRequest) -> dict:
+        return {
+            "prompt": request.messages[-1]["content"],
+            "model_name": request.model,
+            "params": {"temperature": request.temperature or 0.7},
+        }
+
+    def _parse_response(self, data: dict) -> CompletionResponse:
+        return CompletionResponse(
+            id=data.get("request_id", ""),
+            model=data.get("model", ""),
+            choices=[CompletionChoice(
+                index=0,
+                message=ChatMessage(role="assistant", content=data["output"]),
+                finish_reason="stop",
+            )],
+            usage=TokenUsage(
+                prompt_tokens=data.get("tokens_in", 0),
+                completion_tokens=data.get("tokens_out", 0),
+                total_tokens=data.get("tokens_in", 0) + data.get("tokens_out", 0),
+            ),
+        )
+
+provider = CorpLLMProvider(BaseProviderConfig(
+    base_url="https://llm.corp.internal",
+    api_key="corp-token-123",
+    models=[
+        ModelInfo(
+            id="corp.internal-llm",
+            name="Internal LLM",
+            capabilities=["generation.text-generation.chat-completion"],
+            context_window=32_000,
+        ),
+    ],
+))
+```
+
+Override only what differs: `_get_completion_endpoint()` for the URL path, `_build_headers()` for authentication, `_build_request_payload()` to translate the request format, and `_parse_response()` to translate the response back. For streaming, also override `_parse_sse_chunk()`.
 
 Six connector types are extensible this way: providers, rotation policies, secret stores, storage backends, observability sinks, and discovery connectors.
 
