@@ -19,7 +19,7 @@ title: ModelMesh Lite
   <a href="https://github.com/ApartsinProjects/ModelMesh/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C879%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
-  <a href="guides/FAQ.html"><img src="https://img.shields.io/badge/FAQ-10%20questions-orange" alt="FAQ"></a>
+  <a href="guides/FAQ.html"><img src="https://img.shields.io/badge/FAQ-21%20questions-orange" alt="FAQ"></a>
 </p>
 
 ---

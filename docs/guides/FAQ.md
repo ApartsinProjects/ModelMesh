@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-Ten questions developers ask before adopting ModelMesh, each answered with a short explanation and working code. For architecture details, see [System Concept](../SystemConcept.md). For the YAML reference, see [System Configuration](../SystemConfiguration.md).
+Twenty-one questions developers ask before and after adopting ModelMesh, each answered with a short explanation and working code. For architecture details, see [System Concept](../SystemConcept.md). For the YAML reference, see [System Configuration](../SystemConfiguration.md).
 
 ---
 
@@ -952,6 +952,567 @@ pools:
 ```
 
 See the [Connector Catalogue](../ConnectorCatalogue.md) for all pre-shipped connectors and [Connector Interfaces](../ConnectorInterfaces.md) for interface specifications.
+
+---
+
+## 11. How do I intercept requests and responses with middleware?
+
+Use the `Middleware` base class. Override `before_request` to modify or log outgoing requests, `after_response` to enrich or cache responses, and `on_error` to provide fallback responses when a provider fails.
+
+**Python:**
+
+```python
+import modelmesh
+from modelmesh import Middleware, MiddlewareContext
+from modelmesh.interfaces.provider import CompletionRequest, CompletionResponse
+
+class LoggingMiddleware(Middleware):
+    async def before_request(
+        self, request: CompletionRequest, context: MiddlewareContext,
+    ) -> CompletionRequest:
+        print(f">>> {context.pool_name} → {context.model_id} (attempt {context.attempt})")
+        return request
+
+    async def after_response(
+        self, response: CompletionResponse, context: MiddlewareContext,
+    ) -> CompletionResponse:
+        tokens = response.usage.total_tokens if response.usage else 0
+        print(f"<<< {context.model_id}: {tokens} tokens")
+        return response
+
+    async def on_error(
+        self, error: Exception, context: MiddlewareContext,
+    ) -> CompletionResponse:
+        print(f"!!! {context.model_id}: {error}")
+        raise error  # re-raise to let the router handle rotation
+
+client = modelmesh.create("chat-completion", middleware=[LoggingMiddleware()])
+```
+
+**TypeScript:**
+
+```typescript
+import { create, Middleware, MiddlewareContext } from "@nistrapa/modelmesh-core";
+import type { CompletionRequest, CompletionResponse } from "@nistrapa/modelmesh-core";
+
+class LoggingMiddleware extends Middleware {
+  async beforeRequest(request: CompletionRequest, context: MiddlewareContext): Promise<CompletionRequest> {
+    console.log(`>>> ${context.poolName} → ${context.modelId}`);
+    return request;
+  }
+
+  async afterResponse(response: CompletionResponse, context: MiddlewareContext): Promise<CompletionResponse> {
+    console.log(`<<< ${context.modelId}: ${response.usage?.totalTokens} tokens`);
+    return response;
+  }
+}
+
+const client = create("chat-completion", { middleware: [new LoggingMiddleware()] });
+```
+
+Middleware runs in **onion order**: `before_request` hooks fire first-registered-first, `after_response` hooks fire in reverse order. Multiple middlewares compose naturally — add logging, caching, and rate limiting as separate classes.
+
+See the [Middleware](Middleware.md) guide.
+
+---
+
+## 12. How do I handle errors and retries?
+
+ModelMesh has a structured [exception hierarchy](ErrorHandling.md). Catch specific exceptions for fine-grained control, or catch the base `ModelMeshError` for broad handling.
+
+```python
+from modelmesh.exceptions import (
+    ModelMeshError,
+    AllProvidersExhaustedError,
+    RateLimitError,
+    BudgetExceededError,
+)
+
+try:
+    response = client.chat.completions.create(
+        model="chat-completion",
+        messages=[{"role": "user", "content": "Hello"}],
+    )
+except RateLimitError as e:
+    print(f"Rate limited by {e.provider_id}, retry after {e.retry_after}s")
+except BudgetExceededError as e:
+    print(f"Budget: {e.limit_type} limit ${e.limit_value} reached")
+except AllProvidersExhaustedError as e:
+    print(f"All {e.attempts} providers failed: {e.last_error}")
+except ModelMeshError as e:
+    if e.retryable:
+        # Safe to retry — transient failure
+        import time
+        time.sleep(getattr(e, "retry_after", 5))
+```
+
+```typescript
+import {
+  ModelMeshError, RateLimitError, BudgetExceededError, AllProvidersExhaustedError,
+} from "@nistrapa/modelmesh-core";
+
+try {
+  const response = await client.chat.completions.create({
+    model: "chat-completion",
+    messages: [{ role: "user", content: "Hello" }],
+  });
+} catch (e) {
+  if (e instanceof RateLimitError) {
+    console.log(`Rate limited, retry after ${e.retryAfter}s`);
+  } else if (e instanceof BudgetExceededError) {
+    console.log(`Budget: ${e.limitType} limit $${e.limitValue} reached`);
+  } else if (e instanceof AllProvidersExhaustedError) {
+    console.log(`All ${e.attempts} attempts failed`);
+  }
+}
+```
+
+Every exception carries a `retryable` flag — check it to decide whether retrying makes sense. The router already retries internally per its configured policy; these exceptions surface only when all retry/rotation attempts are exhausted.
+
+See the [Error Handling](ErrorHandling.md) guide.
+
+---
+
+## 13. How do I deploy ModelMesh as an HTTP proxy?
+
+Run the [Docker proxy](ProxyGuide.md) and point any OpenAI SDK client at it. The proxy speaks the standard OpenAI REST API with full ModelMesh routing behind it.
+
+**Docker Compose:**
+
+```yaml
+# docker-compose.yml
+services:
+  modelmesh:
+    image: ghcr.io/apartsinprojects/modelmesh:latest
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./modelmesh.yaml:/app/modelmesh.yaml:ro
+```
+
+```bash
+docker compose up -d
+```
+
+**Any language can now call it:**
+
+```bash
+curl http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer my-proxy-token" \
+  -d '{"model":"chat-completion","messages":[{"role":"user","content":"Hello"}]}'
+```
+
+**Python client pointing at the proxy:**
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8080/v1", api_key="my-proxy-token")
+response = client.chat.completions.create(
+    model="chat-completion",
+    messages=[{"role": "user", "content": "Hello"}],
+)
+```
+
+**Proxy-specific YAML settings:**
+
+```yaml
+proxy:
+  port: 8080
+  host: "0.0.0.0"
+  token: "my-proxy-token"         # Bearer token for proxy auth
+  cors:
+    enabled: true
+    allowed_origins: ["*"]
+```
+
+See the [Proxy Guide](ProxyGuide.md) for authentication, CORS, streaming, and production deployment.
+
+---
+
+## 14. How do I persist model state across restarts?
+
+Configure a [storage backend](../SystemConfiguration.md#storage). ModelMesh saves model health scores, cost accumulators, and rotation state so pools resume from where they left off.
+
+```yaml
+storage:
+  connector: modelmesh.sqlite.v1
+  config:
+    path: ./mesh-state.db
+```
+
+```python
+import modelmesh
+
+# State persists to SQLite — restarts pick up where they left off
+client = modelmesh.create(config="modelmesh.yaml")
+
+# Check stored state
+print(client.usage.total_cost)      # Accumulated across restarts
+print(client.pool_status())         # Model health scores preserved
+```
+
+6 built-in backends (see [Q9](#9-how-do-i-configure-infrastructure-connectors-observability-storage-secrets) for the full table):
+
+| Backend | Best for |
+|---------|----------|
+| `modelmesh.sqlite.v1` | Production single-process (recommended) |
+| `modelmesh.local-file.v1` | Simple JSON file |
+| `modelmesh.memory.v1` | Testing (ephemeral) |
+| `modelmesh.localstorage.v1` | Browser (TypeScript) |
+| `modelmesh.sessionstorage.v1` | Browser sessions (TypeScript) |
+| `modelmesh.indexeddb.v1` | Browser persistent (TypeScript) |
+
+For a custom backend (Redis, PostgreSQL), see [Q10](#10-what-if-the-pre-built-connectors-dont-cover-my-use-case).
+
+---
+
+## 15. How do I add production observability (logging, metrics, traces)?
+
+Configure an [observability connector](../SystemConfiguration.md#observability). Every routing decision, model selection, error, and cost event flows through the observability pipeline.
+
+```yaml
+observability:
+  connector: modelmesh.console.v1
+  config:
+    log_level: metadata        # "silent" | "summary" | "metadata" | "full"
+    min_severity: info         # "debug" | "info" | "warning" | "error"
+    use_color: true
+```
+
+**Structured JSON logs (for log aggregation):**
+
+```yaml
+observability:
+  connector: modelmesh.json-log.v1
+  config:
+    log_level: metadata
+    min_severity: info
+```
+
+**Webhook alerts (PagerDuty, Slack):**
+
+```yaml
+observability:
+  connector: modelmesh.webhook.v1
+  config:
+    url: https://hooks.slack.com/services/T.../B.../xxx
+    min_severity: warning      # Only alert on warnings and errors
+```
+
+**Prometheus metrics:**
+
+```yaml
+observability:
+  connector: modelmesh.prometheus.v1
+  config:
+    port: 9090
+    path: /metrics
+```
+
+**Custom observability via API:**
+
+```python
+from modelmesh.cdk import BaseObservability, BaseObservabilityConfig
+
+class DatadogSink(BaseObservability):
+    def _write(self, line: str) -> None:
+        # Send to your monitoring system
+        requests.post("https://api.datadoghq.com/v2/logs", ...)
+
+mesh.initialize(MeshConfig(raw={
+    "observability": {"instance": DatadogSink(BaseObservabilityConfig())},
+}))
+```
+
+Traces include severity levels (DEBUG, INFO, WARNING, ERROR) with component context (router, pool, provider) so you can filter by the subsystem you care about. See [Q9](#9-how-do-i-configure-infrastructure-connectors-observability-storage-secrets) for the full connector table.
+
+---
+
+## 16. How do I stream responses?
+
+Set `stream=True` in the request. ModelMesh streams chunks from the selected provider. If the provider fails mid-stream, the router rotates to the next provider and restarts the stream.
+
+**Python:**
+
+```python
+import modelmesh
+
+client = modelmesh.create("chat-completion")
+
+stream = client.chat.completions.create(
+    model="chat-completion",
+    messages=[{"role": "user", "content": "Write a poem about AI"}],
+    stream=True,
+)
+
+for chunk in stream:
+    delta = chunk.choices[0].delta
+    if delta and delta.content:
+        print(delta.content, end="", flush=True)
+print()  # newline at the end
+```
+
+**TypeScript:**
+
+```typescript
+import { create } from "@nistrapa/modelmesh-core";
+
+const client = create("chat-completion");
+
+const stream = await client.chat.completions.create({
+  model: "chat-completion",
+  messages: [{ role: "user", content: "Write a poem about AI" }],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  const delta = chunk.choices[0]?.delta;
+  if (delta?.content) {
+    process.stdout.write(delta.content);
+  }
+}
+```
+
+Streaming works with all rotation strategies and [budget-aware rotation](FAQ.md#6-how-do-i-prevent-surprise-ai-bills). The router applies the same failover logic to streaming as to non-streaming requests.
+
+---
+
+## 17. How does auto-discovery work?
+
+Set API keys as environment variables. ModelMesh detects available providers, enumerates their models, and builds pools automatically — no YAML file needed.
+
+```bash
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
+export GROQ_API_KEY="gsk_..."
+```
+
+```python
+import modelmesh
+
+# Auto-discovery runs at create() time
+client = modelmesh.create("chat-completion")
+
+# See what was discovered
+print(modelmesh.capabilities.list_all())
+# ['chat-completion', 'code-generation', 'text-embeddings', ...]
+
+print(client.pool_status())
+# {'chat-completion': {'active': 8, 'standby': 0, 'total': 8}}
+```
+
+**For explicit control over discovery:**
+
+```yaml
+discovery:
+  connector: modelmesh.auto-discovery.v1
+  config:
+    providers: ["openai", "anthropic"]     # Only discover these
+    include_patterns: ["gpt-4*", "claude-*"]
+    exclude_patterns: ["*-mini"]
+```
+
+Auto-discovery checks for known environment variable patterns (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `GOOGLE_API_KEY`, etc.) and registers models with their full [capability paths](../ModelCapabilities.md).
+
+---
+
+## 18. Can I define multiple pools with different strategies?
+
+Yes. Each pool targets a [capability node](../ModelCapabilities.md) and can have its own rotation strategy, failure threshold, and budget policy.
+
+```yaml
+pools:
+  # Fast responses — pick the lowest latency model
+  chat-fast:
+    capability: generation.text-generation.chat-completion
+    strategy: modelmesh.latency-first.v1
+
+  # Cost-sensitive batch — pick the cheapest model
+  chat-cheap:
+    capability: generation.text-generation.chat-completion
+    strategy: modelmesh.cost-first.v1
+    on_budget_exceeded: rotate
+
+  # Code review — priority ordering with specific models
+  code-review:
+    capability: generation.text-generation.code-generation
+    strategy: modelmesh.priority-selection.v1
+
+  # Embeddings — round-robin across providers
+  embeddings:
+    capability: representation.embeddings.text-embeddings
+    strategy: modelmesh.round-robin.v1
+```
+
+```python
+import modelmesh
+
+client = modelmesh.create(config="modelmesh.yaml")
+
+# Each pool is addressed by its name
+fast = client.chat.completions.create(model="chat-fast", messages=[...])
+cheap = client.chat.completions.create(model="chat-cheap", messages=[...])
+review = client.chat.completions.create(model="code-review", messages=[...])
+```
+
+Pools sharing the same capability can have different models if providers are filtered. Use `providers` to restrict which providers contribute models to a pool:
+
+```yaml
+pools:
+  chat-openai-only:
+    capability: generation.text-generation.chat-completion
+    providers: ["openai"]
+    strategy: modelmesh.stick-until-failure.v1
+```
+
+---
+
+## 19. Can I reload configuration without restarting?
+
+Yes. Use `ConfigWatcher` for automatic file-based reloading, or call `reconfigure()` programmatically.
+
+**File-based auto-reload:**
+
+```python
+from modelmesh.config.hot_reload import ConfigWatcher
+
+mesh = modelmesh.ModelMesh()
+mesh.initialize(MeshConfig.from_yaml("modelmesh.yaml"))
+
+watcher = ConfigWatcher("modelmesh.yaml", mesh, interval=5.0)
+watcher.start()
+
+# Edit modelmesh.yaml while running — changes apply within 5 seconds
+# watcher.stop() when shutting down
+```
+
+**Programmatic reload:**
+
+```python
+from modelmesh.config.hot_reload import reconfigure
+from modelmesh.config import MeshConfig
+
+new_config = MeshConfig.from_yaml("modelmesh-v2.yaml")
+errors = reconfigure(mesh, new_config)
+if errors:
+    print(f"Reload failed: {errors}")
+else:
+    print("Configuration reloaded successfully")
+```
+
+Hot-reload is atomic: the mesh remains functional during the swap. Pools are rebuilt, secrets re-resolved, and connectors re-registered from the new configuration. In-flight requests complete with the old config; new requests use the updated config.
+
+---
+
+## 20. How do I use ModelMesh in the browser?
+
+Use the TypeScript library with `BrowserBaseProvider`. Browser-compatible connectors use the Fetch API and `ReadableStream` instead of Node.js `http`.
+
+**Direct access (provider supports CORS):**
+
+```typescript
+import { create } from "@nistrapa/modelmesh-core";
+
+// Anthropic allows direct browser access with a special header
+const client = create("chat-completion", {
+  providers: [{
+    connector: "anthropic.llm.v1",
+    config: { apiKey: userEnteredKey },
+  }],
+});
+
+const response = await client.chat.completions.create({
+  model: "chat-completion",
+  messages: [{ role: "user", content: "Hello from the browser!" }],
+});
+```
+
+**With CORS proxy (when the provider blocks browser requests):**
+
+```typescript
+import { BrowserBaseProvider, createBrowserProviderConfig } from "@nistrapa/modelmesh-core";
+
+const provider = new BrowserBaseProvider(createBrowserProviderConfig({
+  baseUrl: "https://api.openai.com",
+  apiKey: userEnteredKey,
+  proxyUrl: "http://localhost:3000/proxy/",  // Your CORS proxy
+}));
+```
+
+**Browser-compatible storage and secrets:**
+
+```yaml
+storage:
+  connector: modelmesh.localstorage.v1    # Browser localStorage
+
+secrets:
+  store: modelmesh.browser-secrets.v1     # Browser localStorage for keys
+```
+
+For bundling, ModelMesh is tree-shakeable — only browser-compatible connectors are included. See the [Browser Usage](BrowserUsage.md) guide for the CORS proxy setup and security considerations.
+
+---
+
+## 21. Can I use TypeScript without a CORS proxy?
+
+Yes — in two scenarios where CORS restrictions don't apply:
+
+**1. Node.js / Deno / Bun server-side:**
+
+No CORS restrictions exist outside the browser. Use the standard `BaseProvider`:
+
+```typescript
+import { create } from "@nistrapa/modelmesh-core";
+
+// Server-side — no CORS, no proxy needed
+const client = create("chat-completion");
+
+const response = await client.chat.completions.create({
+  model: "chat-completion",
+  messages: [{ role: "user", content: "Hello from Node.js" }],
+});
+```
+
+**2. Chrome Extension with host permissions:**
+
+Chrome extensions can call any API directly if the manifest declares `host_permissions`:
+
+```json
+// manifest.json (Manifest V3)
+{
+  "manifest_version": 3,
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*"
+  ]
+}
+```
+
+```typescript
+// background.ts or content script
+import { create, BrowserBaseProvider, createBrowserProviderConfig } from "@nistrapa/modelmesh-core";
+
+const provider = new BrowserBaseProvider(createBrowserProviderConfig({
+  baseUrl: "https://api.openai.com",
+  apiKey: await chrome.storage.local.get("apiKey"),
+  // No proxyUrl needed — extension has host_permissions
+}));
+
+const client = create("chat-completion", {
+  providers: [{ connector: "openai", instance: provider }],
+  storage: { connector: "modelmesh.localstorage.v1" },
+  secrets: { store: "modelmesh.browser-secrets.v1" },
+});
+```
+
+The `BrowserBaseProvider` uses the Fetch API internally, which works in both browser contexts and Chrome extension service workers. No Node.js dependencies are required.
+
+See the [Browser Usage](BrowserUsage.md) guide for security considerations and the [Proxy Guide](ProxyGuide.md) for when you do need a CORS proxy.
 
 ---
 
