@@ -40,6 +40,21 @@ export interface MockResponse {
   completionTokens?: number;
   /** Stop reason (default: "stop"). */
   finishReason?: string;
+  /**
+   * When set, this error is thrown instead of returning a response.
+   * Useful for simulating provider failures.
+   */
+  error?: Error;
+  /**
+   * Seconds to wait before returning or throwing, simulating
+   * network latency. Uses `setTimeout` internally.
+   */
+  delay?: number;
+  /**
+   * HTTP status code to simulate (informational only).
+   * @default 200
+   */
+  statusCode?: number;
 }
 
 /** Record of a call made to the mock client. */
@@ -85,10 +100,12 @@ class MockChatCompletions {
   private _responses: MockResponse[];
   private _calls: MockCall[];
   private _index = 0;
+  private _failureRate: number;
 
-  constructor(responses: MockResponse[], calls: MockCall[]) {
+  constructor(responses: MockResponse[], calls: MockCall[], failureRate = 0) {
     this._responses = responses;
     this._calls = calls;
+    this._failureRate = failureRate;
   }
 
   async create(params: {
@@ -103,6 +120,21 @@ class MockChatCompletions {
         ? this._responses[this._index++]
         : this._responses[this._responses.length - 1] ?? {};
 
+    // Apply per-response delay
+    if (mock.delay && mock.delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, mock.delay! * 1000));
+    }
+
+    // Apply global random failure rate (chaos testing)
+    if (this._failureRate > 0 && Math.random() < this._failureRate) {
+      throw new Error('Simulated random failure (chaos testing)');
+    }
+
+    // Apply per-response error injection
+    if (mock.error) {
+      throw mock.error;
+    }
+
     const response = toCompletionResponse(mock);
     const { model, messages: _msgs, stream: _s, ...kwargs } = params;
     this._calls.push({ model, messages, kwargs, response });
@@ -113,8 +145,8 @@ class MockChatCompletions {
 class MockChatNamespace {
   readonly completions: MockChatCompletions;
 
-  constructor(responses: MockResponse[], calls: MockCall[]) {
-    this.completions = new MockChatCompletions(responses, calls);
+  constructor(responses: MockResponse[], calls: MockCall[], failureRate = 0) {
+    this.completions = new MockChatCompletions(responses, calls, failureRate);
   }
 }
 
@@ -136,9 +168,9 @@ export class MockClient {
   readonly chat: MockChatNamespace;
   readonly models: MockModelsNamespace;
 
-  constructor(responses?: MockResponse[]) {
+  constructor(responses?: MockResponse[], failureRate = 0) {
     const resps = responses ?? [{}];
-    this.chat = new MockChatNamespace(resps, this.calls);
+    this.chat = new MockChatNamespace(resps, this.calls, failureRate);
     this.models = new MockModelsNamespace();
   }
 
@@ -184,10 +216,35 @@ export class MockClient {
  * Create a mock MeshClient for testing.
  *
  * @param options - Configuration for the mock client.
+ * @param options.responses - Pre-configured responses to cycle through.
+ *   Individual responses can specify `error`, `delay`, or `statusCode`
+ *   for per-request behavior simulation.
+ * @param options.failureRate - Probability (0.0 to 1.0) that any request
+ *   randomly throws an Error for chaos testing. Applied before
+ *   per-response error checks.
  * @returns A MockClient that can be used in place of a real MeshClient.
+ *
+ * @example
+ * ```ts
+ * // Simulate errors
+ * const client = mockClient({
+ *   responses: [
+ *     { content: 'OK' },
+ *     { error: new Error('Rate limited') },
+ *     { content: 'Recovered' },
+ *   ],
+ * });
+ *
+ * // Chaos testing (20% random failures)
+ * const client2 = mockClient({
+ *   responses: [{ content: 'Response' }],
+ *   failureRate: 0.2,
+ * });
+ * ```
  */
 export function mockClient(options?: {
   responses?: MockResponse[];
+  failureRate?: number;
 }): MockClient {
-  return new MockClient(options?.responses);
+  return new MockClient(options?.responses, options?.failureRate);
 }

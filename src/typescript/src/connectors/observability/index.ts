@@ -9,3 +9,5 @@ export { CallbackConnector } from './callback-connector';
 export type { CallbackConnectorConfig } from './callback-connector';
 export { WebhookConnector } from './webhook-connector';
 export type { WebhookConnectorConfig } from './webhook-connector';
+export { PrometheusObservability } from './prometheus-connector';
+export type { PrometheusObservabilityConfig } from './prometheus-connector';

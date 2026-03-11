@@ -54,6 +54,7 @@ import { FileObservabilityConnector } from './observability/file-connector';
 import { JsonLogConnector } from './observability/json-log-connector';
 import { WebhookConnector } from './observability/webhook-connector';
 import { CallbackConnector } from './observability/callback-connector';
+import { PrometheusObservability } from './observability/prometheus-connector';
 
 // Rotation
 import { StickUntilFailurePolicy } from './rotation/stick-until-failure';
@@ -137,6 +138,7 @@ export const CONNECTOR_REGISTRY: Record<string, any> = {
   [JsonLogConnector.CONNECTOR_ID]: JsonLogConnector,
   [WebhookConnector.CONNECTOR_ID]: WebhookConnector,
   [CallbackConnector.CONNECTOR_ID]: CallbackConnector,
+  [PrometheusObservability.CONNECTOR_ID]: PrometheusObservability,
 
   // Rotation
   [StickUntilFailurePolicy.CONNECTOR_ID]: StickUntilFailurePolicy,

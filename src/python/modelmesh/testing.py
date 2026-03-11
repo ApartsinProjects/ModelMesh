@@ -22,6 +22,7 @@ Usage::
 """
 from __future__ import annotations
 
+import random
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -46,6 +47,12 @@ class MockResponse:
         prompt_tokens: Prompt token count (defaults to tokens // 3).
         completion_tokens: Completion token count (auto-calculated).
         finish_reason: Stop reason (default: "stop").
+        error: When set, this exception is raised instead of returning
+            a response. Useful for simulating provider failures.
+        delay: Seconds to sleep before returning or raising, simulating
+            network latency.
+        status_code: HTTP status code to simulate (informational only,
+            stored in the response metadata).
     """
 
     content: str = "Mock response"
@@ -54,6 +61,9 @@ class MockResponse:
     prompt_tokens: Optional[int] = None
     completion_tokens: Optional[int] = None
     finish_reason: str = "stop"
+    error: Optional[Exception] = None
+    delay: float = 0.0
+    status_code: int = 200
 
     def to_completion_response(self) -> CompletionResponse:
         """Convert to a ``CompletionResponse``."""
@@ -106,10 +116,18 @@ class MockCall:
 class _MockChatCompletions:
     """Mock chat.completions namespace."""
 
-    def __init__(self, responses: list[MockResponse], calls: list[MockCall]) -> None:
+    def __init__(
+        self,
+        responses: list[MockResponse],
+        calls: list[MockCall],
+        failure_rate: float = 0.0,
+        latency_range: Optional[tuple[float, float]] = None,
+    ) -> None:
         self._responses = responses
         self._calls = calls
         self._index = 0
+        self._failure_rate = failure_rate
+        self._latency_range = latency_range
 
     def create(
         self,
@@ -119,15 +137,44 @@ class _MockChatCompletions:
         stream: bool = False,
         **kwargs,
     ) -> CompletionResponse:
-        """Return the next pre-configured response."""
+        """Return the next pre-configured response.
+
+        Handles per-response error injection, latency simulation, and
+        global chaos testing options (``failure_rate``, ``latency_range``).
+        """
         messages = messages or []
 
         if self._index < len(self._responses):
-            response = self._responses[self._index].to_completion_response()
+            mock = self._responses[self._index]
             self._index += 1
         else:
             # Cycle back to last response if exhausted
-            response = self._responses[-1].to_completion_response() if self._responses else MockResponse().to_completion_response()
+            mock = self._responses[-1] if self._responses else MockResponse()
+
+        # Apply per-response delay
+        if mock.delay > 0:
+            time.sleep(mock.delay)
+
+        # Apply global random latency range
+        if self._latency_range is not None:
+            lo, hi = self._latency_range
+            time.sleep(random.uniform(lo, hi))
+
+        # Apply global random failure rate (chaos testing)
+        if self._failure_rate > 0 and random.random() < self._failure_rate:
+            from modelmesh.exceptions import ProviderError
+
+            raise ProviderError(
+                "Simulated random failure (chaos testing)",
+                provider_id="mock",
+                retryable=True,
+            )
+
+        # Apply per-response error injection
+        if mock.error is not None:
+            raise mock.error
+
+        response = mock.to_completion_response()
 
         call = MockCall(
             model=model,
@@ -142,8 +189,18 @@ class _MockChatCompletions:
 class _MockChatNamespace:
     """Mock chat namespace."""
 
-    def __init__(self, responses: list[MockResponse], calls: list[MockCall]) -> None:
-        self.completions = _MockChatCompletions(responses, calls)
+    def __init__(
+        self,
+        responses: list[MockResponse],
+        calls: list[MockCall],
+        failure_rate: float = 0.0,
+        latency_range: Optional[tuple[float, float]] = None,
+    ) -> None:
+        self.completions = _MockChatCompletions(
+            responses, calls,
+            failure_rate=failure_rate,
+            latency_range=latency_range,
+        )
 
 
 class _MockModelsNamespace:
@@ -165,10 +222,21 @@ class MockClient:
         models: Models namespace with ``list()``.
     """
 
-    def __init__(self, responses: list[MockResponse] | None = None) -> None:
+    def __init__(
+        self,
+        responses: list[MockResponse] | None = None,
+        failure_rate: float = 0.0,
+        latency_range: Optional[tuple[float, float]] = None,
+    ) -> None:
         self.calls: list[MockCall] = []
         self._responses = responses or [MockResponse()]
-        self.chat = _MockChatNamespace(self._responses, self.calls)
+        self._failure_rate = failure_rate
+        self._latency_range = latency_range
+        self.chat = _MockChatNamespace(
+            self._responses, self.calls,
+            failure_rate=failure_rate,
+            latency_range=latency_range,
+        )
         self.models = _MockModelsNamespace()
 
     def __enter__(self) -> MockClient:
@@ -209,13 +277,24 @@ class MockClient:
 
 def mock_client(
     responses: list[MockResponse] | None = None,
+    failure_rate: float = 0.0,
+    latency_range: tuple[float, float] | None = None,
 ) -> MockClient:
     """Create a mock MeshClient for testing.
 
     Args:
         responses: Pre-configured responses to cycle through.
             Each call to ``chat.completions.create()`` returns
-            the next response in the list.
+            the next response in the list. Individual responses
+            can specify ``error``, ``delay``, or ``status_code``
+            for per-request behavior simulation.
+        failure_rate: Probability (0.0 to 1.0) that any request
+            randomly raises a :class:`ProviderError` for chaos
+            testing. Applied before per-response error checks.
+        latency_range: Optional ``(min_seconds, max_seconds)``
+            tuple. When set, each request sleeps for a random
+            duration within this range to simulate variable
+            network latency.
 
     Returns:
         A ``MockClient`` that can be used in place of a real
@@ -223,14 +302,33 @@ def mock_client(
 
     Example::
 
+        # Basic usage
         client = mock_client(responses=[
             MockResponse(content="Hello!"),
             MockResponse(content="Goodbye!"),
         ])
         resp = client.chat.completions.create(model="test", messages=[...])
         assert resp.choices[0].message.content == "Hello!"
+
+        # Simulate errors
+        from modelmesh.exceptions import RateLimitError
+        client = mock_client(responses=[
+            MockResponse(content="OK"),
+            MockResponse(error=RateLimitError("Rate limited", provider_id="mock")),
+            MockResponse(content="Recovered"),
+        ])
+
+        # Chaos testing (20% random failures)
+        client = mock_client(
+            responses=[MockResponse(content="Response")],
+            failure_rate=0.2,
+        )
     """
-    return MockClient(responses=responses)
+    return MockClient(
+        responses=responses,
+        failure_rate=failure_rate,
+        latency_range=latency_range,
+    )
 
 
 __all__ = [

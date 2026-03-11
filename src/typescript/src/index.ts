@@ -71,6 +71,22 @@ export type { FileSecretStoreConfig } from './cdk/specialized/file-secret-store'
 export { HttpHealthDiscovery } from './cdk/specialized/http-health-discovery';
 export type { HttpHealthDiscoveryConfig } from './cdk/specialized/http-health-discovery';
 
+// CDK -- Mixins
+export {
+  CircuitBreakerMixin,
+  CircuitBreakerState,
+  CircuitOpenError,
+  RetryMixin,
+  CacheMixin,
+  RateLimiterMixin,
+} from './cdk/mixins';
+export type {
+  CircuitBreakerConfig,
+  RetryConfig,
+  CacheConfig,
+  RateLimiterConfig,
+} from './cdk/mixins';
+
 // CDK -- Test helpers
 export {
   mockCompletionRequest,
@@ -137,6 +153,10 @@ export { VLLMProvider, createVLLMProviderConfig } from './connectors/providers/v
 export type { VLLMProviderConfig } from './connectors/providers/vllm-provider';
 export { LocalAIProvider, createLocalAIProviderConfig } from './connectors/providers/localai-provider';
 export type { LocalAIProviderConfig } from './connectors/providers/localai-provider';
+
+// Connectors -- Observability
+export { PrometheusObservability } from './connectors/observability/prometheus-connector';
+export type { PrometheusObservabilityConfig } from './connectors/observability/prometheus-connector';
 
 // Connectors -- Azure Speech TTS
 export { AzureSpeechProvider, createAzureSpeechProviderConfig } from './connectors/providers/azure-speech-provider';

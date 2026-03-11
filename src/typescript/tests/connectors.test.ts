@@ -1196,8 +1196,8 @@ describe('AssemblyAIProvider', () => {
 // ---------------------------------------------------------------------------
 
 describe('CONNECTOR_REGISTRY', () => {
-  test('should have 42 registered connectors', () => {
-    expect(Object.keys(CONNECTOR_REGISTRY).length).toBe(42);
+  test('should have 43 registered connectors', () => {
+    expect(Object.keys(CONNECTOR_REGISTRY).length).toBe(43);
   });
 
   test('should include all cloud providers', () => {
