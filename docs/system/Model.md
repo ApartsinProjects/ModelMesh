@@ -7,7 +7,7 @@ title: "Model"
 
 Runtime representation of a model definition combined with its current state. The static definition declares capabilities, delivery modes, features, and constraints; the dynamic state tracks health, quotas, and cooldowns. A model belongs to one provider and participates in one or more capability pools.
 
-**Depends on:** [ProviderService](ProviderService.html), [ModelState](ModelState.html).
+**Depends on:** [ProviderService](ProviderService.md), [ModelState](ModelState.md).
 
 ---
 
@@ -192,7 +192,7 @@ class Model {
 
 ## Configuration
 
-Model parameters are configured under the `models` section. See [SystemConfiguration.md -- Models](../SystemConfiguration.html#models).
+Model parameters are configured under the `models` section. See [SystemConfiguration.md -- Models](../SystemConfiguration.md#models).
 
 | Parameter | Type | Description |
 | --- | --- | --- |

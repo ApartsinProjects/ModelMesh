@@ -29,9 +29,9 @@ Each request resolves in two stages: **capability resolution** (choose a pool ma
 
 ### Connector-Based Extensibility
 
-Every integration point is a **connector**, a class or function implementing a defined interface (providers, rotation policies, secret stores, storage backends, observability outputs, discovery). Each connector type has a **connector catalogue**, a registry of available implementations with code, metadata, and a configuration schema. Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.html).
+Every integration point is a **connector**, a class or function implementing a defined interface (providers, rotation policies, secret stores, storage backends, observability outputs, discovery). Each connector type has a **connector catalogue**, a registry of available implementations with code, metadata, and a configuration schema. Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.md).
 
-Custom connectors are first-class citizens; they register in the same catalogue and receive the same treatment as pre-shipped ones. Connectors can be bundled with the application or loaded at runtime from connector packages (zip archives) referenced in configuration. The library ships with broad pre-built coverage (full catalogue in [ConnectorCatalogue.md](ConnectorCatalogue.html)); standard capabilities require zero configuration beyond API keys.
+Custom connectors are first-class citizens; they register in the same catalogue and receive the same treatment as pre-shipped ones. Connectors can be bundled with the application or loaded at runtime from connector packages (zip archives) referenced in configuration. The library ships with broad pre-built coverage (full catalogue in [ConnectorCatalogue.md](ConnectorCatalogue.md)); standard capabilities require zero configuration beyond API keys.
 
 | Connector type | Function | Interface | Pre-shipped |
 | --- | --- | --- | --- |
@@ -44,7 +44,7 @@ Custom connectors are first-class citizens; they register in the same catalogue 
 
 ### Connector Development Kit (CDK)
 
-The **Connector Development Kit** is the class library used to build both pre-shipped and custom connectors. It provides generic base classes with sensible default behavior for each connector type, so a new connector can be created with minimal code. Users who need specialized behavior can derive from an existing connector and override only the methods that differ, inheriting everything else. The same CDK classes that the library uses internally are available to users, making custom connectors indistinguishable from pre-shipped ones. CDK architecture, base classes, and tutorials are in [cdk/Overview.md](cdk/Overview.html).
+The **Connector Development Kit** is the class library used to build both pre-shipped and custom connectors. It provides generic base classes with sensible default behavior for each connector type, so a new connector can be created with minimal code. Users who need specialized behavior can derive from an existing connector and override only the methods that differ, inheriting everything else. The same CDK classes that the library uses internally are available to users, making custom connectors indistinguishable from pre-shipped ones. CDK architecture, base classes, and tutorials are in [cdk/Overview.md](cdk/Overview.md).
 
 ### Object Identification — Dot-Notated ID Strings
 
@@ -77,7 +77,7 @@ Every object in the system has a **unique dot-notated ID string** that establish
 
 ## Model Capability Hierarchy
 
-Model capabilities form a **hierarchical tree**. Parent nodes are categories; leaf nodes are concrete, routable capabilities (full tree in [ModelCapabilities.md](ModelCapabilities.html)).
+Model capabilities form a **hierarchical tree**. Parent nodes are categories; leaf nodes are concrete, routable capabilities (full tree in [ModelCapabilities.md](ModelCapabilities.md)).
 
 | Category           | Produces            | Example leaves                                  |
 | ------------------ | ------------------- | ----------------------------------------------- |
@@ -104,7 +104,7 @@ A model definition is a **capability contract**, a declaration of what an applic
 - **Feature**: optional behaviors (e.g., tool calling, structured output, grounding)
 - **Constraint**: operational limits (e.g., context window, max output tokens)
 
-Capabilities and delivery modes are orthogonal: `chat-completion` supports sync, streaming, and batch, while `web-search` supports only sync. Full attribute reference in [SystemConfiguration.md — Models](SystemConfiguration.html#models).
+Capabilities and delivery modes are orthogonal: `chat-completion` supports sync, streaming, and batch, while `web-search` supports only sync. Full attribute reference in [SystemConfiguration.md — Models](SystemConfiguration.md#models).
 
 ---
 
@@ -112,7 +112,7 @@ Capabilities and delivery modes are orthogonal: `chat-completion` supports sync,
 
 A **capability pool** groups models that fulfill the same type of task. Pools are defined by a capability node, not by provider, and collect all models registered at that node or its descendants.
 
-The library ships with predefined pools for common capabilities ([ModelCapabilities.md — Predefined Pools](ModelCapabilities.html#predefined-capability-pools)). Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-context-analysis`) with the same rotation and failover logic.
+The library ships with predefined pools for common capabilities ([ModelCapabilities.md — Predefined Pools](ModelCapabilities.md#predefined-capability-pools)). Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-context-analysis`) with the same rotation and failover logic.
 
 Pool membership is automatic: a model definition registered at `chat-completion`, `ocr`, and `tool-calling` leaf nodes joins the `generation`, `understanding`, `interaction`, and all ancestor pools without manual assignment.
 
@@ -134,13 +134,13 @@ A provider exposes one or more models through a specific API via a **provider co
 - **Model operations**: authentication, request execution, error reporting, quota tracking, rate-limit monitoring, cost metadata
 - **Infrastructure capabilities**: model discovery, batch operations, file management, fine-tuning
 
-Infrastructure capabilities feed routing directly: discovery, quota, and pricing data inform model selection and proactive rotation. Providers report operational data; the pool's [rotation policy](#model-rotation-failover-and-state) acts on it. Details in [ConnectorInterfaces.md — Provider](ConnectorInterfaces.html#provider) and [Provider Interface](interfaces/Provider.html).
+Infrastructure capabilities feed routing directly: discovery, quota, and pricing data inform model selection and proactive rotation. Providers report operational data; the pool's [rotation policy](#model-rotation-failover-and-state) acts on it. Details in [ConnectorInterfaces.md — Provider](ConnectorInterfaces.md#provider) and [Provider Interface](interfaces/Provider.md).
 
 ---
 
 ## Model Rotation, Failover, and State
 
-Within each pool, every model is classified as **Active** (eligible for routing) or **Standby** (temporarily excluded). A **rotation policy** governs transitions through three components (deactivation, recovery, and selection), configured independently per pool. Rotation operates at model level (individual model moves to standby) or provider level (provider-wide issue deactivates all its models across all pools). The library tracks each model's state (failure counts, cooldown timers, quota usage) and persists it through [storage connectors](#persistent-storage). All policy attributes in [SystemConfiguration.md — Pools](SystemConfiguration.html#pools).
+Within each pool, every model is classified as **Active** (eligible for routing) or **Standby** (temporarily excluded). A **rotation policy** governs transitions through three components (deactivation, recovery, and selection), configured independently per pool. Rotation operates at model level (individual model moves to standby) or provider level (provider-wide issue deactivates all its models across all pools). The library tracks each model's state (failure counts, cooldown timers, quota usage) and persists it through [storage connectors](#persistent-storage). All policy attributes in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
 
 ### Deactivation Triggers
 
@@ -152,7 +152,7 @@ A standby model returns to active through: **startup probe**, **cooldown** (fixe
 
 ### Selection Strategies
 
-Pre-shipped: `modelmesh.stick-until-failure.v1` (default), `modelmesh.priority-selection.v1`, `modelmesh.round-robin.v1`, `modelmesh.cost-first.v1`, `modelmesh.latency-first.v1`, `modelmesh.session-stickiness.v1`, `modelmesh.rate-limit-aware.v1`, `modelmesh.load-balanced.v1`. **Rate-limit-aware** switches models preemptively before hitting limits; **load-balanced** distributes requests proportionally to each model's rate-limit headroom. Strategy details in [SystemConfiguration.md — Pools](SystemConfiguration.html#pools).
+Pre-shipped: `modelmesh.stick-until-failure.v1` (default), `modelmesh.priority-selection.v1`, `modelmesh.round-robin.v1`, `modelmesh.cost-first.v1`, `modelmesh.latency-first.v1`, `modelmesh.session-stickiness.v1`, `modelmesh.rate-limit-aware.v1`, `modelmesh.load-balanced.v1`. **Rate-limit-aware** switches models preemptively before hitting limits; **load-balanced** distributes requests proportionally to each model's rate-limit headroom. Strategy details in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
 
 ### Intelligent Retry
 
@@ -166,7 +166,7 @@ The library ships pre-built policy connectors for each component. Users can repl
 
 ## Request Routing Pipeline
 
-Each request passes through: capability resolution → pool selection → delivery mode filter → state filter (exclude standby models) → selection strategy → intelligent retry. The pipeline combines capability hierarchy, model attributes, pool state, and rotation policy to select the best available model. Example in [SystemConfiguration.md — Routing Pipeline](SystemConfiguration.html#routing-pipeline-example).
+Each request passes through: capability resolution → pool selection → delivery mode filter → state filter (exclude standby models) → selection strategy → intelligent retry. The pipeline combines capability hierarchy, model attributes, pool state, and rotation policy to select the best available model. Example in [SystemConfiguration.md — Routing Pipeline](SystemConfiguration.md#routing-pipeline-example).
 
 ---
 
@@ -215,19 +215,19 @@ Most AI provider APIs do not send CORS headers, so browsers block direct request
 
 For bundlers (Webpack, Vite, esbuild), import from `@nistrapa/modelmesh-core/browser` to exclude Node.js-dependent modules (`ProxyServer`, `FileSecretStore`, `HttpHealthDiscovery`, file-backed `KeyValueStorage`). The `createBrowser()` convenience function provides a browser-optimized equivalent of `modelmesh.create()`.
 
-Full browser usage guide in [guides/BrowserUsage.md](guides/BrowserUsage.html).
+Full browser usage guide in [guides/BrowserUsage.md](guides/BrowserUsage.md).
 
 ---
 
 ## Configuration
 
-The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [persistent storage connectors](#persistent-storage), enabling centralized management and sharing across instances. Full YAML reference in [SystemConfiguration.md](SystemConfiguration.html).
+The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [persistent storage connectors](#persistent-storage), enabling centralized management and sharing across instances. Full YAML reference in [SystemConfiguration.md](SystemConfiguration.md).
 
 ---
 
 ## Credential Management
 
-API keys and tokens must never be hardcoded in configuration or source code. **Secret store connectors** resolve credentials from secure backends (environment variables, cloud secret managers, vaults) at runtime. Configuration references secrets by name (`${secrets:openai-key}`); the library resolves them at initialization through the configured store. A **CLI utility** publishes and manages credentials across stores. Pre-shipped stores and deployment patterns in [ConnectorCatalogue.md](ConnectorCatalogue.html).
+API keys and tokens must never be hardcoded in configuration or source code. **Secret store connectors** resolve credentials from secure backends (environment variables, cloud secret managers, vaults) at runtime. Configuration references secrets by name (`${secrets:openai-key}`); the library resolves them at initialization through the configured store. A **CLI utility** publishes and manages credentials across stores. Pre-shipped stores and deployment patterns in [ConnectorCatalogue.md](ConnectorCatalogue.md).
 
 ---
 
@@ -241,7 +241,7 @@ API keys and tokens must never be hardcoded in configuration or source code. **S
 
 **Sync policies:** `in-memory` (no persistence), `sync-on-boundary` (load/save at startup/shutdown), `periodic` (configurable interval), `immediate` (every state change).
 
-Pre-shipped connectors include `modelmesh.local-file.v1`, `aws.s3.v1`, `google.drive.v1`, and `redis.redis.v1` (full table in [ConnectorCatalogue.md](ConnectorCatalogue.html)). Custom connectors implement the same interface and register in the connector catalogue. Details in [SystemConfiguration.md](SystemConfiguration.html).
+Pre-shipped connectors include `modelmesh.local-file.v1`, `aws.s3.v1`, `google.drive.v1`, and `redis.redis.v1` (full table in [ConnectorCatalogue.md](ConnectorCatalogue.md)). Custom connectors implement the same interface and register in the connector catalogue. Details in [SystemConfiguration.md](SystemConfiguration.md).
 
 ---
 
@@ -253,7 +253,7 @@ Three levels of visibility into routing and provider behavior:
 - **Request/response logging**: configurable detail (metadata only, truncated summary, or full payloads)
 - **Aggregate statistics**: per-model, per-provider, per-pool request counts, token usage, cost, latency, downtime, rotation events
 
-Data exports through pluggable **observability connectors**; multiple can be active simultaneously (e.g., webhook for alerts + file for dashboards). Full metrics, API, and configuration in [SystemConfiguration.md — Observability](SystemConfiguration.html#observability).
+Data exports through pluggable **observability connectors**; multiple can be active simultaneously (e.g., webhook for alerts + file for dashboards). Full metrics, API, and configuration in [SystemConfiguration.md — Observability](SystemConfiguration.md#observability).
 
 ---
 
@@ -269,7 +269,7 @@ Synchronizes the local model catalogue with provider APIs on a configurable sche
 
 Background process that probes configured providers at a configurable interval. Records latency, success/failure, and error codes; maintains rolling availability scores; feeds results into the [rotation policy](#model-rotation-failover-and-state) for proactive deactivation. Probe frequency, timeout, and failure thresholds are configurable per provider.
 
-Both are pluggable; pre-shipped implementations and extension points in [ConnectorCatalogue.md](ConnectorCatalogue.html).
+Both are pluggable; pre-shipped implementations and extension points in [ConnectorCatalogue.md](ConnectorCatalogue.md).
 
 ---
 
@@ -305,6 +305,6 @@ ModelMesh Lite ships with a **User Manual** (integration, configuration, deploym
 
 ---
 
-The capability taxonomy and predefined pools are in **[ModelCapabilities.md](ModelCapabilities.html)**. Runtime objects and services (Router, CapabilityPool, Model, Provider, and others) are in **[SystemServices.md](SystemServices.html)** with individual service docs in **[system/](system/Overview.html)**. Connector interface definitions are in **[ConnectorInterfaces.md](ConnectorInterfaces.html)** with full interface specifications in **[interfaces/](interfaces/Provider.html)**. The full connector and provider catalogue is in **[ConnectorCatalogue.md](ConnectorCatalogue.html)** with individual connector docs in **[connectors/](connectors/openai-llm.html)**. YAML configuration reference is in **[SystemConfiguration.md](SystemConfiguration.html)**. The Connector Development Kit documentation is in **[cdk/Overview.md](cdk/Overview.html)** with base class reference in **[cdk/BaseClasses.md](cdk/BaseClasses.html)** and tutorials in **[cdk/DeveloperGuide.md](cdk/DeveloperGuide.html)**.
+The capability taxonomy and predefined pools are in **[ModelCapabilities.md](ModelCapabilities.md)**. Runtime objects and services (Router, CapabilityPool, Model, Provider, and others) are in **[SystemServices.md](SystemServices.md)** with individual service docs in **[system/](system/Overview.md)**. Connector interface definitions are in **[ConnectorInterfaces.md](ConnectorInterfaces.md)** with full interface specifications in **[interfaces/](interfaces/Provider.md)**. The full connector and provider catalogue is in **[ConnectorCatalogue.md](ConnectorCatalogue.md)** with individual connector docs in **[connectors/](connectors/openai-llm.md)**. YAML configuration reference is in **[SystemConfiguration.md](SystemConfiguration.md)**. The Connector Development Kit documentation is in **[cdk/Overview.md](cdk/Overview.md)** with base class reference in **[cdk/BaseClasses.md](cdk/BaseClasses.md)** and tutorials in **[cdk/DeveloperGuide.md](cdk/DeveloperGuide.md)**.
 
-For a hands-on introduction with working code samples, see the **[FAQ](guides/FAQ.html)** and **[Quick Start](guides/QuickStart.html)** guides.
+For a hands-on introduction with working code samples, see the **[FAQ](guides/FAQ.md)** and **[Quick Start](guides/QuickStart.md)** guides.

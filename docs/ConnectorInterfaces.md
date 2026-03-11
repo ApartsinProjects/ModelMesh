@@ -5,9 +5,9 @@ title: "Connector Interfaces"
 
 # Connector Interfaces
 
-**Interface overview for every ModelMesh Lite connector type.** Each section describes the connector's purpose and the interfaces it exposes. This is a conceptual overview, not a full specification. Full interface definitions with code are in [interfaces/](interfaces/Provider.html). Pre-shipped implementations are listed in [ConnectorCatalogue.md](ConnectorCatalogue.html). For a tutorial on building custom connectors, see the [FAQ — CDK guide](guides/FAQ.html#10-what-if-the-pre-built-connectors-dont-cover-my-use-case).
+**Interface overview for every ModelMesh Lite connector type.** Each section describes the connector's purpose and the interfaces it exposes. This is a conceptual overview, not a full specification. Full interface definitions with code are in [interfaces/](interfaces/Provider.md). Pre-shipped implementations are listed in [ConnectorCatalogue.md](ConnectorCatalogue.md). For a tutorial on building custom connectors, see the [FAQ — CDK guide](guides/FAQ.md#10-what-if-the-pre-built-connectors-dont-cover-my-use-case).
 
-> **CDK:** Base classes with sensible defaults for each interface are available in the [Connector Development Kit](cdk/Overview.html). See [cdk/BaseClasses.md](cdk/BaseClasses.html) for implementations.
+> **CDK:** Base classes with sensible defaults for each interface are available in the [Connector Development Kit](cdk/Overview.md). See [cdk/BaseClasses.md](cdk/BaseClasses.md) for implementations.
 
 ---
 
@@ -43,7 +43,7 @@ A provider connector exposes one or more AI models (or web API services) through
 
 ### Common Configuration
 
-Parameters shared by all provider connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#provider-connectors)).
+Parameters shared by all provider connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#provider-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -84,7 +84,7 @@ A rotation policy governs model lifecycle within a pool through three independen
 
 ### Common Configuration
 
-Parameters shared by all rotation policies. Configured per pool; policies receive these through the pool context. Full YAML reference in [SystemConfiguration.md — Pools](SystemConfiguration.html#pools).
+Parameters shared by all rotation policies. Configured per pool; policies receive these through the pool context. Full YAML reference in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -126,7 +126,7 @@ A secret store connector resolves API keys and tokens from a secure backend at r
 
 ### Common Configuration
 
-Parameters shared by all secret store connectors. Individual stores may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#secret-store-connectors)).
+Parameters shared by all secret store connectors. Individual stores may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#secret-store-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -152,7 +152,7 @@ A storage connector serializes and deserializes library data to an external back
 
 ### Common Configuration
 
-Parameters shared by all storage connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#storage-connectors)).
+Parameters shared by all storage connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#storage-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -182,7 +182,7 @@ An observability connector exports routing activity to an external output. Multi
 
 ### Common Configuration
 
-Parameters shared by all observability connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#observability-connectors)).
+Parameters shared by all observability connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#observability-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -200,7 +200,7 @@ Parameters shared by all observability connectors. Individual connectors may add
 
 ## Discovery
 
-A discovery connector keeps the model catalogue accurate and provider health visible without manual intervention. Discovery connectors run as background processes on configurable schedules and feed results into the [rotation policy](SystemConcept.html#model-rotation-failover-and-state) for proactive deactivation.
+A discovery connector keeps the model catalogue accurate and provider health visible without manual intervention. Discovery connectors run as background processes on configurable schedules and feed results into the [rotation policy](SystemConcept.md#model-rotation-failover-and-state) for proactive deactivation.
 
 **Interfaces:**
 
@@ -211,7 +211,7 @@ A discovery connector keeps the model catalogue accurate and provider health vis
 
 ### Common Configuration
 
-Parameters shared by all discovery connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.html#discovery-connectors)).
+Parameters shared by all discovery connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md](ConnectorCatalogue.md#discovery-connectors)).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -251,8 +251,8 @@ The `MeshClient` exposes audio through an OpenAI SDK-compatible namespace:
 | `client.audio.speech.create()` | `generation.audio.text-to-speech` | Generate speech from text. Routes to TTS providers (ElevenLabs, OpenAI, Google Cloud). |
 | `client.audio.transcriptions.create()` | `understanding.audio.speech-to-text` | Transcribe audio to text. Routes to STT providers (AssemblyAI, OpenAI Whisper, Groq). |
 
-Audio requests follow the same routing pipeline as text requests: capability resolution, pool selection, [rotation policy](guides/FAQ.html#4-what-happens-when-a-provider-goes-down), retry, and failover. Pools targeting `generation.audio` or `understanding.audio` collect all audio-capable models automatically.
+Audio requests follow the same routing pipeline as text requests: capability resolution, pool selection, [rotation policy](guides/FAQ.md#4-what-happens-when-a-provider-goes-down), retry, and failover. Pools targeting `generation.audio` or `understanding.audio` collect all audio-capable models automatically.
 
 ---
 
-See also: [FAQ](guides/FAQ.html) · [Connector Catalogue](ConnectorCatalogue.html) · [CDK Base Classes](cdk/BaseClasses.html) · [System Configuration](SystemConfiguration.html)
+See also: [FAQ](guides/FAQ.md) · [Connector Catalogue](ConnectorCatalogue.md) · [CDK Base Classes](cdk/BaseClasses.md) · [System Configuration](SystemConfiguration.md)

@@ -5,7 +5,7 @@ title: "Secret Stores Guide"
 
 # Secret Stores Guide
 
-ModelMesh uses **secret store connectors** to resolve API keys and tokens at runtime. Instead of hardcoding credentials, you configure a secret store and reference secrets by name in your [YAML configuration](../SystemConfiguration.html). ModelMesh ships with six built-in stores (see [Connector Catalogue](../ConnectorCatalogue.html)) and supports [custom implementations](FAQ.html#10-what-if-the-pre-built-connectors-dont-cover-my-use-case) via the CDK.
+ModelMesh uses **secret store connectors** to resolve API keys and tokens at runtime. Instead of hardcoding credentials, you configure a secret store and reference secrets by name in your [YAML configuration](../SystemConfiguration.md). ModelMesh ships with six built-in stores (see [Connector Catalogue](../ConnectorCatalogue.md)) and supports [custom implementations](FAQ.md#10-what-if-the-pre-built-connectors-dont-cover-my-use-case) via the CDK.
 
 ## Built-in Secret Stores
 
@@ -309,8 +309,8 @@ If both are provided, `encryption_key` takes precedence.
 2. **Use different stores per environment**: `.env` for development, encrypted file or cloud secret manager for production.
 3. **Rotate keys regularly** and use the SecretManagement interface to update them.
 4. **Keep passphrases separate** from encrypted files -- store the passphrase in an environment variable.
-5. **Audit access** using [observability connectors](FAQ.html#9-how-do-i-configure-infrastructure-connectors-observability-storage-secrets) to log secret resolution events.
+5. **Audit access** using [observability connectors](FAQ.md#9-how-do-i-configure-infrastructure-connectors-observability-storage-secrets) to log secret resolution events.
 
 ---
 
-See also: [FAQ](FAQ.html) · [Connector Catalogue](../ConnectorCatalogue.html) · [System Configuration](../SystemConfiguration.html)
+See also: [FAQ](FAQ.md) · [Connector Catalogue](../ConnectorCatalogue.md) · [System Configuration](../SystemConfiguration.md)

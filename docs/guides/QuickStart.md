@@ -1,6 +1,6 @@
 # Developer Quick Start
 
-Get productive with ModelMesh in 5 minutes. This guide covers everything a developer needs for day-to-day usage: making requests, [handling errors](ErrorHandling.html), [testing](Testing.html), debugging routing, and tracking costs. For the full [YAML configuration reference](../SystemConfiguration.html), see the configuration docs.
+Get productive with ModelMesh in 5 minutes. This guide covers everything a developer needs for day-to-day usage: making requests, [handling errors](ErrorHandling.md), [testing](Testing.md), debugging routing, and tracking costs. For the full [YAML configuration reference](../SystemConfiguration.md), see the configuration docs.
 
 ## 1. First Request
 
@@ -127,7 +127,7 @@ try {
 }
 ```
 
-See [Error Handling Guide](ErrorHandling.html) for the full exception hierarchy.
+See [Error Handling Guide](ErrorHandling.md) for the full exception hierarchy.
 
 ## 4. Middleware
 
@@ -169,7 +169,7 @@ class LoggingMiddleware extends Middleware {
 const client = create('chat', { middleware: [new LoggingMiddleware()] });
 ```
 
-See [Middleware Guide](Middleware.html) for advanced patterns.
+See [Middleware Guide](Middleware.md) for advanced patterns.
 
 ## 5. Testing
 
@@ -210,7 +210,7 @@ expect(response.choices[0].message?.content).toBe('Hello!');
 expect(client.calls.length).toBe(1);
 ```
 
-See [Testing Guide](Testing.html) for full mock client API.
+See [Testing Guide](Testing.md) for full mock client API.
 
 ## 6. Routing Explanation
 
@@ -342,9 +342,9 @@ providers = client.active_providers()
 
 ## Next Steps
 
-- [FAQ](FAQ.html) — 10 questions developers ask before adopting ModelMesh
-- [Error Handling Guide](ErrorHandling.html) — Full exception hierarchy reference
-- [Middleware Guide](Middleware.html) — Write custom middleware
-- [Testing Guide](Testing.html) — Mock client deep dive
-- [System Configuration](../SystemConfiguration.html) — YAML config reference
-- [Connector Catalogue](../ConnectorCatalogue.html) — All supported providers
+- [FAQ](FAQ.md) — 10 questions developers ask before adopting ModelMesh
+- [Error Handling Guide](ErrorHandling.md) — Full exception hierarchy reference
+- [Middleware Guide](Middleware.md) — Write custom middleware
+- [Testing Guide](Testing.md) — Mock client deep dive
+- [System Configuration](../SystemConfiguration.md) — YAML config reference
+- [Connector Catalogue](../ConnectorCatalogue.md) — All supported providers

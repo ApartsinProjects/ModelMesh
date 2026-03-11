@@ -7,7 +7,7 @@ title: "Storage Interface"
 
 A storage connector serializes and deserializes library data to an external backend. Three data types flow through it: **state** (model health, failure counts, cooldown timers, quota usage), **configuration** (providers, pools, policies, credential references), and **observability logs** (routing decisions, request records, statistics). Sync policies control when persistence occurs: `in-memory`, `sync-on-boundary`, `periodic`, or `immediate`.
 
-> **Reference:** [ConnectorInterfaces.md -- Storage](../ConnectorInterfaces.html#storage) | [ConnectorCatalogue.md -- Storage Connectors](../ConnectorCatalogue.html#storage-connectors)
+> **Reference:** [ConnectorInterfaces.md -- Storage](../ConnectorInterfaces.md#storage) | [ConnectorCatalogue.md -- Storage Connectors](../ConnectorCatalogue.md#storage-connectors)
 
 ---
 
@@ -274,7 +274,7 @@ interface StorageConnector extends Persistence, Inventory, StatQuery {}
 
 ## Common Configuration
 
-Parameters shared by all storage connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Storage Connectors](../ConnectorCatalogue.html#storage-connectors)).
+Parameters shared by all storage connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Storage Connectors](../ConnectorCatalogue.md#storage-connectors)).
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -291,4 +291,4 @@ Parameters shared by all storage connectors. Individual connectors may add conne
 
 ## CDK Base Class
 
-The CDK provides [BaseStorage](../cdk/BaseClasses.html#basestorage) with in-memory dict and advisory locking. Specialized class: [KeyValueStorage](../cdk/BaseClasses.html#keyvaluestorage). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.html#tutorial-5-complete-connector-set-for-acmecorp).
+The CDK provides [BaseStorage](../cdk/BaseClasses.md#basestorage) with in-memory dict and advisory locking. Specialized class: [KeyValueStorage](../cdk/BaseClasses.md#keyvaluestorage). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.md#tutorial-5-complete-connector-set-for-acmecorp).

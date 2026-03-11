@@ -48,7 +48,7 @@ All requests are routed to deepseek-v3.2. If deepseek-v3.2 is deactivated (quota
 
 This strategy uses only the common rotation parameters. Pricing data is sourced from provider connectors -- no strategy-specific configuration is required.
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 ## YAML Example
 

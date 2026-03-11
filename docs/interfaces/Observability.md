@@ -7,7 +7,7 @@ title: "Observability Interface"
 
 An observability connector exports routing activity to an external output. Multiple connectors can be active simultaneously (e.g., webhook for alerts + file for dashboards). The library pushes data through the connector at four levels of detail: events for state changes, logs for request/response data, statistics for aggregate metrics, and traces for structured severity-tagged diagnostic output.
 
-> **Reference:** [ConnectorInterfaces.md -- Observability](../ConnectorInterfaces.html#observability) | [ConnectorCatalogue.md -- Observability Connectors](../ConnectorCatalogue.html#observability-connectors)
+> **Reference:** [ConnectorInterfaces.md -- Observability](../ConnectorInterfaces.md#observability) | [ConnectorCatalogue.md -- Observability Connectors](../ConnectorCatalogue.md#observability-connectors)
 
 ---
 
@@ -318,7 +318,7 @@ interface ObservabilityConnector extends Events, Logging, Statistics, Tracing {}
 
 ## Common Configuration
 
-Parameters shared by all observability connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Observability Connectors](../ConnectorCatalogue.html#observability-connectors)).
+Parameters shared by all observability connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Observability Connectors](../ConnectorCatalogue.md#observability-connectors)).
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -336,4 +336,4 @@ Parameters shared by all observability connectors. Individual connectors may add
 
 ## CDK Base Class
 
-The CDK provides [BaseObservability](../cdk/BaseClasses.html#baseobservability) with event filtering, log-level control, and secret redaction. Specialized class: [ConsoleObservability](../cdk/BaseClasses.html#consoleobservability). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.html#tutorial-5-complete-connector-set-for-acmecorp).
+The CDK provides [BaseObservability](../cdk/BaseClasses.md#baseobservability) with event filtering, log-level control, and secret redaction. Specialized class: [ConsoleObservability](../cdk/BaseClasses.md#consoleobservability). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.md#tutorial-5-complete-connector-set-for-acmecorp).

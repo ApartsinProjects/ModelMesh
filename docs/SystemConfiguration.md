@@ -5,7 +5,7 @@ title: "System Configuration"
 
 # System Configuration
 
-**YAML configuration reference for ModelMesh Lite.** The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [storage connectors](ConnectorInterfaces.html#storage) for centralized management and sharing across instances. For the runtime objects that consume this configuration see [SystemServices.md](SystemServices.html). For a tutorial-style introduction, see the [FAQ](guides/FAQ.html) and [Quick Start](guides/QuickStart.html).
+**YAML configuration reference for ModelMesh Lite.** The system is configured declaratively via YAML, programmatically via API, or both. Configuration can be serialized to and deserialized from [storage connectors](ConnectorInterfaces.md#storage) for centralized management and sharing across instances. For the runtime objects that consume this configuration see [SystemServices.md](SystemServices.md). For a tutorial-style introduction, see the [FAQ](guides/FAQ.md) and [Quick Start](guides/QuickStart.md).
 
 ---
 
@@ -43,7 +43,7 @@ secrets:
   region: us-east-1
 ```
 
-See [ConnectorCatalogue.md — Secret Store](ConnectorCatalogue.html#secret-store-connectors) for pre-shipped stores and deployment patterns.
+See [ConnectorCatalogue.md — Secret Store](ConnectorCatalogue.md#secret-store-connectors) for pre-shipped stores and deployment patterns.
 
 ---
 
@@ -112,13 +112,13 @@ providers:
     enabled: false
 ```
 
-See [ConnectorCatalogue.md — Provider](ConnectorCatalogue.html#provider-connectors) for pre-shipped provider connectors and capability matrix.
+See [ConnectorCatalogue.md — Provider](ConnectorCatalogue.md#provider-connectors) for pre-shipped provider connectors and capability matrix.
 
 ---
 
 ## Models
 
-Explicit model definitions supplement auto-discovered models. Each entry is a capability contract declaring what an application can expect. Models register at leaf nodes of the [capability hierarchy](ModelCapabilities.html) and automatically join ancestor pools.
+Explicit model definitions supplement auto-discovered models. Each entry is a capability contract declaring what an application can expect. Models register at leaf nodes of the [capability hierarchy](ModelCapabilities.md) and automatically join ancestor pools.
 
 | Attribute | Type | Description |
 | --- | --- | --- |
@@ -217,7 +217,7 @@ models:
 
 ## Pools
 
-Defines capability pools and their per-pool rotation, selection, and retry configuration. Each pool targets a node in the [capability hierarchy](ModelCapabilities.html) and automatically includes all models registered at that node or its descendants.
+Defines capability pools and their per-pool rotation, selection, and retry configuration. Each pool targets a node in the [capability hierarchy](ModelCapabilities.md) and automatically includes all models registered at that node or its descendants.
 
 > **Note:** The current implementation supports `capability`, `models`, `providers`, and `strategy` pool fields. Additional fields shown below are reserved for future releases.
 
@@ -331,7 +331,7 @@ pools:
     fallback_strategy: modelmesh.cost-first.v1
 ```
 
-See [ConnectorCatalogue.md — Rotation Policies](ConnectorCatalogue.html#rotation-policies) for pre-shipped strategies.
+See [ConnectorCatalogue.md — Rotation Policies](ConnectorCatalogue.md#rotation-policies) for pre-shipped strategies.
 
 ---
 
@@ -364,7 +364,7 @@ storage:
   sync_interval: 300s
 ```
 
-See [ConnectorCatalogue.md — Storage](ConnectorCatalogue.html#storage-connectors) for pre-shipped backends.
+See [ConnectorCatalogue.md — Storage](ConnectorCatalogue.md#storage-connectors) for pre-shipped backends.
 
 ---
 
@@ -426,7 +426,7 @@ Each routing decision records: requested capability, resolved pool, selected mod
 
 > **Note:** The `mesh.stats()` API is planned for a future release. Statistics are currently available through the observability connector's raw output (JSONL records with `"type": "stats"`).
 
-See [ConnectorCatalogue.md — Observability](ConnectorCatalogue.html#observability-connectors) for pre-shipped connectors.
+See [ConnectorCatalogue.md — Observability](ConnectorCatalogue.md#observability-connectors) for pre-shipped connectors.
 
 ---
 
@@ -466,7 +466,7 @@ discovery:
     failure_threshold: 3
 ```
 
-See [ConnectorCatalogue.md — Discovery](ConnectorCatalogue.html#discovery-connectors) for pre-shipped connectors.
+See [ConnectorCatalogue.md — Discovery](ConnectorCatalogue.md#discovery-connectors) for pre-shipped connectors.
 
 ---
 
@@ -485,7 +485,7 @@ connectors:
     - https://registry.example.com/connectors/pg-storage-1.0.zip
 ```
 
-Custom connectors register in the same catalogue and receive the same treatment as pre-shipped ones. See [SystemConcept.md — Connector-Based Extensibility](SystemConcept.html#connector-based-extensibility).
+Custom connectors register in the same catalogue and receive the same treatment as pre-shipped ones. See [SystemConcept.md — Connector-Based Extensibility](SystemConcept.md#connector-based-extensibility).
 
 ---
 
@@ -515,7 +515,7 @@ proxy:
       - ${secrets:proxy-token}
 ```
 
-See [SystemConcept.md — OpenAI-Compatible Proxy](SystemConcept.html#openai-compatible-proxy) and [Deployment Modes](SystemConcept.html#deployment-modes).
+See [SystemConcept.md — OpenAI-Compatible Proxy](SystemConcept.md#openai-compatible-proxy) and [Deployment Modes](SystemConcept.md#deployment-modes).
 
 ---
 
@@ -610,7 +610,7 @@ mesh.list_models()       # All registered models with status
 
 ### Custom Connectors
 
-Custom connectors are registered through the connector catalogue and referenced by ID in configuration. See [SystemConcept.md -- Connector-Based Extensibility](SystemConcept.html#connector-based-extensibility) and the [Connector Development Kit](cdk/Overview.html) for details.
+Custom connectors are registered through the connector catalogue and referenced by ID in configuration. See [SystemConcept.md -- Connector-Based Extensibility](SystemConcept.md#connector-based-extensibility) and the [Connector Development Kit](cdk/Overview.md) for details.
 
 ```python
 # Provider
@@ -655,4 +655,4 @@ Request: "parse 500 invoice PDFs, return structured JSON"
 
 ---
 
-See also: [FAQ](guides/FAQ.html) · [Quick Start](guides/QuickStart.html) · [Connector Catalogue](ConnectorCatalogue.html) · [Connector Interfaces](ConnectorInterfaces.html) · [System Concept](SystemConcept.html)
+See also: [FAQ](guides/FAQ.md) · [Quick Start](guides/QuickStart.md) · [Connector Catalogue](ConnectorCatalogue.md) · [Connector Interfaces](ConnectorInterfaces.md) · [System Concept](SystemConcept.md)

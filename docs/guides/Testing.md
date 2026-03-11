@@ -1,6 +1,6 @@
 # Testing with ModelMesh
 
-ModelMesh provides a built-in mock client for unit testing without live API calls. The mock client has the same interface as the real [`MeshClient`](../SystemServices.html), so your tests use the exact same code paths your application uses. For error simulation, see the [Error Handling](ErrorHandling.html) guide for the complete exception hierarchy.
+ModelMesh provides a built-in mock client for unit testing without live API calls. The mock client has the same interface as the real [`MeshClient`](../SystemServices.md), so your tests use the exact same code paths your application uses. For error simulation, see the [Error Handling](ErrorHandling.md) guide for the complete exception hierarchy.
 
 ## Quick Start
 
@@ -163,4 +163,4 @@ def test_multiple_turns(client):
 
 ---
 
-See also: [FAQ](FAQ.html) · [Quick Start](QuickStart.html) · [Error Handling](ErrorHandling.html)
+See also: [FAQ](FAQ.md) · [Quick Start](QuickStart.md) · [Error Handling](ErrorHandling.md)

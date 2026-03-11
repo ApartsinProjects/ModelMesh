@@ -7,7 +7,7 @@ title: "DeliveryFilter"
 
 Pipeline stage that filters candidate models by the requested delivery mode (synchronous, streaming, or batch). Models that do not support the requested mode are excluded from the candidate list before selection.
 
-**Depends on:** [Model](Model.html).
+**Depends on:** [Model](Model.md).
 
 ---
 

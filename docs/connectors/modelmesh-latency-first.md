@@ -48,7 +48,7 @@ All requests are routed to groq-llama-3.3-70b. If Groq's latency spikes to 2000m
 
 This strategy uses only the common rotation parameters. Latency data is collected automatically by the router -- no strategy-specific configuration is required.
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 ## YAML Example
 

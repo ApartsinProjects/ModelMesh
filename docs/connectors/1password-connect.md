@@ -27,7 +27,7 @@ Resolves secrets from a 1Password Connect Server. 1Password Connect provides a R
 | `vault_id` | string | _(required)_ | UUID of the 1Password vault to resolve secrets from. |
 | `token` | string | _(required)_ | Connect Server access token. Store this token in an environment variable and reference it (e.g., `${env:OP_CONNECT_TOKEN}`) to avoid embedding credentials in configuration files. |
 
-See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
+See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
 
 ## YAML Example
 

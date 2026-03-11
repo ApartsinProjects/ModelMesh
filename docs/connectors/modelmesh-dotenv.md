@@ -26,7 +26,7 @@ Loads secrets from a `.env` file on disk. Ideal for local development where secr
 | `path` | string | `"./.env"` | Path to the `.env` file. Relative paths are resolved from the working directory. |
 | `override` | boolean | `false` | Whether to override existing environment variables with values from the file. When `false`, existing environment variables take precedence. |
 
-See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
+See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
 
 ## YAML Example
 

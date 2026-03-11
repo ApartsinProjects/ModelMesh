@@ -5,7 +5,7 @@ title: "Proxy Guide"
 
 # Proxy Guide
 
-**Deploy ModelMesh as an OpenAI-compatible HTTP proxy.** The proxy exposes a standard OpenAI REST API on a configurable port. Internally it leverages all ModelMesh capabilities: multi-provider [routing](../SystemConcept.html), automatic [failover](ErrorHandling.html), [pool strategies](FAQ.html#4-what-happens-when-a-provider-goes-down), [budget controls](FAQ.html#6-how-do-i-prevent-surprise-ai-bills), and free-tier aggregation. Any OpenAI SDK client, `curl`, or plain `fetch()` call can talk to the proxy without modification.
+**Deploy ModelMesh as an OpenAI-compatible HTTP proxy.** The proxy exposes a standard OpenAI REST API on a configurable port. Internally it leverages all ModelMesh capabilities: multi-provider [routing](../SystemConcept.md), automatic [failover](ErrorHandling.md), [pool strategies](FAQ.md#4-what-happens-when-a-provider-goes-down), [budget controls](FAQ.md#6-how-do-i-prevent-surprise-ai-bills), and free-tier aggregation. Any OpenAI SDK client, `curl`, or plain `fetch()` call can talk to the proxy without modification.
 
 ---
 
@@ -188,10 +188,10 @@ python -m modelmesh.proxy --config modelmesh.yaml
 
 | Section | Purpose | Reference |
 |---------|---------|-----------|
-| `secrets` | Secret store backend (env vars, dotenv, cloud vaults) | [SystemConfiguration](../SystemConfiguration.html#secrets) |
-| `providers` | Provider registration, API keys, budgets, rate limits | [SystemConfiguration](../SystemConfiguration.html#providers) |
-| `models` | Model definitions with capabilities, features, constraints | [SystemConfiguration](../SystemConfiguration.html#models) |
-| `pools` | Capability pools with rotation strategies | [SystemConfiguration](../SystemConfiguration.html#pools) |
+| `secrets` | Secret store backend (env vars, dotenv, cloud vaults) | [SystemConfiguration](../SystemConfiguration.md#secrets) |
+| `providers` | Provider registration, API keys, budgets, rate limits | [SystemConfiguration](../SystemConfiguration.md#providers) |
+| `models` | Model definitions with capabilities, features, constraints | [SystemConfiguration](../SystemConfiguration.md#models) |
+| `pools` | Capability pools with rotation strategies | [SystemConfiguration](../SystemConfiguration.md#pools) |
 
 ### Available Providers
 
@@ -208,7 +208,7 @@ python -m modelmesh.proxy --config modelmesh.yaml
 | `xai.api.v1` | xAI (Grok) | Chat |
 | `cohere.api.v1` | Cohere | Chat, embeddings |
 
-See [ConnectorCatalogue](../ConnectorCatalogue.html) for all connectors and config schemas.
+See [ConnectorCatalogue](../ConnectorCatalogue.md) for all connectors and config schemas.
 
 ### Rotation Strategies
 
@@ -223,7 +223,7 @@ See [ConnectorCatalogue](../ConnectorCatalogue.html) for all connectors and conf
 | Rate-limit-aware | `modelmesh.rate-limit-aware.v1` | Track per-model quotas, switch before exhaustion |
 | Load-balanced | `modelmesh.load-balanced.v1` | Distribute requests using weighted round-robin |
 
-For custom strategies, see the [FAQ — CDK extension guide](FAQ.html#10-what-if-the-pre-built-connectors-dont-cover-my-use-case). For full strategy config options, see the [Connector Catalogue](../ConnectorCatalogue.html).
+For custom strategies, see the [FAQ — CDK extension guide](FAQ.md#10-what-if-the-pre-built-connectors-dont-cover-my-use-case). For full strategy config options, see the [Connector Catalogue](../ConnectorCatalogue.md).
 
 ### Secret Stores
 
@@ -655,4 +655,4 @@ server.stop()
 
 ---
 
-See also: [FAQ](FAQ.html) · [Quick Start](QuickStart.html) · [System Configuration](../SystemConfiguration.html)
+See also: [FAQ](FAQ.md) · [Quick Start](QuickStart.md) · [System Configuration](../SystemConfiguration.md)

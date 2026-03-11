@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-Ten questions developers ask before adopting ModelMesh, each answered with a short explanation and working code. For architecture details, see [System Concept](../SystemConcept.html). For the YAML reference, see [System Configuration](../SystemConfiguration.html).
+Ten questions developers ask before adopting ModelMesh, each answered with a short explanation and working code. For architecture details, see [System Concept](../SystemConcept.md). For the YAML reference, see [System Configuration](../SystemConfiguration.md).
 
 ---
 
@@ -25,7 +25,7 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-**How does this work?** Setting `OPENAI_API_KEY` triggers auto-discovery: ModelMesh finds the OpenAI provider, registers its models, and groups them into **[capability pools](../SystemConcept.html#capability-based-model-pools)** by what each model can do. `create("chat-completion")` returns a client wired to the pool containing all chat-capable models. The shortcut `"chat-completion"` resolves to the full dot-notation path `generation.text-generation.chat-completion` automatically (see [Q5](#5-what-does-request-capabilities-not-model-names-mean)).
+**How does this work?** Setting `OPENAI_API_KEY` triggers auto-discovery: ModelMesh finds the OpenAI provider, registers its models, and groups them into **[capability pools](../SystemConcept.md#capability-based-model-pools)** by what each model can do. `create("chat-completion")` returns a client wired to the pool containing all chat-capable models. The shortcut `"chat-completion"` resolves to the full dot-notation path `generation.text-generation.chat-completion` automatically (see [Q5](#5-what-does-request-capabilities-not-model-names-mean)).
 
 When you need more control, add a YAML file or pass options programmatically. All three layers compose: env vars for secrets, YAML for topology, code for runtime overrides.
 
@@ -41,7 +41,7 @@ client = modelmesh.create(
 )
 ```
 
-See the [Progressive Configuration](../index.html) guide for the full reference.
+See the [Progressive Configuration](../index.md) guide for the full reference.
 
 ---
 
@@ -79,7 +79,7 @@ const response = await client.chat.completions.create({
 
 The same call shape works for chat, embeddings, TTS, STT, and image generation regardless of which provider handles the request.
 
-See the [Uniform OpenAI-Compatible API](Capabilities.html) guide.
+See the [Uniform OpenAI-Compatible API](Capabilities.md) guide.
 
 ---
 
@@ -111,15 +111,15 @@ for i in range(100):
 
 Your code makes the same call every time. The library handles detection, pooling, and rotation internally.
 
-**How are pools formed?** Each provider registers its models with [capability tags](../ModelCapabilities.html) (e.g. `generation.text-generation.chat-completion`). ModelMesh groups all models sharing a capability into a single pool. When you call `create("chat-completion")`, you get a client backed by every chat-capable model across all discovered providers. Adding a new API key adds that provider's models to the existing pools automatically.
+**How are pools formed?** Each provider registers its models with [capability tags](../ModelCapabilities.md) (e.g. `generation.text-generation.chat-completion`). ModelMesh groups all models sharing a capability into a single pool. When you call `create("chat-completion")`, you get a client backed by every chat-capable model across all discovered providers. Adding a new API key adds that provider's models to the existing pools automatically.
 
-See the [Free-Tier Aggregation](QuickStart.html) guide.
+See the [Free-Tier Aggregation](QuickStart.md) guide.
 
 ---
 
 ## 4. What happens when a provider goes down?
 
-ModelMesh retries with backoff, then [rotates](../SystemConcept.html) to the next model in the pool. All within the same request. Your code never sees the failure (see [Error Handling](ErrorHandling.html) for the full exception hierarchy).
+ModelMesh retries with backoff, then [rotates](../SystemConcept.md) to the next model in the pool. All within the same request. Your code never sees the failure (see [Error Handling](ErrorHandling.md) for the full exception hierarchy).
 
 ```python
 import modelmesh
@@ -181,7 +181,7 @@ mesh.initialize(MeshConfig(raw={
 
 Need a custom strategy? See [Q10](#10-what-if-the-pre-built-connectors-dont-cover-my-use-case).
 
-See the [Resilient Routing](ErrorHandling.html) guide and [Connector Catalogue](../ConnectorCatalogue.html) for full config reference.
+See the [Resilient Routing](ErrorHandling.md) guide and [Connector Catalogue](../ConnectorCatalogue.md) for full config reference.
 
 ---
 
@@ -209,17 +209,17 @@ matches = modelmesh.capabilities.search("text")
 client = modelmesh.create("chat-completion")
 ```
 
-**Shortcuts vs dot-notation:** Every capability has a full dot-notation path reflecting its position in the [hierarchy tree](../ModelCapabilities.html) (e.g. `generation.text-generation.chat-completion`). Shortcuts like `"chat-completion"` are leaf-node aliases that resolve automatically. Both forms work everywhere: `create("chat-completion")` and `create("generation.text-generation.chat-completion")` are equivalent. Providers tag their models with full paths; you use whichever form is convenient.
+**Shortcuts vs dot-notation:** Every capability has a full dot-notation path reflecting its position in the [hierarchy tree](../ModelCapabilities.md) (e.g. `generation.text-generation.chat-completion`). Shortcuts like `"chat-completion"` are leaf-node aliases that resolve automatically. Both forms work everywhere: `create("chat-completion")` and `create("generation.text-generation.chat-completion")` are equivalent. Providers tag their models with full paths; you use whichever form is convenient.
 
 When a new model launches or an old one is deprecated, update your config. Your application code stays the same.
 
-See the [Capability Discovery](Capabilities.html) guide.
+See the [Capability Discovery](Capabilities.md) guide.
 
 ---
 
 ## 6. How do I prevent surprise AI bills?
 
-Set daily or monthly spending limits in your [configuration](../SystemConfiguration.html#providers). ModelMesh tracks cost per request in real time and raises [`BudgetExceededError`](ErrorHandling.html) before the breaching request is sent.
+Set daily or monthly spending limits in your [configuration](../SystemConfiguration.md#providers). ModelMesh tracks cost per request in real time and raises [`BudgetExceededError`](ErrorHandling.md) before the breaching request is sent.
 
 ```yaml
 providers:
@@ -265,13 +265,13 @@ pools:
 
 With `on_budget_exceeded: rotate`, when a model's budget limit is reached, the router deactivates that model and silently retries with the next candidate — no code changes needed.
 
-See the [Budget Enforcement](QuickStart.html#usage-tracking) guide and [System Configuration](../SystemConfiguration.html) for the full YAML schema.
+See the [Budget Enforcement](QuickStart.md#usage-tracking) guide and [System Configuration](../SystemConfiguration.md) for the full YAML schema.
 
 ---
 
 ## 7. Can I use ModelMesh with my existing stack?
 
-Yes. ModelMesh ships as a Python library, a TypeScript library, and a [Docker proxy](ProxyGuide.html). Each exposes the same OpenAI-compatible API. Pick the one that fits your stack.
+Yes. ModelMesh ships as a Python library, a TypeScript library, and a [Docker proxy](ProxyGuide.md). Each exposes the same OpenAI-compatible API. Pick the one that fits your stack.
 
 **Python backend:**
 ```bash
@@ -297,9 +297,9 @@ curl http://localhost:8080/v1/chat/completions \
   -d '{"model":"chat-completion","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
-All three share the same [YAML configuration format](../SystemConfiguration.html). Zero core dependencies in the Python and TypeScript libraries. For browser usage with TypeScript, see the [Browser Guide](BrowserUsage.html).
+All three share the same [YAML configuration format](../SystemConfiguration.md). Zero core dependencies in the Python and TypeScript libraries. For browser usage with TypeScript, see the [Browser Guide](BrowserUsage.md).
 
-See the [Full-Stack Deployment](QuickStart.html) guide and [Proxy Guide](ProxyGuide.html).
+See the [Full-Stack Deployment](QuickStart.md) guide and [Proxy Guide](ProxyGuide.md).
 
 ---
 
@@ -357,7 +357,7 @@ print(explanation["selected_model"])   # Which model would be selected
 print(explanation["reason"])           # Why
 ```
 
-See the [Mock Client and Testing](Testing.html) guide.
+See the [Mock Client and Testing](Testing.md) guide.
 
 ---
 
@@ -374,8 +374,8 @@ ModelMesh has **6 connector types**. Providers and rotation are covered in Q1-Q4
 | **Observability** | Events, logging, metrics, tracing | 7 sinks | `BaseObservability` |
 | **Discovery** | Auto-discovers provider models and health checks | 1 connector | `BaseDiscovery` |
 
-→ Full list of every connector and its config: [Connector Catalogue](../ConnectorCatalogue.html)
-→ Interface specs for all 6 types: [Connector Interfaces](../ConnectorInterfaces.html)
+→ Full list of every connector and its config: [Connector Catalogue](../ConnectorCatalogue.md)
+→ Interface specs for all 6 types: [Connector Interfaces](../ConnectorInterfaces.md)
 
 ### Observability
 
@@ -468,7 +468,7 @@ storage:
 
 Traces include severity levels (DEBUG, INFO, WARNING, ERROR) with component context (router, pool, provider) so you can filter by the subsystem you care about.
 
-See the [Connector Catalogue](../ConnectorCatalogue.html) for full config reference and [System Configuration](../SystemConfiguration.html) for the complete YAML schema.
+See the [Connector Catalogue](../ConnectorCatalogue.md) for full config reference and [System Configuration](../SystemConfiguration.md) for the complete YAML schema.
 
 ---
 
@@ -487,7 +487,7 @@ Use the **CDK (Connector Development Kit)**. Each of the 6 connector types has a
 | **Observability** | `BaseObservability` | `BaseObservability` | `_write(line)`, `_format_event()` |
 | **Discovery** | `BaseDiscovery` | `BaseDiscovery` | `probe()`, `_discover_provider_models()` |
 
-> Interface specs: [Connector Interfaces](../ConnectorInterfaces.html) | Pre-shipped list: [Connector Catalogue](../ConnectorCatalogue.html)
+> Interface specs: [Connector Interfaces](../ConnectorInterfaces.md) | Pre-shipped list: [Connector Catalogue](../ConnectorCatalogue.md)
 
 ### Where to place custom connector code
 
@@ -951,7 +951,7 @@ pools:
     strategy: corp.cost-aware.v1
 ```
 
-See the [Connector Catalogue](../ConnectorCatalogue.html) for all pre-shipped connectors and [Connector Interfaces](../ConnectorInterfaces.html) for interface specifications.
+See the [Connector Catalogue](../ConnectorCatalogue.md) for all pre-shipped connectors and [Connector Interfaces](../ConnectorInterfaces.md) for interface specifications.
 
 ---
 
@@ -959,17 +959,17 @@ See the [Connector Catalogue](../ConnectorCatalogue.html) for all pre-shipped co
 
 | Document | What it covers |
 |----------|---------------|
-| [System Concept](../SystemConcept.html) | Architecture overview — routing pipeline, pools, providers |
-| [Model Capabilities](../ModelCapabilities.html) | Complete capability hierarchy tree |
-| [System Configuration](../SystemConfiguration.html) | YAML schema reference for all sections |
-| [System Services](../SystemServices.html) | Runtime objects — Router, Pool, Model, StateManager |
-| [Connector Catalogue](../ConnectorCatalogue.html) | All 54 pre-shipped connectors with config schemas |
-| [Connector Interfaces](../ConnectorInterfaces.html) | Interface specs for all 6 connector types |
-| [Quick Start](QuickStart.html) | 5-minute hands-on tutorial |
-| [Error Handling](ErrorHandling.html) | Exception hierarchy and retry guidance |
-| [Middleware](Middleware.html) | Request/response interception patterns |
-| [Testing](Testing.html) | Mock client for unit tests |
-| [Capabilities](Capabilities.html) | Capability discovery API |
-| [Secret Stores](SecretStores.html) | Secret store configuration and usage |
-| [Browser Usage](BrowserUsage.html) | Browser-specific setup and CORS |
-| [Proxy Guide](ProxyGuide.html) | Docker proxy deployment |
+| [System Concept](../SystemConcept.md) | Architecture overview — routing pipeline, pools, providers |
+| [Model Capabilities](../ModelCapabilities.md) | Complete capability hierarchy tree |
+| [System Configuration](../SystemConfiguration.md) | YAML schema reference for all sections |
+| [System Services](../SystemServices.md) | Runtime objects — Router, Pool, Model, StateManager |
+| [Connector Catalogue](../ConnectorCatalogue.md) | All 54 pre-shipped connectors with config schemas |
+| [Connector Interfaces](../ConnectorInterfaces.md) | Interface specs for all 6 connector types |
+| [Quick Start](QuickStart.md) | 5-minute hands-on tutorial |
+| [Error Handling](ErrorHandling.md) | Exception hierarchy and retry guidance |
+| [Middleware](Middleware.md) | Request/response interception patterns |
+| [Testing](Testing.md) | Mock client for unit tests |
+| [Capabilities](Capabilities.md) | Capability discovery API |
+| [Secret Stores](SecretStores.md) | Secret store configuration and usage |
+| [Browser Usage](BrowserUsage.md) | Browser-specific setup and CORS |
+| [Proxy Guide](ProxyGuide.md) | Docker proxy deployment |

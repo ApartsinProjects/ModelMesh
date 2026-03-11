@@ -7,7 +7,7 @@ title: "Discovery Interface"
 
 A discovery connector keeps the model catalogue accurate and provider health visible without manual intervention. Discovery connectors run as background processes on configurable schedules and feed results into the rotation policy for proactive deactivation.
 
-> **Reference:** [ConnectorInterfaces.md -- Discovery](../ConnectorInterfaces.html#discovery) | [ConnectorCatalogue.md -- Discovery Connectors](../ConnectorCatalogue.html#discovery-connectors)
+> **Reference:** [ConnectorInterfaces.md -- Discovery](../ConnectorInterfaces.md#discovery) | [ConnectorCatalogue.md -- Discovery Connectors](../ConnectorCatalogue.md#discovery-connectors)
 
 ---
 
@@ -258,7 +258,7 @@ interface DiscoveryConnector extends RegistrySync, HealthMonitoring {}
 
 ## Common Configuration
 
-Parameters shared by all discovery connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Discovery Connectors](../ConnectorCatalogue.html#discovery-connectors)).
+Parameters shared by all discovery connectors. Individual connectors may add connector-specific parameters (see [ConnectorCatalogue.md -- Discovery Connectors](../ConnectorCatalogue.md#discovery-connectors)).
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -278,4 +278,4 @@ Parameters shared by all discovery connectors. Individual connectors may add con
 
 ## CDK Base Class
 
-The CDK provides [BaseDiscovery](../cdk/BaseClasses.html#basediscovery) with diff-based sync and failure-threshold health monitoring. Specialized class: [HttpHealthDiscovery](../cdk/BaseClasses.html#httphealthdiscovery). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.html#tutorial-5-complete-connector-set-for-acmecorp).
+The CDK provides [BaseDiscovery](../cdk/BaseClasses.md#basediscovery) with diff-based sync and failure-threshold health monitoring. Specialized class: [HttpHealthDiscovery](../cdk/BaseClasses.md#httphealthdiscovery). See [DeveloperGuide -- Tutorial 5](../cdk/DeveloperGuide.md#tutorial-5-complete-connector-set-for-acmecorp).

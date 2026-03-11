@@ -7,7 +7,7 @@ title: "EventEmitter"
 
 Publishes routing events to all active observability connectors. Events cover the full model lifecycle -- activation, deactivation, rotation, recovery -- as well as provider health changes, pool membership updates, and discovery sync results. Multiple connectors can subscribe simultaneously (e.g., a webhook connector for alerts and a file connector for dashboards).
 
-**Depends on:** [ObservabilityConnector](../ConnectorInterfaces.html#observability)
+**Depends on:** [ObservabilityConnector](../ConnectorInterfaces.md#observability)
 
 ---
 
@@ -148,7 +148,7 @@ class EventEmitter {
 
 ## Configuration
 
-See [SystemConfiguration.md -- Observability](../SystemConfiguration.html#observability) for full YAML reference.
+See [SystemConfiguration.md -- Observability](../SystemConfiguration.md#observability) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

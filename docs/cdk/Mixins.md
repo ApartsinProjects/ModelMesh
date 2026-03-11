@@ -12,9 +12,9 @@ Mixins are reusable building blocks that connector authors compose into their im
 **TypeScript** uses composition. Because TypeScript interfaces cannot carry implementation, mixins are standalone helper objects created by factory functions. The connector receives them through its constructor and delegates to their methods explicitly.
 
 > **Cross-references:** Types referenced below are defined in the interface documentation:
-> - [Provider](../interfaces/Provider.html) -- `CompletionRequest`, `CompletionResponse`, `TokenUsage`
-> - [Storage](../interfaces/Storage.html) -- `SerializationFormat`
-> - [Rotation Policy](../interfaces/RotationPolicy.html) -- `ModelSnapshot`
+> - [Provider](../interfaces/Provider.md) -- `CompletionRequest`, `CompletionResponse`, `TokenUsage`
+> - [Storage](../interfaces/Storage.md) -- `SerializationFormat`
+> - [Rotation Policy](../interfaces/RotationPolicy.md) -- `ModelSnapshot`
 
 ---
 

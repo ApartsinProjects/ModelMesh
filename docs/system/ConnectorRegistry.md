@@ -7,7 +7,7 @@ title: "ConnectorRegistry"
 
 Catalogue of available connector implementations. The registry loads built-in connectors at initialization and custom connectors from packages referenced in configuration. All connector types -- provider, rotation, secret store, storage, observability, and discovery -- register here and are retrieved by their naming-convention ID. Connector packages are zip archives or directory paths containing one or more connector implementations that self-register on load.
 
-**Depends on:** [ModelMesh](ModelMesh.html)
+**Depends on:** [ModelMesh](ModelMesh.md)
 
 ---
 
@@ -168,7 +168,7 @@ class ConnectorRegistry {
 
 ## Configuration
 
-See [SystemConfiguration.md -- Connectors](../SystemConfiguration.html#connectors) for full YAML reference.
+See [SystemConfiguration.md -- Connectors](../SystemConfiguration.md#connectors) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

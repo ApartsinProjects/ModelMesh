@@ -5,9 +5,9 @@ title: "Connector Catalogue"
 
 # Connector Catalogue
 
-**Pre-shipped connector implementations for ModelMesh Lite.** Each section lists available implementations for one connector type. Individual connector documentation is in [connectors/](connectors/openai-llm.html). Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.html). Custom connectors implement the same interfaces and register in the same catalogue (see [Developer Manual](SystemConcept.html#connector-based-extensibility)).
+**Pre-shipped connector implementations for ModelMesh Lite.** Each section lists available implementations for one connector type. Individual connector documentation is in [connectors/](connectors/openai-llm.md). Interface definitions are in [ConnectorInterfaces.md](ConnectorInterfaces.md). Custom connectors implement the same interfaces and register in the same catalogue (see [Developer Manual](SystemConcept.md#connector-based-extensibility)).
 
-> **Building custom connectors?** The [Connector Development Kit](cdk/Overview.html) provides base classes and tutorials for creating new connectors with minimal code.
+> **Building custom connectors?** The [Connector Development Kit](cdk/Overview.md) provides base classes and tutorials for creating new connectors with minimal code.
 
 > Pricing and availability change frequently; consult each provider's documentation for current details.
 
@@ -36,13 +36,13 @@ In YAML configuration, the `connector_type.` prefix is omitted within its own se
 
 ## Provider Connectors
 
-Interface: [ConnectorInterfaces.md — Provider](ConnectorInterfaces.html#provider)
+Interface: [ConnectorInterfaces.md — Provider](ConnectorInterfaces.md#provider)
 
 ModelMesh Lite ships with provider connectors for: **OpenAI** (`provider.openai.llm.v1`), **Gemini** (`provider.google.gemini.v1`), **OpenRouter** (`provider.openrouter.gateway.v1`), **Anthropic** (`anthropic.claude.v1`), **Groq** (`provider.groq.api.v1`), **DeepSeek** (`provider.deepseek.api.v1`), **Mistral** (`provider.mistral.api.v1`), **Together AI** (`provider.together.api.v1`), **xAI Grok** (`provider.xai.grok.v1`), **Cohere** (`provider.cohere.nlp.v1`), **Perplexity** (`provider.perplexity.search.v1`), **ElevenLabs** (`provider.elevenlabs.tts.v1`), **Azure Speech** (`provider.azure.tts.v1`), **AssemblyAI** (`provider.assemblyai.stt.v1`), **Tavily** (`provider.tavily.search.v1`), **Serper** (`provider.serper.search.v1`), **Jina** (`provider.jina.search.v1`), **Firecrawl** (`provider.firecrawl.search.v1`), **Ollama** (`ollama.local.v1`), **LM Studio** (`lmstudio.local.v1`), **vLLM** (`vllm.local.v1`), and **LocalAI** (`localai.local.v1`). Providers marked **(Planned)** below are not yet implemented.
 
 ### Provider Capability Format
 
-Provider connectors (OpenAI, Anthropic, and others) declare model capabilities using **dot-notation paths** that reference the [capability hierarchy](ModelCapabilities.html). Short-form capability names (`"chat"`, `"tools"`, `"vision"`) are no longer used; capabilities now map directly to tree nodes such as `generation.text-generation.chat-completion`. Features like tool calling, vision, and system prompt support are declared separately in a `features` dict.
+Provider connectors (OpenAI, Anthropic, and others) declare model capabilities using **dot-notation paths** that reference the [capability hierarchy](ModelCapabilities.md). Short-form capability names (`"chat"`, `"tools"`, `"vision"`) are no longer used; capabilities now map directly to tree nodes such as `generation.text-generation.chat-completion`. Features like tool calling, vision, and system prompt support are declared separately in a `features` dict.
 
 **Before (short-form, deprecated):**
 
@@ -69,7 +69,7 @@ The provider-level `capabilities` config follows the same convention. For exampl
 
 ### Pool Definition Modes
 
-Pools support three definition modes (see also [SystemConfiguration.md -- Pools](SystemConfiguration.html#pools)):
+Pools support three definition modes (see also [SystemConfiguration.md -- Pools](SystemConfiguration.md#pools)):
 
 | Mode | Config Fields | Behaviour |
 | --- | --- | --- |
@@ -240,7 +240,7 @@ Non-AI web services can be wrapped as provider connectors using the same interfa
 | **BaseProvider** | Node.js | `http`/`https` | Node.js streams | Server-side applications, CLI tools, backend services |
 | **BrowserBaseProvider** | Browser, Deno, Bun, Workers | Fetch API | `ReadableStream` | Single-page apps, browser extensions, edge runtimes |
 
-Both classes expose the same provider interface and the same protected hooks for subclassing. See [cdk/BaseClasses](cdk/BaseClasses.html#browserbaseprovider) for details and [guides/BrowserUsage](guides/BrowserUsage.html) for browser setup.
+Both classes expose the same provider interface and the same protected hooks for subclassing. See [cdk/BaseClasses](cdk/BaseClasses.md#browserbaseprovider) for details and [guides/BrowserUsage](guides/BrowserUsage.md) for browser setup.
 
 ### Runtime Environment Metadata
 
@@ -290,13 +290,13 @@ transcript = client.audio.transcriptions.create(
 )
 ```
 
-Audio requests are internally bridged to `CompletionRequest`/`CompletionResponse` via the `AudioRequest` and `AudioResponse` types (see [ConnectorInterfaces.md -- Audio](ConnectorInterfaces.html#audio)). The same rotation, failover, and pool logic applies to audio providers.
+Audio requests are internally bridged to `CompletionRequest`/`CompletionResponse` via the `AudioRequest` and `AudioResponse` types (see [ConnectorInterfaces.md -- Audio](ConnectorInterfaces.md#audio)). The same rotation, failover, and pool logic applies to audio providers.
 
 ---
 
 ## Rotation Policies
 
-Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.html#rotation-policy). Full attributes in [SystemConfiguration.md — Pools](SystemConfiguration.html#pools).
+Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.md#rotation-policy). Full attributes in [SystemConfiguration.md — Pools](SystemConfiguration.md#pools).
 
 | Policy | Description |
 | --- | --- |
@@ -313,7 +313,7 @@ Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.html
 
 ## Secret Store Connectors
 
-Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.html#secret-store)
+Interface: [ConnectorInterfaces.md — Secret Store](ConnectorInterfaces.md#secret-store)
 
 | Store | Description | Free Tier | Docs |
 | --- | --- | --- | --- |
@@ -430,7 +430,7 @@ Stores secrets in the browser's localStorage. Supports the full `SecretManagemen
 
 ## Storage Connectors
 
-Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.html#storage)
+Interface: [ConnectorInterfaces.md — Storage](ConnectorInterfaces.md#storage)
 
 | Connector | Backend | Concurrency | Free Tier | Best For | Docs |
 | --- | --- | --- | --- | --- | --- |
@@ -534,7 +534,7 @@ Natively async storage using the browser's IndexedDB API. Stores binary data dir
 
 ## Observability Connectors
 
-Interface: [ConnectorInterfaces.md — Observability](ConnectorInterfaces.html#observability)
+Interface: [ConnectorInterfaces.md — Observability](ConnectorInterfaces.md#observability)
 
 The observability interface combines four concerns: **events** (state changes), **logging** (request/response data), **statistics** (aggregate metrics), and **tracing** (severity-tagged structured traces). All core components (Router, Pool, Mesh) and CDK base classes (BaseProvider) emit traces through the configured observability connector. If no connector is configured, the `null` connector is used (zero overhead).
 
@@ -640,7 +640,7 @@ All observability connectors write records with a `"type"` field. The file conne
 
 ## Discovery Connectors
 
-Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.html#discovery)
+Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.md#discovery)
 
 | Connector | Description |
 | --- | --- |
@@ -649,4 +649,4 @@ Interface: [ConnectorInterfaces.md — Discovery](ConnectorInterfaces.html#disco
 
 ---
 
-See also: [FAQ](guides/FAQ.html) · [Connector Interfaces](ConnectorInterfaces.html) · [CDK Base Classes](cdk/BaseClasses.html) · [System Configuration](SystemConfiguration.html)
+See also: [FAQ](guides/FAQ.md) · [Connector Interfaces](ConnectorInterfaces.md) · [CDK Base Classes](cdk/BaseClasses.md) · [System Configuration](SystemConfiguration.md)

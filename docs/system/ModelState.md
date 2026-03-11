@@ -7,7 +7,7 @@ title: "ModelState"
 
 Per-model health and usage tracking dataclass. Updated after each request and persisted through the `StateManager`. Serializable for storage and recovery across restarts. This is a data structure, not a service.
 
-**Depends on:** [StateManager](StateManager.html) (for persistence).
+**Depends on:** [StateManager](StateManager.md) (for persistence).
 
 ---
 

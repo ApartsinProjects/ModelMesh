@@ -7,7 +7,7 @@ title: "RequestLogger"
 
 Records request and response data at a configurable detail level through observability connectors. The logger supports three detail levels to balance observability against payload size and privacy: metadata-only (timestamps, model, latency), summary (metadata plus truncated payloads), and full (complete request and response bodies). Sensitive data such as API keys and tokens can be automatically redacted from logged payloads.
 
-**Depends on:** [ObservabilityConnector](../ConnectorInterfaces.html#observability)
+**Depends on:** [ObservabilityConnector](../ConnectorInterfaces.md#observability)
 
 ---
 
@@ -138,7 +138,7 @@ class RequestLogger {
 
 ## Configuration
 
-See [SystemConfiguration.md -- Observability](../SystemConfiguration.html#observability) for full YAML reference.
+See [SystemConfiguration.md -- Observability](../SystemConfiguration.md#observability) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

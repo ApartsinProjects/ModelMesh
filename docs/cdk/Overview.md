@@ -108,7 +108,7 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);
 ```
 
-> **See also:** [ConvenienceLayer.md](ConvenienceLayer.html) for full API reference, auto-detection details, and advanced usage.
+> **See also:** [ConvenienceLayer.md](ConvenienceLayer.md) for full API reference, auto-detection details, and advanced usage.
 
 ### 1. Use a Specialized Class with Configuration Only (Zero Code)
 
@@ -312,12 +312,12 @@ The CDK dramatically reduces the amount of code required to build a connector. T
 
 | Document | Description |
 | --- | --- |
-| [ConvenienceLayer.md](ConvenienceLayer.html) | Convenience layer API: `modelmesh.create()`, `MeshClient`, `QuickProvider`, auto-detection |
-| [BaseClasses.md](BaseClasses.html) | Detailed API reference for all six base classes |
-| [Mixins.md](Mixins.html) | Cross-cutting mixins: Retry, Cache, RateLimiter, Metrics, Serialization |
-| [Helpers.md](Helpers.html) | Utility functions and shared helpers |
-| [Enums.md](Enums.html) | Consolidated enum reference for all CDK and interface enums |
-| [DeveloperGuide.md](DeveloperGuide.html) | Step-by-step tutorial for building a custom connector |
+| [ConvenienceLayer.md](ConvenienceLayer.md) | Convenience layer API: `modelmesh.create()`, `MeshClient`, `QuickProvider`, auto-detection |
+| [BaseClasses.md](BaseClasses.md) | Detailed API reference for all six base classes |
+| [Mixins.md](Mixins.md) | Cross-cutting mixins: Retry, Cache, RateLimiter, Metrics, Serialization |
+| [Helpers.md](Helpers.md) | Utility functions and shared helpers |
+| [Enums.md](Enums.md) | Consolidated enum reference for all CDK and interface enums |
+| [DeveloperGuide.md](DeveloperGuide.md) | Step-by-step tutorial for building a custom connector |
 | [interfaces/](../interfaces/) | Authoritative interface definitions for all six connector types |
-| [ConnectorCatalogue.md](../ConnectorCatalogue.html) | Registry of all pre-shipped connector implementations |
-| [SystemConcept.md](../SystemConcept.html) | System architecture and connector extensibility model |
+| [ConnectorCatalogue.md](../ConnectorCatalogue.md) | Registry of all pre-shipped connector implementations |
+| [SystemConcept.md](../SystemConcept.md) | System architecture and connector extensibility model |

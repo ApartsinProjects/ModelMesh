@@ -7,7 +7,7 @@ title: "DeactivationEvaluator"
 
 Evaluates whether active models should move to standby status. The evaluator is triggered after each request completion or on state change events such as quota exhaustion, error threshold breach, budget cap, or maintenance window entry. It inspects the current model snapshot and returns a boolean decision along with an optional reason code that is recorded in the model's state history.
 
-**Depends on:** [ModelState](ModelState.html), [RotationPolicyService](RotationPolicyService.html)
+**Depends on:** [ModelState](ModelState.md), [RotationPolicyService](RotationPolicyService.md)
 
 ---
 
@@ -146,7 +146,7 @@ class DeactivationEvaluator {
 
 ## Configuration
 
-Parameters configured per pool under the `deactivation` key. See [SystemConfiguration.md -- Pools](../SystemConfiguration.html#pools) for full YAML reference.
+Parameters configured per pool under the `deactivation` key. See [SystemConfiguration.md -- Pools](../SystemConfiguration.md#pools) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

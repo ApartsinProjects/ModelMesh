@@ -7,7 +7,7 @@ title: "StateFilter"
 
 Pipeline stage that excludes standby models and models from deactivated providers. Ensures only healthy, active models reach the selection stage of the routing pipeline.
 
-**Depends on:** [Model](Model.html), [ModelState](ModelState.html), [ProviderState](ProviderState.html).
+**Depends on:** [Model](Model.md), [ModelState](ModelState.md), [ProviderState](ProviderState.md).
 
 ---
 

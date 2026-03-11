@@ -173,16 +173,16 @@ Ten reasons to add ModelMesh to your next project.
 
 | # | Value | Feature | How It Delivers |
 |---|---|---|---|
-| **1** | **Integrate in two minutes, scale the configuration as you grow** | **[Progressive Configuration](guides/FAQ.html#1-how-quickly-can-i-integrate-modelmesh-into-my-project)** | **Env vars** for instant start. **YAML** for providers, pools, strategies, budgets, secrets. **Programmatic** for dynamic setups. All three compose seamlessly |
-| **2** | **One familiar API across every provider you will ever use** | **[Uniform OpenAI-Compatible API](guides/FAQ.html#2-do-i-need-to-learn-a-new-api)** | Same `client.chat.completions.create()` for OpenAI, Anthropic, Gemini, DeepSeek, Mistral, Ollama, or custom models. Chat, embeddings, TTS, STT, image generation. Swap providers in config, never in code |
-| **3** | **Chain free tiers so you never hit a quota wall** | **[Free-Tier Aggregation](guides/FAQ.html#3-how-does-free-tier-aggregation-work)** | Set free API keys, call `create("chat")`. The library detects providers, pools them by capability, and rotates silently when a quota exhausts. Your code sees one provider; ModelMesh manages the rotation |
-| **4** | **Provider goes down, your app stays up** | **[Resilient Routing](guides/FAQ.html#4-what-happens-when-a-provider-goes-down)** | Multiple rotation strategies: cost-first, latency-first, round-robin, sticky, rate-limit-aware. On failure the router deactivates the model, selects the next candidate, and retries within the same request |
-| **5** | **Request capabilities, not model names** | **[Capability Discovery](guides/FAQ.html#5-what-does-request-capabilities-not-model-names-mean)** | Ask for `"chat-completion"`, not `"gpt-4o"`. ModelMesh resolves to the best available model. New models appear, old ones deprecate, your code stays the same |
-| **6** | **Spending caps enforced before the overage, not after** | **[Budget Enforcement](guides/FAQ.html#6-how-do-i-prevent-surprise-ai-bills)** | Real-time cost tracking per model and provider. Set daily or monthly limits in config. `BudgetExceededError` fires before the breaching request |
-| **7** | **One library for Python backend, TypeScript frontend, Docker proxy** | **[Full-Stack Deployment](guides/FAQ.html#7-can-i-use-modelmesh-with-my-existing-stack)** | `pip install`, `npm install`, or `docker run`. Each exposes the same API with zero core dependencies. One config file drives all deployment modes |
-| **8** | **Test AI code like regular code** | **[Mock Client and Testing](guides/FAQ.html#8-how-do-i-test-ai-code-without-burning-api-credits)** | `mock_client(responses=[...])` returns an identical API with zero network calls and millisecond execution. Typed exceptions carry structured metadata. `client.explain()` dry-runs routing decisions |
-| **9** | **Production-grade observability without extra plumbing** | **[Observability Connectors](guides/FAQ.html#9-what-observability-does-modelmesh-provide)** | Pre-built sinks for console, file, JSON-log, Prometheus, and webhooks. Structured traces across routing, failover, and budget events. Plug in custom callbacks for existing dashboards |
-| **10** | **When pre-built doesn't fit, extend without forking** | **[CDK](guides/FAQ.html#10-what-if-the-pre-built-connectors-dont-cover-my-use-case)** | Base classes for providers, rotation policies, secret stores, storage backends, and observability sinks. Inherit, override what you need, ship as a reusable package |
+| **1** | **Integrate in two minutes, scale the configuration as you grow** | **[Progressive Configuration](guides/FAQ.md#1-how-quickly-can-i-integrate-modelmesh-into-my-project)** | **Env vars** for instant start. **YAML** for providers, pools, strategies, budgets, secrets. **Programmatic** for dynamic setups. All three compose seamlessly |
+| **2** | **One familiar API across every provider you will ever use** | **[Uniform OpenAI-Compatible API](guides/FAQ.md#2-do-i-need-to-learn-a-new-api)** | Same `client.chat.completions.create()` for OpenAI, Anthropic, Gemini, DeepSeek, Mistral, Ollama, or custom models. Chat, embeddings, TTS, STT, image generation. Swap providers in config, never in code |
+| **3** | **Chain free tiers so you never hit a quota wall** | **[Free-Tier Aggregation](guides/FAQ.md#3-how-does-free-tier-aggregation-work)** | Set free API keys, call `create("chat")`. The library detects providers, pools them by capability, and rotates silently when a quota exhausts. Your code sees one provider; ModelMesh manages the rotation |
+| **4** | **Provider goes down, your app stays up** | **[Resilient Routing](guides/FAQ.md#4-what-happens-when-a-provider-goes-down)** | Multiple rotation strategies: cost-first, latency-first, round-robin, sticky, rate-limit-aware. On failure the router deactivates the model, selects the next candidate, and retries within the same request |
+| **5** | **Request capabilities, not model names** | **[Capability Discovery](guides/FAQ.md#5-what-does-request-capabilities-not-model-names-mean)** | Ask for `"chat-completion"`, not `"gpt-4o"`. ModelMesh resolves to the best available model. New models appear, old ones deprecate, your code stays the same |
+| **6** | **Spending caps enforced before the overage, not after** | **[Budget Enforcement](guides/FAQ.md#6-how-do-i-prevent-surprise-ai-bills)** | Real-time cost tracking per model and provider. Set daily or monthly limits in config. `BudgetExceededError` fires before the breaching request |
+| **7** | **One library for Python backend, TypeScript frontend, Docker proxy** | **[Full-Stack Deployment](guides/FAQ.md#7-can-i-use-modelmesh-with-my-existing-stack)** | `pip install`, `npm install`, or `docker run`. Each exposes the same API with zero core dependencies. One config file drives all deployment modes |
+| **8** | **Test AI code like regular code** | **[Mock Client and Testing](guides/FAQ.md#8-how-do-i-test-ai-code-without-burning-api-credits)** | `mock_client(responses=[...])` returns an identical API with zero network calls and millisecond execution. Typed exceptions carry structured metadata. `client.explain()` dry-runs routing decisions |
+| **9** | **Production-grade observability without extra plumbing** | **[Observability Connectors](guides/FAQ.md#9-what-observability-does-modelmesh-provide)** | Pre-built sinks for console, file, JSON-log, Prometheus, and webhooks. Structured traces across routing, failover, and budget events. Plug in custom callbacks for existing dashboards |
+| **10** | **When pre-built doesn't fit, extend without forking** | **[CDK](guides/FAQ.md#10-what-if-the-pre-built-connectors-dont-cover-my-use-case)** | Base classes for providers, rotation policies, secret stores, storage backends, and observability sinks. Inherit, override what you need, ship as a reusable package |
 
 ## Documentation
 
@@ -190,68 +190,68 @@ Ten reasons to add ModelMesh to your next project.
 
 | Document | Description |
 |---|---|
-| **[FAQ](guides/FAQ.html)** | Ten questions developers ask before adopting, each with a working code tutorial |
-| **[Developer Quick Start](guides/QuickStart.html)** | Get productive in 5 minutes: all features walkthrough with cheat sheet |
+| **[FAQ](guides/FAQ.md)** | Ten questions developers ask before adopting, each with a working code tutorial |
+| **[Developer Quick Start](guides/QuickStart.md)** | Get productive in 5 minutes: all features walkthrough with cheat sheet |
 
 ### Core Concepts
 
 | Document | Description |
 |---|---|
-| **[System Concept](SystemConcept.html)** | Architecture, design, and full feature overview |
-| **[Model Capabilities](ModelCapabilities.html)** | Capability hierarchy tree and predefined pools |
-| **[System Configuration](SystemConfiguration.html)** | Full YAML configuration reference |
-| **[Connector Catalogue](ConnectorCatalogue.html)** | All pre-shipped connectors with config schemas |
+| **[System Concept](SystemConcept.md)** | Architecture, design, and full feature overview |
+| **[Model Capabilities](ModelCapabilities.md)** | Capability hierarchy tree and predefined pools |
+| **[System Configuration](SystemConfiguration.md)** | Full YAML configuration reference |
+| **[Connector Catalogue](ConnectorCatalogue.md)** | All pre-shipped connectors with config schemas |
 
 ### Developer Guides
 
 | Document | Description |
 |---|---|
-| **[Error Handling](guides/ErrorHandling.html)** | Exception hierarchy, catch patterns, retry guidance |
-| **[Middleware](guides/Middleware.html)** | Write custom middleware: logging, transforms, caching, error fallbacks |
-| **[Testing](guides/Testing.html)** | Unit testing with `mock_client()` — no API keys needed |
-| **[Capabilities](guides/Capabilities.html)** | Discover, resolve, and search capability aliases |
-| **[Audio (TTS/STT)](ConnectorInterfaces.html#audio)** | AudioRequest/AudioResponse types, `client.audio` namespace |
+| **[Error Handling](guides/ErrorHandling.md)** | Exception hierarchy, catch patterns, retry guidance |
+| **[Middleware](guides/Middleware.md)** | Write custom middleware: logging, transforms, caching, error fallbacks |
+| **[Testing](guides/Testing.md)** | Unit testing with `mock_client()` — no API keys needed |
+| **[Capabilities](guides/Capabilities.md)** | Discover, resolve, and search capability aliases |
+| **[Audio (TTS/STT)](ConnectorInterfaces.md#audio)** | AudioRequest/AudioResponse types, `client.audio` namespace |
 
 ### Deployment
 
 | Document | Description |
 |---|---|
-| **[Proxy Guide](guides/ProxyGuide.html)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
-| **[Browser Usage](guides/BrowserUsage.html)** | BrowserBaseProvider, CORS proxy setup, and browser-specific patterns |
-| **[AI Agent Integration](ForAIAgent.html)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
+| **[Proxy Guide](guides/ProxyGuide.md)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
+| **[Browser Usage](guides/BrowserUsage.md)** | BrowserBaseProvider, CORS proxy setup, and browser-specific patterns |
+| **[AI Agent Integration](ForAIAgent.md)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
 
 ### API Reference
 
 | Document | Description |
 |---|---|
-| **[Connector Interfaces](ConnectorInterfaces.html)** | Interface definitions for all connector types |
-| **[Provider](interfaces/Provider.html)** | Provider connector interface spec |
-| **[Rotation Policy](interfaces/RotationPolicy.html)** | Rotation policy interface spec |
-| **[Secret Store](interfaces/SecretStore.html)** | Secret store interface spec |
-| **[Storage](interfaces/Storage.html)** | Storage backend interface spec |
-| **[Observability](interfaces/Observability.html)** | Observability connector interface spec |
-| **[Discovery](interfaces/Discovery.html)** | Discovery connector interface spec |
+| **[Connector Interfaces](ConnectorInterfaces.md)** | Interface definitions for all connector types |
+| **[Provider](interfaces/Provider.md)** | Provider connector interface spec |
+| **[Rotation Policy](interfaces/RotationPolicy.md)** | Rotation policy interface spec |
+| **[Secret Store](interfaces/SecretStore.md)** | Secret store interface spec |
+| **[Storage](interfaces/Storage.md)** | Storage backend interface spec |
+| **[Observability](interfaces/Observability.md)** | Observability connector interface spec |
+| **[Discovery](interfaces/Discovery.md)** | Discovery connector interface spec |
 
 ### Runtime Services
 
 | Document | Description |
 |---|---|
-| **[Overview](system/Overview.html)** | Runtime architecture and object graph |
-| **[System Services](SystemServices.html)** | Router, Pool, Model, and State runtime objects |
-| **[Router](system/Router.html)** | Request routing and retry logic |
-| **[Capability Pool](system/CapabilityPool.html)** | Pool lifecycle and model selection |
-| **[State Manager](system/StateManager.html)** | State persistence and recovery |
-| **[Event Emitter](system/EventEmitter.html)** | Event system for routing, failover, and budget events |
+| **[Overview](system/Overview.md)** | Runtime architecture and object graph |
+| **[System Services](SystemServices.md)** | Router, Pool, Model, and State runtime objects |
+| **[Router](system/Router.md)** | Request routing and retry logic |
+| **[Capability Pool](system/CapabilityPool.md)** | Pool lifecycle and model selection |
+| **[State Manager](system/StateManager.md)** | State persistence and recovery |
+| **[Event Emitter](system/EventEmitter.md)** | Event system for routing, failover, and budget events |
 
 ### Extending ModelMesh (CDK)
 
 | Document | Description |
 |---|---|
-| **[CDK Overview](cdk/Overview.html)** | Architecture and class hierarchy |
-| **[Base Classes](cdk/BaseClasses.html)** | Reference for all CDK base classes |
-| **[Developer Guide](cdk/DeveloperGuide.html)** | Tutorials: build your own connectors |
-| **[Convenience Layer](cdk/ConvenienceLayer.html)** | QuickProvider and zero-config setup |
-| **[Mixins](cdk/Mixins.html)** | Cache, metrics, rate limiter, HTTP client |
+| **[CDK Overview](cdk/Overview.md)** | Architecture and class hierarchy |
+| **[Base Classes](cdk/BaseClasses.md)** | Reference for all CDK base classes |
+| **[Developer Guide](cdk/DeveloperGuide.md)** | Tutorials: build your own connectors |
+| **[Convenience Layer](cdk/ConvenienceLayer.md)** | QuickProvider and zero-config setup |
+| **[Mixins](cdk/Mixins.md)** | Cache, metrics, rate limiter, HTTP client |
 
 ### Samples
 

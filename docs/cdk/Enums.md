@@ -11,7 +11,7 @@ All enums used by the CDK and connector interfaces, consolidated in one referenc
 
 ## Provider Enums
 
-> Source: [interfaces/Provider.md](../interfaces/Provider.html)
+> Source: [interfaces/Provider.md](../interfaces/Provider.md)
 
 ### AuthMethod
 
@@ -46,7 +46,7 @@ enum AuthMethod {
 
 ## Rotation Policy Enums
 
-> Source: [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.html)
+> Source: [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.md)
 
 ### ModelStatus
 
@@ -154,7 +154,7 @@ enum RecoveryTrigger {
 
 ## Storage Enums
 
-> Source: [interfaces/Storage.md](../interfaces/Storage.html)
+> Source: [interfaces/Storage.md](../interfaces/Storage.md)
 
 ### SyncPolicy
 
@@ -221,7 +221,7 @@ enum SerializationFormat {
 
 ## Observability Enums
 
-> Source: [interfaces/Observability.md](../interfaces/Observability.html)
+> Source: [interfaces/Observability.md](../interfaces/Observability.md)
 
 ### EventType
 
@@ -335,7 +335,7 @@ enum LogLevel {
 
 ## Discovery Enums
 
-> Source: [interfaces/Discovery.md](../interfaces/Discovery.html)
+> Source: [interfaces/Discovery.md](../interfaces/Discovery.md)
 
 ### SyncAction
 
@@ -447,15 +447,15 @@ Each enum is authoritatively defined in its interface document. This file consol
 
 | Enum | Authoritative Source |
 | --- | --- |
-| `AuthMethod` | [interfaces/Provider.md](../interfaces/Provider.html) |
-| `ModelStatus` | [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.html) |
-| `DeactivationReason` | [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.html) |
-| `RecoveryTrigger` | [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.html) |
-| `SyncPolicy` | [interfaces/Storage.md](../interfaces/Storage.html) |
-| `SerializationFormat` | [interfaces/Storage.md](../interfaces/Storage.html) |
-| `Severity` | [interfaces/Observability.md](../interfaces/Observability.html) |
-| `EventType` | [interfaces/Observability.md](../interfaces/Observability.html) |
-| `LogLevel` | [interfaces/Observability.md](../interfaces/Observability.html) |
-| `SyncAction` | [interfaces/Discovery.md](../interfaces/Discovery.html) |
-| `DeprecationAction` | [interfaces/Discovery.md](../interfaces/Discovery.html) |
+| `AuthMethod` | [interfaces/Provider.md](../interfaces/Provider.md) |
+| `ModelStatus` | [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.md) |
+| `DeactivationReason` | [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.md) |
+| `RecoveryTrigger` | [interfaces/RotationPolicy.md](../interfaces/RotationPolicy.md) |
+| `SyncPolicy` | [interfaces/Storage.md](../interfaces/Storage.md) |
+| `SerializationFormat` | [interfaces/Storage.md](../interfaces/Storage.md) |
+| `Severity` | [interfaces/Observability.md](../interfaces/Observability.md) |
+| `EventType` | [interfaces/Observability.md](../interfaces/Observability.md) |
+| `LogLevel` | [interfaces/Observability.md](../interfaces/Observability.md) |
+| `SyncAction` | [interfaces/Discovery.md](../interfaces/Discovery.md) |
+| `DeprecationAction` | [interfaces/Discovery.md](../interfaces/Discovery.md) |
 | `ConnectorType` | CDK-specific (this document) |

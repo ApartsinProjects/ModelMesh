@@ -7,7 +7,7 @@ title: "CapabilityResolver"
 
 Maps a capability name to matching capability pools using the capability hierarchy. Traverses the `CapabilityTree` to find pools targeting the requested node or any of its ancestors. Results are ordered by specificity so that leaf-level pools (most specific) appear first.
 
-**Depends on:** [CapabilityTree](CapabilityTree.html), [CapabilityPool](CapabilityPool.html).
+**Depends on:** [CapabilityTree](CapabilityTree.md), [CapabilityPool](CapabilityPool.md).
 
 ---
 

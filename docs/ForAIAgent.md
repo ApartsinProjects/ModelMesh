@@ -555,9 +555,9 @@ curl -s http://localhost:8080/v1/models | grep -q 'text-generation'
 
 - **Repository:** https://github.com/ApartsinProjects/ModelMesh
 - **Documentation:** https://apartsinprojects.github.io/ModelMesh/
-- **System Concept:** [docs/SystemConcept](SystemConcept.html)
-- **Configuration Reference:** [docs/SystemConfiguration](SystemConfiguration.html)
-- **Connector Catalogue:** [docs/ConnectorCatalogue](ConnectorCatalogue.html)
-- **Proxy Guide:** [docs/guides/ProxyGuide](guides/ProxyGuide.html)
-- **CDK Overview:** [docs/cdk/Overview](cdk/Overview.html)
-- **FAQ:** [docs/guides/FAQ](guides/FAQ.html)
+- **System Concept:** [docs/SystemConcept](SystemConcept.md)
+- **Configuration Reference:** [docs/SystemConfiguration](SystemConfiguration.md)
+- **Connector Catalogue:** [docs/ConnectorCatalogue](ConnectorCatalogue.md)
+- **Proxy Guide:** [docs/guides/ProxyGuide](guides/ProxyGuide.md)
+- **CDK Overview:** [docs/cdk/Overview](cdk/Overview.md)
+- **FAQ:** [docs/guides/FAQ](guides/FAQ.md)

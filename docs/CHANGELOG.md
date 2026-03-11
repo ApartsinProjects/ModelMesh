@@ -19,28 +19,28 @@ All issues found and fixes applied during the 5 review cycles of the ModelMesh L
 
 | File | Issue | Fix |
 | --- | --- | --- |
-| `SystemConcept.md` | Referenced `ProviderSchemas.md` which does not exist (lines 101, 248) | Replaced with `[Provider Interface](interfaces/Provider.html)` and removed redundant footer reference |
+| `SystemConcept.md` | Referenced `ProviderSchemas.md` which does not exist (lines 101, 248) | Replaced with `[Provider Interface](interfaces/Provider.md)` and removed redundant footer reference |
 
 ### Root Docs Missing Subfolder References (4 fixes)
 
 | File | Fix |
 | --- | --- |
 | `SystemConcept.md` | Updated footer to mention `system/Overview.md`, `interfaces/Provider.md`, `connectors/openai-llm.md` as entry points |
-| `SystemServices.md` | Added link: "Individual service documentation with full code definitions is in [system/](system/Overview.html)." |
-| `ConnectorInterfaces.md` | Added link: "Full interface definitions with code are in [interfaces/](interfaces/Provider.html)." |
-| `ConnectorCatalogue.md` | Added link: "Individual connector documentation is in [connectors/](connectors/openai-llm.html)." |
+| `SystemServices.md` | Added link: "Individual service documentation with full code definitions is in [system/](system/Overview.md)." |
+| `ConnectorInterfaces.md` | Added link: "Full interface definitions with code are in [interfaces/](interfaces/Provider.md)." |
+| `ConnectorCatalogue.md` | Added link: "Individual connector documentation is in [connectors/](connectors/openai-llm.md)." |
 
 ### System Docs Pointing to Root Instead of Local Docs (7 fixes)
 
 | File | Old Link | New Link |
 | --- | --- | --- |
-| `system/ConnectorRegistry.md` | `[ModelMesh](../SystemServices.html#modelmesh)` | `[ModelMesh](ModelMesh.html)` |
-| `system/DeactivationEvaluator.md` | `[ModelState](../SystemServices.html#modelstate), [RotationPolicy](../SystemServices.html#rotationpolicy)` | `[ModelState](ModelState.html), [RotationPolicyService](RotationPolicyService.html)` |
-| `system/ModelRegistry.md` | `[CapabilityPool](../SystemServices.html#capabilitypool)` | `[CapabilityPool](CapabilityPool.html)` |
-| `system/OpenAIClient.md` | `[Router](../SystemServices.html#router)` | `[Router](Router.html)` |
-| `system/ProxyServer.md` | `[Router](../SystemServices.html#router), [ModelMesh](../SystemServices.html#modelmesh)` | `[Router](Router.html), [ModelMesh](ModelMesh.html)` |
-| `system/RecoveryEvaluator.md` | `[ModelState](../SystemServices.html#modelstate), [RotationPolicy](../SystemServices.html#rotationpolicy)` | `[ModelState](ModelState.html), [RotationPolicyService](RotationPolicyService.html)` |
-| `system/SelectionStrategy.md` | `[RotationPolicy](../SystemServices.html#rotationpolicy), [CapabilityPool](../SystemServices.html#capabilitypool)` | `[RotationPolicyService](RotationPolicyService.html), [CapabilityPool](CapabilityPool.html)` |
+| `system/ConnectorRegistry.md` | `[ModelMesh](../SystemServices.md#modelmesh)` | `[ModelMesh](ModelMesh.md)` |
+| `system/DeactivationEvaluator.md` | `[ModelState](../SystemServices.md#modelstate), [RotationPolicy](../SystemServices.md#rotationpolicy)` | `[ModelState](ModelState.md), [RotationPolicyService](RotationPolicyService.md)` |
+| `system/ModelRegistry.md` | `[CapabilityPool](../SystemServices.md#capabilitypool)` | `[CapabilityPool](CapabilityPool.md)` |
+| `system/OpenAIClient.md` | `[Router](../SystemServices.md#router)` | `[Router](Router.md)` |
+| `system/ProxyServer.md` | `[Router](../SystemServices.md#router), [ModelMesh](../SystemServices.md#modelmesh)` | `[Router](Router.md), [ModelMesh](ModelMesh.md)` |
+| `system/RecoveryEvaluator.md` | `[ModelState](../SystemServices.md#modelstate), [RotationPolicy](../SystemServices.md#rotationpolicy)` | `[ModelState](ModelState.md), [RotationPolicyService](RotationPolicyService.md)` |
+| `system/SelectionStrategy.md` | `[RotationPolicy](../SystemServices.md#rotationpolicy), [CapabilityPool](../SystemServices.md#capabilitypool)` | `[RotationPolicyService](RotationPolicyService.md), [CapabilityPool](CapabilityPool.md)` |
 
 ### Unlinked Plain-Text Dependencies (13 fixes)
 
@@ -53,11 +53,11 @@ Added markdown links for plain-text "Depends on" entries in 13 system docs:
 | File | Fix |
 | --- | --- |
 | `system/Overview.md` | Added links for 10 services in the Service Groupings table |
-| `system/RoutingPipeline.md` | Changed plain-text `SelectionStrategy` to `[SelectionStrategy](SelectionStrategy.html)` |
+| `system/RoutingPipeline.md` | Changed plain-text `SelectionStrategy` to `[SelectionStrategy](SelectionStrategy.md)` |
 
 ### Missing Interface References in Rotation Connectors (4 fixes)
 
-Added `See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy)...` to:
+Added `See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy)...` to:
 
 `connectors/modelmesh-priority-selection.md`, `connectors/modelmesh-session-stickiness.md`, `connectors/modelmesh-rate-limit-aware.md`, `connectors/modelmesh-load-balanced.md`
 

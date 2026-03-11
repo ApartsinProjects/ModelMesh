@@ -23,7 +23,7 @@ The default secret store. Resolves secrets by reading environment variables from
 
 This connector has no specific configuration parameters. It reads directly from the process environment.
 
-See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.html#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
+See [ConnectorInterfaces.md -- Secret Store](../ConnectorInterfaces.md#secret-store) for common secret store parameters (caching, reload-on-rotation, fail-on-missing).
 
 ## YAML Example
 

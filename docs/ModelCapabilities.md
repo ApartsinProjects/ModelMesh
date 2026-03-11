@@ -5,7 +5,7 @@ title: "Model Capability Taxonomy"
 
 # Model Capability Taxonomy
 
-**The complete capability hierarchy for ModelMesh Lite.** Models register at leaf nodes; pools target any node and include all descendants. The hierarchy is extensible — custom categories, subcategories, and leaf nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. For the programmatic discovery API, see [Capability Discovery](guides/Capabilities.html). For which providers support which capabilities, see [Connector Catalogue](ConnectorCatalogue.html).
+**The complete capability hierarchy for ModelMesh Lite.** Models register at leaf nodes; pools target any node and include all descendants. The hierarchy is extensible — custom categories, subcategories, and leaf nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. For the programmatic discovery API, see [Capability Discovery](guides/Capabilities.md). For which providers support which capabilities, see [Connector Catalogue](ConnectorCatalogue.md).
 
 ---
 
@@ -141,14 +141,14 @@ capability
 | `text-to-speech` | generation.audio-generation.text-to-speech | text → audio |
 | `vision-understanding` | understanding.vision-understanding | image → text |
 
-Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-context-analysis`) targeting any hierarchy node. See [SystemConcept.md — Capability-Based Model Pools](SystemConcept.html#capability-based-model-pools) for static and dynamic pool definitions.
+Users add custom pools (e.g., `code-review`, `medical-summarization`, `long-context-analysis`) targeting any hierarchy node. See [SystemConcept.md — Capability-Based Model Pools](SystemConcept.md#capability-based-model-pools) for static and dynamic pool definitions.
 
 ---
 
 ## Extending the Hierarchy
 
-Custom categories, subcategories, and leaf nodes can be added at any level (e.g., `compliance` → `pii-detection`, `regulatory-review`). Custom nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. Extension points are defined via [YAML configuration](SystemConfiguration.html) or at runtime through the API — see [Capability Discovery](guides/Capabilities.html) for both approaches.
+Custom categories, subcategories, and leaf nodes can be added at any level (e.g., `compliance` → `pii-detection`, `regulatory-review`). Custom nodes follow the same routing, pooling, and inheritance rules as pre-shipped ones. Extension points are defined via [YAML configuration](SystemConfiguration.md) or at runtime through the API — see [Capability Discovery](guides/Capabilities.md) for both approaches.
 
 ---
 
-See also: [System Concept](SystemConcept.html) · [Capability Discovery Guide](guides/Capabilities.html) · [Connector Catalogue](ConnectorCatalogue.html) · [FAQ](guides/FAQ.html)
+See also: [System Concept](SystemConcept.md) · [Capability Discovery Guide](guides/Capabilities.md) · [Connector Catalogue](ConnectorCatalogue.md) · [FAQ](guides/FAQ.md)

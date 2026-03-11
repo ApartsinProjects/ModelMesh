@@ -7,7 +7,7 @@ title: "RetryPolicy"
 
 Configurable retry logic applied before rotation. On failure, determines whether to retry the same model (with backoff) or rotate to the next candidate. Retry attempts count toward the deactivation threshold managed by the `DeactivationEvaluator`.
 
-**Depends on:** [Model](Model.html), [RotationPolicyService](RotationPolicyService.html).
+**Depends on:** [Model](Model.md), [RotationPolicyService](RotationPolicyService.md).
 
 ---
 
@@ -178,7 +178,7 @@ class RetryPolicy {
 
 ## Configuration
 
-Retry parameters are configured per pool. See [SystemConfiguration.md -- Pools](../SystemConfiguration.html#pools).
+Retry parameters are configured per pool. See [SystemConfiguration.md -- Pools](../SystemConfiguration.md#pools).
 
 | Parameter | Type | Description |
 | --- | --- | --- |

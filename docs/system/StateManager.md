@@ -7,7 +7,7 @@ title: "StateManager"
 
 Coordinates persistence of runtime state -- ModelState, ProviderState, and pool memberships -- through the configured storage connector. The manager handles the full sync lifecycle: loading state at startup, saving on shutdown, and syncing periodically or immediately depending on the configured policy. For multi-instance deployments, advisory locking prevents concurrent writes to the same storage backend.
 
-**Depends on:** [StorageConnector](../ConnectorInterfaces.html#storage)
+**Depends on:** [StorageConnector](../ConnectorInterfaces.md#storage)
 
 ---
 
@@ -292,7 +292,7 @@ class StateManager {
 
 ## Configuration
 
-See [SystemConfiguration.md -- Storage](../SystemConfiguration.html#storage) for full YAML reference.
+See [SystemConfiguration.md -- Storage](../SystemConfiguration.md#storage) for full YAML reference.
 
 | Parameter | Type | Description |
 | --- | --- | --- |

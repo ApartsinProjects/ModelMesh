@@ -73,7 +73,7 @@ gpt-4o has crossed the 80% threshold. The strategy switches to claude-sonnet-4-2
 
 ## Configuration
 
-See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.html#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
+See [ConnectorInterfaces.md -- Rotation Policy](../ConnectorInterfaces.md#rotation-policy) for the full list of common rotation parameters including deactivation thresholds, recovery cooldowns, and probe settings.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |

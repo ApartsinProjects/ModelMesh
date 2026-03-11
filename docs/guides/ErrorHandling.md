@@ -1,6 +1,6 @@
 # Error Handling
 
-ModelMesh provides a structured exception hierarchy so you can catch failures at the right level of specificity. The [router](../SystemConcept.html) raises these exceptions during the request pipeline; [middleware](Middleware.html) can intercept them via `on_error` hooks.
+ModelMesh provides a structured exception hierarchy so you can catch failures at the right level of specificity. The [router](../SystemConcept.md) raises these exceptions during the request pipeline; [middleware](Middleware.md) can intercept them via `on_error` hooks.
 
 ## Exception Tree
 
@@ -108,7 +108,7 @@ Every ModelMesh exception carries structured metadata:
 | Exception | Extra Fields | When Raised |
 |-----------|-------------|-------------|
 | `ConfigurationError` | — | Invalid config, missing fields |
-| `BudgetExceededError` | `limit_type`, `limit_value`, `actual_value` | Cost limit breached (see [budget controls](FAQ.html#6-how-do-i-prevent-surprise-ai-bills)) |
+| `BudgetExceededError` | `limit_type`, `limit_value`, `actual_value` | Cost limit breached (see [budget controls](FAQ.md#6-how-do-i-prevent-surprise-ai-bills)) |
 
 ## Retry Guidance
 
@@ -138,4 +138,4 @@ The new exceptions maintain backward compatibility:
 
 ---
 
-See also: [FAQ](FAQ.html) · [Quick Start](QuickStart.html) · [System Configuration](../SystemConfiguration.html)
+See also: [FAQ](FAQ.md) · [Quick Start](QuickStart.md) · [System Configuration](../SystemConfiguration.md)

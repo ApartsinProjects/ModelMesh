@@ -5,9 +5,9 @@ title: "ProviderService"
 
 # ProviderService
 
-Runtime representation of a configured provider. Wraps the provider connector (which handles API communication) with operational state tracking: quota consumption, rate-limit headroom, and health status. A provider manages one or more models. Named `ProviderService` to distinguish from the connector interface documented in [ConnectorInterfaces.md](../ConnectorInterfaces.html).
+Runtime representation of a configured provider. Wraps the provider connector (which handles API communication) with operational state tracking: quota consumption, rate-limit headroom, and health status. A provider manages one or more models. Named `ProviderService` to distinguish from the connector interface documented in [ConnectorInterfaces.md](../ConnectorInterfaces.md).
 
-**Depends on:** [ProviderConnector](../interfaces/Provider.html), [ProviderState](ProviderState.html), [SecretResolver](SecretResolver.html).
+**Depends on:** [ProviderConnector](../interfaces/Provider.md), [ProviderState](ProviderState.md), [SecretResolver](SecretResolver.md).
 
 ---
 
@@ -198,7 +198,7 @@ class ProviderService {
 
 ## Configuration
 
-Provider parameters are configured under the `providers` section. See [SystemConfiguration.md -- Providers](../SystemConfiguration.html#providers).
+Provider parameters are configured under the `providers` section. See [SystemConfiguration.md -- Providers](../SystemConfiguration.md#providers).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
