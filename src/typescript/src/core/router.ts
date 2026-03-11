@@ -21,6 +21,7 @@ import type { TraceEntry } from "../interfaces/observability";
 import {
   NoActiveModelError,
   AllProvidersExhaustedError,
+  BudgetExceededError,
 } from "../exceptions";
 import type { MiddlewareStack, MiddlewareContext } from "../middleware";
 
@@ -214,6 +215,13 @@ export class Router {
         return;
       } catch (e) {
         const err = e instanceof Error ? e : new Error(String(e));
+
+        // Budget-aware rotation for streaming
+        const onBudgetStream = (pool.config as Record<string, unknown>).on_budget_exceeded ?? "error";
+        if (err instanceof BudgetExceededError && onBudgetStream !== "rotate") {
+          throw err;
+        }
+
         this._trace(
           Severity.WARNING,
           "router",
@@ -408,6 +416,14 @@ export class Router {
         return response;
       } catch (e) {
         lastError = e instanceof Error ? e : new Error(String(e));
+
+        // Budget-aware rotation: if the error is a BudgetExceededError
+        // and the pool is configured with on_budget_exceeded: "rotate",
+        // deactivate the model and try the next one. Otherwise, re-throw.
+        const onBudget = (pool.config as Record<string, unknown>).on_budget_exceeded ?? "error";
+        if (lastError instanceof BudgetExceededError && onBudget !== "rotate") {
+          throw lastError;
+        }
 
         // Run middleware onError hooks — may return fallback
         if (this._middleware && this._middleware.length > 0) {

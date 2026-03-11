@@ -41,7 +41,7 @@ client = modelmesh.create(
 )
 ```
 
-See the [Progressive Configuration](../index.md) guide for the full reference.
+See the [Progressive Configuration](../index.html) guide for the full reference.
 
 ---
 
@@ -79,7 +79,7 @@ const response = await client.chat.completions.create({
 
 The same call shape works for chat, embeddings, TTS, STT, and image generation regardless of which provider handles the request.
 
-See the [Uniform OpenAI-Compatible API](Capabilities.md) guide.
+See the [Uniform OpenAI-Compatible API](Capabilities.html) guide.
 
 ---
 
@@ -113,7 +113,7 @@ Your code makes the same call every time. The library handles detection, pooling
 
 **How are pools formed?** Each provider registers its models with capability tags (e.g. `generation.text-generation.chat-completion`). ModelMesh groups all models sharing a capability into a single pool. When you call `create("chat-completion")`, you get a client backed by every chat-capable model across all discovered providers. Adding a new API key adds that provider's models to the existing pools automatically.
 
-See the [Free-Tier Aggregation](QuickStart.md) guide.
+See the [Free-Tier Aggregation](QuickStart.html) guide.
 
 ---
 
@@ -141,17 +141,47 @@ print(client.pool_status())
 print(client.describe())
 ```
 
-Choose from multiple rotation strategies in your YAML config:
+Choose from 8 built-in rotation strategies:
+
+| Strategy | Connector ID | Behaviour |
+|---|---|---|
+| Stick-until-failure | `modelmesh.stick-until-failure.v1` | Use current model until it errors (default) |
+| Cost-first | `modelmesh.cost-first.v1` | Always pick the model with lowest accumulated cost |
+| Latency-first | `modelmesh.latency-first.v1` | Always pick the model with lowest observed latency |
+| Round-robin | `modelmesh.round-robin.v1` | Cycle through models in sequence |
+| Priority | `modelmesh.priority-selection.v1` | Follow an ordered preference list with fallback |
+| Session-stickiness | `modelmesh.session-stickiness.v1` | Route same-session requests to the same model |
+| Rate-limit-aware | `modelmesh.rate-limit-aware.v1` | Track per-model quotas, switch before exhaustion |
+| Load-balanced | `modelmesh.load-balanced.v1` | Distribute requests using weighted round-robin |
+
+Switch strategies in YAML:
 
 ```yaml
 pools:
   chat:
     capability: generation.text-generation.chat-completion
-    strategy: cost-first       # or: latency-first, round-robin,
-                               #     stick-until-failure, rate-limit-aware
+    strategy: modelmesh.cost-first.v1
 ```
 
-See the [Resilient Routing](ErrorHandling.md) guide.
+Or pass a pre-built strategy instance via API:
+
+```python
+from modelmesh.connectors import CostFirstPolicy
+
+mesh.initialize(MeshConfig(raw={
+    "pools": {
+        "chat": {
+            "capability": "generation.text-generation.chat-completion",
+            "strategy_instance": CostFirstPolicy(),  # direct injection
+        }
+    },
+    # ...
+}))
+```
+
+Need a custom strategy? See [Q10](#10-what-if-the-pre-built-connectors-dont-cover-my-use-case).
+
+See the [Resilient Routing](ErrorHandling.html) guide and [Connector Catalogue](../ConnectorCatalogue.html) for full config reference.
 
 ---
 
@@ -183,7 +213,7 @@ client = modelmesh.create("chat-completion")
 
 When a new model launches or an old one is deprecated, update your config. Your application code stays the same.
 
-See the [Capability Discovery](Capabilities.md) guide.
+See the [Capability Discovery](Capabilities.html) guide.
 
 ---
 
@@ -223,7 +253,19 @@ print(f"Total cost: ${client.usage.total_cost:.4f}")
 print(f"By model:   {client.usage.by_model}")
 ```
 
-See the [Budget Enforcement](QuickStart.md#usage-tracking) guide.
+**Budget-aware rotation:** Instead of raising an error when a model exceeds its budget, configure the pool to automatically rotate to the next available model:
+
+```yaml
+pools:
+  chat:
+    capability: generation.text-generation.chat-completion
+    strategy: modelmesh.stick-until-failure.v1
+    on_budget_exceeded: rotate   # "rotate" or "error" (default: "error")
+```
+
+With `on_budget_exceeded: rotate`, when a model's budget limit is reached, the router deactivates that model and silently retries with the next candidate — no code changes needed.
+
+See the [Budget Enforcement](QuickStart.html#usage-tracking) guide and [System Configuration](../SystemConfiguration.html) for the full YAML schema.
 
 ---
 
@@ -257,7 +299,7 @@ curl http://localhost:8080/v1/chat/completions \
 
 All three share the same YAML configuration format. Zero core dependencies in the Python and TypeScript libraries.
 
-See the [Full-Stack Deployment](QuickStart.md) guide.
+See the [Full-Stack Deployment](QuickStart.html) guide.
 
 ---
 
@@ -315,57 +357,194 @@ print(explanation["selected_model"])   # Which model would be selected
 print(explanation["reason"])           # Why
 ```
 
-See the [Mock Client and Testing](Testing.md) guide.
+See the [Mock Client and Testing](Testing.html) guide.
 
 ---
 
-## 9. What observability does ModelMesh provide?
+## 9. How do I configure infrastructure connectors (observability, storage, secrets)?
 
-Pre-built connectors for console, file, JSON-log, Prometheus, and webhooks. Structured traces cover routing decisions, failover events, and budget alerts.
+ModelMesh has **6 connector types**. Providers and rotation are covered in Q1-Q4. This section covers the remaining infrastructure connectors. Each can be configured via YAML or injected as a pre-built instance via API.
+
+| Connector Type | What It Does | Pre-shipped | CDK Base Class |
+|---|---|---|---|
+| **Provider** | Calls AI APIs (chat, embeddings, TTS, STT, search) | 22 connectors | `BaseProvider` |
+| **Rotation** | Selects which model to use and when to rotate | 8 strategies | `BaseRotationPolicy` |
+| **Secret Store** | Resolves API keys and credentials | 7 stores | `BaseSecretStore` |
+| **Storage** | Persists model state, stats, and cost data | 6 backends | `BaseStorage` |
+| **Observability** | Events, logging, metrics, tracing | 7 sinks | `BaseObservability` |
+| **Discovery** | Auto-discovers provider models and health checks | 1 connector | `BaseDiscovery` |
+
+→ Full list of every connector and its config: [Connector Catalogue](../ConnectorCatalogue.html)
+→ Interface specs for all 6 types: [Connector Interfaces](../ConnectorInterfaces.html)
+
+### Observability
+
+7 built-in sinks:
+
+| Connector ID | Use Case |
+|---|---|
+| `modelmesh.null.v1` | No-op (default, zero overhead) |
+| `modelmesh.console.v1` | ANSI-colored console output for development |
+| `modelmesh.file.v1` | JSONL file with rotation support |
+| `modelmesh.json-log.v1` | JSON Lines for log aggregation pipelines |
+| `modelmesh.webhook.v1` | HTTP POST to alerting endpoints |
+| `modelmesh.callback.v1` | Python callable for in-process dashboards |
+| `modelmesh.prometheus.v1` | Prometheus text exposition format |
 
 ```yaml
+# YAML configuration
 observability:
   connector: modelmesh.console.v1
   config:
     log_level: summary
     use_color: true
-    redact_secrets: true
 ```
-
-For production, switch to Prometheus or webhook export:
-
-```yaml
-observability:
-  connector: modelmesh.prometheus.v1
-  config:
-    endpoint: /metrics
-    port: 9090
-```
-
-Plug in a custom callback for existing dashboards:
 
 ```python
+# Or inject a pre-built instance via API
 from modelmesh.cdk import CallbackObservability, CallbackObservabilityConfig
 
-def on_event(event):
-    my_dashboard.send(event.event_type, event.model_id, event.timestamp)
-
 obs = CallbackObservability(CallbackObservabilityConfig(
-    callback=on_event,
+    callback=lambda event: my_dashboard.send(event),
 ))
+
+mesh.initialize(MeshConfig(raw={
+    "observability": {"instance": obs},
+    # ...
+}))
+```
+
+### Secret stores
+
+7 built-in stores:
+
+| Connector ID | Use Case |
+|---|---|
+| `modelmesh.env.v1` | Environment variables (production default) |
+| `modelmesh.dotenv.v1` | `.env` file (local development) |
+| `modelmesh.json-secrets.v1` | JSON file with dot-notation path support |
+| `modelmesh.memory-secrets.v1` | In-memory dictionary (testing) |
+| `modelmesh.encrypted-file.v1` | AES-256-GCM encrypted JSON file |
+| `modelmesh.keyring.v1` | OS keyring (macOS Keychain, Windows Credential Locker) |
+| `modelmesh.browser-secrets.v1` | localStorage-backed (TypeScript browser only) |
+
+```yaml
+secrets:
+  store: modelmesh.env.v1
+  config:
+    prefix: MODELMESH_   # only read env vars starting with this prefix
+```
+
+```python
+# Or inject via API
+from modelmesh.connectors import EncryptedFileSecretStore
+
+store = EncryptedFileSecretStore({"path": "secrets.enc", "password": "..."})
+mesh.initialize(MeshConfig(raw={
+    "secrets": {"instance": store},
+    # ...
+}))
+```
+
+### Storage
+
+6 built-in backends:
+
+| Connector ID | Use Case |
+|---|---|
+| `modelmesh.local-file.v1` | JSON file (single-process, development) |
+| `modelmesh.sqlite.v1` | SQLite database (queryable, single-process) |
+| `modelmesh.memory.v1` | In-memory (ephemeral, testing) |
+| `modelmesh.localstorage.v1` | Browser localStorage (TS only) |
+| `modelmesh.sessionstorage.v1` | Browser sessionStorage (TS only) |
+| `modelmesh.indexeddb.v1` | Browser IndexedDB (TS only) |
+
+```yaml
+storage:
+  connector: modelmesh.sqlite.v1
+  config:
+    path: ./mesh-state.db
 ```
 
 Traces include severity levels (DEBUG, INFO, WARNING, ERROR) with component context (router, pool, provider) so you can filter by the subsystem you care about.
 
-See the [Observability Connectors](../ConnectorCatalogue.md) reference.
+See the [Connector Catalogue](../ConnectorCatalogue.html) for full config reference and [System Configuration](../SystemConfiguration.html) for the complete YAML schema.
 
 ---
 
 ## 10. What if the pre-built connectors don't cover my use case?
 
-Use the CDK (Connector Development Kit). Each connector type has a base class you can inherit from. Override only the methods you need.
+Use the **CDK (Connector Development Kit)**. Each of the 6 connector types has a base class you inherit from. Override only the methods you need, then plug the connector in via API or YAML.
 
-**Custom provider (10 lines):**
+### Extension reference
+
+| What to Extend | Base Class (Python) | Base Class (TypeScript) | Key Override Methods |
+|---|---|---|---|
+| **Provider** | `BaseProvider` | `BaseProvider` | `_build_request_payload()`, `_parse_response()`, `_build_headers()` |
+| **Rotation** | `BaseRotationPolicy` | `BaseRotationPolicy` | `select()`, `should_deactivate()`, `should_recover()` |
+| **Secret Store** | `BaseSecretStore` | `BaseSecretStore` | `_resolve(name)` |
+| **Storage** | `BaseStorage` | `BaseStorage` | `load()`, `save()`, `list()`, `delete()` |
+| **Observability** | `BaseObservability` | `BaseObservability` | `_write(line)`, `_format_event()` |
+| **Discovery** | `BaseDiscovery` | `BaseDiscovery` | `probe()`, `_discover_provider_models()` |
+
+> Interface specs: [Connector Interfaces](../ConnectorInterfaces.html) | Pre-shipped list: [Connector Catalogue](../ConnectorCatalogue.html)
+
+### Where to place custom connector code
+
+Three deployment options, depending on your project structure:
+
+**1. Same project** — define your class anywhere in your codebase and pass a pre-built instance:
+
+```python
+from my_app.connectors import VaultSecretStore
+
+store = VaultSecretStore({"vault_url": "https://vault.corp"})
+mesh.initialize(MeshConfig(raw={
+    "secrets": {"instance": store},
+    # ...
+}))
+```
+
+**2. Shared package** — publish your connector as a PyPI/npm package and import normally:
+
+```python
+# pip install my-modelmesh-connectors
+from my_modelmesh_connectors import VaultSecretStore
+```
+
+```typescript
+// npm install @corp/modelmesh-connectors
+import { VaultSecretStore } from "@corp/modelmesh-connectors";
+```
+
+**3. Runtime registration** — register the class in the global `CONNECTOR_REGISTRY` so YAML configs can reference it by connector ID:
+
+```python
+from modelmesh import register_connector
+from my_app.connectors import VaultSecretStore
+
+register_connector("corp.vault-secrets.v1", VaultSecretStore)
+```
+
+```typescript
+import { registerConnector } from "@nistrapa/modelmesh-core";
+import { VaultSecretStore } from "./connectors/vault-store";
+
+registerConnector("corp.vault-secrets.v1", VaultSecretStore);
+```
+
+After registration, your YAML config can reference it by ID:
+
+```yaml
+secrets:
+  store: corp.vault-secrets.v1
+  config:
+    vault_url: https://vault.corp
+```
+
+### Custom provider
+
+When your API follows the OpenAI format, use the quick shortcut:
 
 ```python
 from modelmesh.cdk import OpenAICompatibleProvider, OpenAICompatibleConfig
@@ -385,21 +564,10 @@ provider = OpenAICompatibleProvider(OpenAICompatibleConfig(
 ))
 ```
 
-**Custom rotation policy:**
+When your API uses a different format, inherit from `BaseProvider` and override four hook methods. BaseProvider handles HTTP transport, retries, and error classification; you only translate request and response formats.
 
-```python
-from modelmesh.cdk import ThresholdRotationPolicy, ThresholdRotationConfig
-
-policy = ThresholdRotationPolicy(ThresholdRotationConfig(
-    failure_count_threshold=5,
-    error_rate_threshold=0.3,
-    cooldown_seconds=120,
-))
-```
-
-**Custom provider for a non-OpenAI API:**
-
-When your API doesn't follow the OpenAI format, inherit from `BaseProvider` and override four hook methods. BaseProvider handles HTTP transport, retries, and error classification; you only translate the request and response formats.
+<details>
+<summary>Python — custom provider for non-OpenAI API</summary>
 
 ```python
 from modelmesh.cdk import BaseProvider, BaseProviderConfig
@@ -442,26 +610,66 @@ class CorpLLMProvider(BaseProvider):
                 total_tokens=data.get("tokens_in", 0) + data.get("tokens_out", 0),
             ),
         )
-
-provider = CorpLLMProvider(BaseProviderConfig(
-    base_url="https://llm.corp.internal",
-    api_key="corp-token-123",
-    models=[
-        ModelInfo(
-            id="corp.internal-llm",
-            name="Internal LLM",
-            capabilities=["generation.text-generation.chat-completion"],
-            context_window=32_000,
-        ),
-    ],
-))
 ```
+
+</details>
+
+<details>
+<summary>TypeScript — custom provider for non-OpenAI API</summary>
+
+```typescript
+import { BaseProvider, createBaseProviderConfig } from "@nistrapa/modelmesh-core";
+import type { CompletionRequest, CompletionResponse } from "@nistrapa/modelmesh-core";
+
+class CorpLLMProvider extends BaseProvider {
+  protected _getCompletionEndpoint(): string {
+    return `${this._config.baseUrl.replace(/\/$/, "")}/api/generate`;
+  }
+
+  protected _buildHeaders(): Record<string, string> {
+    return {
+      "Content-Type": "application/json",
+      "X-Corp-Token": this._config.apiKey,
+    };
+  }
+
+  protected _buildRequestPayload(request: CompletionRequest): Record<string, unknown> {
+    return {
+      prompt: request.messages[request.messages.length - 1].content,
+      model_name: request.model,
+      params: { temperature: request.temperature ?? 0.7 },
+    };
+  }
+
+  protected _parseResponse(data: Record<string, unknown>): CompletionResponse {
+    return {
+      id: (data.request_id as string) ?? "",
+      model: (data.model as string) ?? "",
+      choices: [{
+        index: 0,
+        message: { role: "assistant", content: data.output as string },
+        finishReason: "stop",
+      }],
+      usage: {
+        promptTokens: (data.tokens_in as number) ?? 0,
+        completionTokens: (data.tokens_out as number) ?? 0,
+        totalTokens: ((data.tokens_in as number) ?? 0) + ((data.tokens_out as number) ?? 0),
+      },
+    };
+  }
+}
+```
+
+</details>
 
 Override only what differs: `_get_completion_endpoint()` for the URL path, `_build_headers()` for authentication, `_build_request_payload()` to translate the request format, and `_parse_response()` to translate the response back. For streaming, also override `_parse_sse_chunk()`.
 
-**Custom rotation policy:**
+### Custom rotation policy
 
 Inherit from `BaseRotationPolicy` and override `select()` to control how models are chosen, `should_deactivate()` to control when a model is taken offline, or `should_recover()` to control when it comes back.
+
+<details>
+<summary>Python — custom rotation policy</summary>
 
 ```python
 from modelmesh.cdk import BaseRotationPolicy, BaseRotationConfig
@@ -479,29 +687,268 @@ class CostAwarePolicy(BaseRotationPolicy):
     ) -> Optional[ModelState]:
         if not candidates:
             return None
-        # Sort by cost (lowest first), break ties by error rate
         return min(candidates, key=lambda c: (c.total_cost, c.error_rate))
 ```
 
-Register the policy in YAML by pointing `strategy` at your custom class, or pass it programmatically:
+</details>
+
+<details>
+<summary>TypeScript — custom rotation policy</summary>
+
+```typescript
+import { BaseSelectionStrategy } from "@nistrapa/modelmesh-core";
+import type { ModelState, CompletionRequest } from "@nistrapa/modelmesh-core";
+
+class CostAwareStrategy extends BaseSelectionStrategy {
+  select(candidates: ModelState[], request: CompletionRequest): ModelState | null {
+    if (candidates.length === 0) return null;
+    return candidates.reduce((cheapest, c) =>
+      c.totalCost < cheapest.totalCost ? c : cheapest
+    );
+  }
+}
+```
+
+</details>
+
+Register via YAML or inject as an instance:
 
 ```yaml
 pools:
   chat:
     capability: generation.text-generation.chat-completion
-    strategy: my_app.policies.CostAwarePolicy
+    strategy: corp.cost-aware.v1   # after register_connector()
 ```
 
 ```python
-# Or register programmatically
-from modelmesh.cdk import ThresholdRotationPolicy, ThresholdRotationConfig
-
-policy = CostAwarePolicy(BaseRotationConfig(
-    failure_threshold=5,
-    cooldown_seconds=120,
-))
+mesh.initialize(MeshConfig(raw={
+    "pools": {
+        "chat": {
+            "capability": "generation.text-generation.chat-completion",
+            "strategy_instance": CostAwarePolicy(BaseRotationConfig(
+                failure_threshold=5, cooldown_seconds=120,
+            )),
+        }
+    },
+}))
 ```
 
-Six connector types are extensible this way: providers, rotation policies, secret stores, storage backends, observability sinks, and discovery connectors.
+### Custom secret store
 
-See the [CDK](../ConnectorCatalogue.md) reference and [CDK Developer Guide](../cdk/DeveloperGuide.md).
+Override `_resolve(name)` to fetch secrets from your backend. The base class handles caching, TTL, and fail-on-missing logic.
+
+<details>
+<summary>Python — custom secret store</summary>
+
+```python
+from modelmesh.cdk import BaseSecretStore, BaseSecretStoreConfig
+
+class VaultSecretStore(BaseSecretStore):
+    """Resolve secrets from HashiCorp Vault."""
+
+    def __init__(self, config: dict):
+        super().__init__(BaseSecretStoreConfig(
+            cache_enabled=True,
+            cache_ttl_ms=60_000,
+        ))
+        self._vault_url = config["vault_url"]
+
+    def _resolve(self, name: str) -> str | None:
+        # Your Vault API call here
+        import requests
+        resp = requests.get(
+            f"{self._vault_url}/v1/secret/data/{name}",
+            headers={"X-Vault-Token": self._vault_token},
+        )
+        if resp.ok:
+            return resp.json()["data"]["data"]["value"]
+        return None
+```
+
+</details>
+
+<details>
+<summary>TypeScript — custom secret store</summary>
+
+```typescript
+import { BaseSecretStore } from "@nistrapa/modelmesh-core";
+import type { BaseSecretStoreConfig } from "@nistrapa/modelmesh-core";
+
+class VaultSecretStore extends BaseSecretStore {
+  private _vaultUrl: string;
+
+  constructor(config: { vault_url: string }) {
+    super({ cacheEnabled: true, cacheTtlMs: 60_000 });
+    this._vaultUrl = config.vault_url;
+  }
+
+  protected _resolve(name: string): string | null {
+    // Your Vault API call here (sync or use cached approach)
+    return null; // Replace with actual implementation
+  }
+}
+```
+
+</details>
+
+### Custom storage backend
+
+Override `load()`, `save()`, `list()`, and `delete()` to persist model state to your backend.
+
+<details>
+<summary>Python — custom storage backend</summary>
+
+```python
+from modelmesh.cdk import BaseStorage, BaseStorageConfig
+
+class RedisStorage(BaseStorage):
+    """Persist model state to Redis."""
+
+    def __init__(self, config: dict):
+        super().__init__(BaseStorageConfig())
+        import redis
+        self._client = redis.Redis(host=config.get("host", "localhost"))
+
+    def load(self, key: str):
+        data = self._client.get(f"modelmesh:{key}")
+        if data:
+            import json
+            return json.loads(data)
+        return None
+
+    def save(self, key: str, entry) -> None:
+        import json
+        self._client.set(f"modelmesh:{key}", json.dumps(entry))
+
+    def list(self, prefix: str | None = None) -> list[str]:
+        pattern = f"modelmesh:{prefix}*" if prefix else "modelmesh:*"
+        return [k.decode().removeprefix("modelmesh:") for k in self._client.keys(pattern)]
+
+    def delete(self, key: str) -> bool:
+        return self._client.delete(f"modelmesh:{key}") > 0
+```
+
+</details>
+
+<details>
+<summary>TypeScript — custom storage backend</summary>
+
+```typescript
+import { BaseStorage } from "@nistrapa/modelmesh-core";
+import type { StorageEntry } from "@nistrapa/modelmesh-core";
+
+class RedisStorage extends BaseStorage {
+  private _client: RedisClient;
+
+  constructor(config: { host?: string }) {
+    super({});
+    this._client = createRedisClient(config.host ?? "localhost");
+  }
+
+  async load(key: string): Promise<StorageEntry | null> {
+    const data = await this._client.get(`modelmesh:${key}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async save(key: string, entry: StorageEntry): Promise<void> {
+    await this._client.set(`modelmesh:${key}`, JSON.stringify(entry));
+  }
+
+  async list(prefix?: string): Promise<string[]> {
+    const pattern = prefix ? `modelmesh:${prefix}*` : "modelmesh:*";
+    const keys = await this._client.keys(pattern);
+    return keys.map((k: string) => k.replace("modelmesh:", ""));
+  }
+
+  async delete(key: string): Promise<boolean> {
+    return (await this._client.del(`modelmesh:${key}`)) > 0;
+  }
+}
+```
+
+</details>
+
+### Custom observability sink
+
+Override `_write(line)` to send formatted trace data to your monitoring system. The base class handles event filtering, severity levels, secret redaction, and formatting.
+
+<details>
+<summary>Python — custom observability sink</summary>
+
+```python
+from modelmesh.cdk import BaseObservability, BaseObservabilityConfig
+
+class DatadogObservability(BaseObservability):
+    """Send traces and events to Datadog."""
+
+    def __init__(self, config: dict):
+        super().__init__(BaseObservabilityConfig(
+            log_level="metadata",
+            min_severity="info",
+        ))
+        self._dd_api_key = config["api_key"]
+
+    def _write(self, line: str) -> None:
+        # Send to Datadog Logs API
+        import requests
+        requests.post(
+            "https://http-intake.logs.datadoghq.com/api/v2/logs",
+            headers={"DD-API-KEY": self._dd_api_key},
+            json={"message": line, "service": "modelmesh"},
+        )
+```
+
+</details>
+
+### Plugging custom connectors in
+
+Every custom connector can be used in two ways:
+
+**Instance injection (API)** — pass a pre-built object directly in config:
+
+```python
+mesh.initialize(MeshConfig(raw={
+    "providers": {"my-llm": {"connector": "custom.v1", "instance": my_provider}},
+    "observability": {"instance": my_observability},
+    "storage": {"instance": my_storage},
+    "secrets": {"instance": my_secret_store},
+    "pools": {
+        "chat": {
+            "capability": "generation.text-generation.chat-completion",
+            "strategy_instance": my_rotation_policy,
+        }
+    },
+}))
+```
+
+**Registry + YAML** — register the class, then reference it by connector ID:
+
+```python
+from modelmesh import register_connector
+
+register_connector("corp.vault-secrets.v1", VaultSecretStore)
+register_connector("corp.redis-storage.v1", RedisStorage)
+register_connector("corp.datadog-obs.v1", DatadogObservability)
+register_connector("corp.cost-aware.v1", CostAwarePolicy)
+```
+
+```yaml
+secrets:
+  store: corp.vault-secrets.v1
+  config:
+    vault_url: https://vault.corp
+storage:
+  connector: corp.redis-storage.v1
+  config:
+    host: redis.corp
+observability:
+  connector: corp.datadog-obs.v1
+  config:
+    api_key: "${secrets:DD_API_KEY}"
+pools:
+  chat:
+    capability: generation.text-generation.chat-completion
+    strategy: corp.cost-aware.v1
+```
+
+See the [Connector Catalogue](../ConnectorCatalogue.html) for all pre-shipped connectors and [Connector Interfaces](../ConnectorInterfaces.html) for interface specifications.

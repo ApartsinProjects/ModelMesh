@@ -59,6 +59,9 @@ class ModelMesh:
         self._event_emitter = EventEmitter()
         self._capability_tree = CapabilityTree()
         self._observability: ObservabilityConnector | None = None
+        self._storage = None
+        self._secret_store = None
+        self._discovery = None
         self._initialized = False
 
     # -- Lifecycle -----------------------------------------------------------
@@ -79,7 +82,10 @@ class ModelMesh:
         # instance is used as-is; otherwise we resolve from config.
         if self._observability is None:
             obs_cfg = config.raw.get("observability", {})
-            if obs_cfg.get("connector"):
+            # Support pre-built instance injection
+            if "instance" in obs_cfg and obs_cfg["instance"] is not None:
+                self._observability = obs_cfg["instance"]
+            elif obs_cfg.get("connector"):
                 from modelmesh.connectors import CONNECTOR_REGISTRY
 
                 obs_cls = CONNECTOR_REGISTRY.get(obs_cfg["connector"])
@@ -92,6 +98,9 @@ class ModelMesh:
 
                 self._observability = NullObservabilityConnector()
 
+        self._setup_storage()
+        self._setup_secrets()
+        self._setup_discovery()
         self._setup_providers()
         self._setup_pools()
         self._router = Router(
@@ -325,6 +334,21 @@ class ModelMesh:
     def capability_tree(self) -> CapabilityTree:
         """The capability tree for inspecting the hierarchy."""
         return self._capability_tree
+
+    @property
+    def storage(self):
+        """The storage connector, or None if not configured."""
+        return self._storage
+
+    @property
+    def secret_store(self):
+        """The secret store connector, or None if not configured."""
+        return self._secret_store
+
+    @property
+    def discovery(self):
+        """The discovery connector, or None if not configured."""
+        return self._discovery
 
     @property
     def observability(self) -> ObservabilityConnector:
@@ -605,6 +629,9 @@ class ModelMesh:
                         )
                     )
 
+            # Resolve selection strategy for this pool
+            self._resolve_pool_strategy(pool, pool_def)
+
             self._pools[pool_id] = pool
             logger.debug(
                 "Pool '%s' configured with %d model(s)",
@@ -619,3 +646,174 @@ class ModelMesh:
                 pool_id=pool_id,
                 model_count=len(pool.models),
             )
+
+    def _resolve_pool_strategy(
+        self, pool: CapabilityPool, pool_def: dict
+    ) -> None:
+        """Resolve the selection strategy for a pool.
+
+        Priority:
+          1. Pre-built ``strategy_instance`` in pool config.
+          2. Connector ID in ``strategy`` field → look up in CONNECTOR_REGISTRY.
+          3. Fall back to pool's default (StickUntilFailure).
+        """
+        # 1. Pre-built instance injection
+        strategy_instance = pool_def.get("strategy_instance")
+        if strategy_instance is not None:
+            pool.set_strategy(strategy_instance)
+            self._trace(
+                "DEBUG",
+                "mesh",
+                f"Pool '{pool.pool_id}' using pre-built strategy instance",
+                pool_id=pool.pool_id,
+            )
+            return
+
+        # 2. Connector ID from config
+        strategy_id = pool_def.get("strategy")
+        if strategy_id and isinstance(strategy_id, str):
+            from modelmesh.connectors import CONNECTOR_REGISTRY
+
+            strategy_cls = CONNECTOR_REGISTRY.get(strategy_id)
+            if strategy_cls:
+                try:
+                    pool.set_strategy(strategy_cls())
+                    self._trace(
+                        "DEBUG",
+                        "mesh",
+                        f"Pool '{pool.pool_id}' using strategy '{strategy_id}'",
+                        pool_id=pool.pool_id,
+                        strategy_id=strategy_id,
+                    )
+                    return
+                except Exception:
+                    logger.debug(
+                        "Failed to instantiate strategy '%s' for pool '%s'",
+                        strategy_id,
+                        pool.pool_id,
+                        exc_info=True,
+                    )
+
+        # 3. Fall back to default (already set in pool __init__)
+
+    def _setup_storage(self) -> None:
+        """Resolve storage connector from config.
+
+        Supports pre-built instance injection via ``"instance"`` key,
+        or connector ID lookup in CONNECTOR_REGISTRY.
+        """
+        assert self._config is not None
+        storage_cfg = self._config.raw.get("storage", {})
+        if not storage_cfg:
+            return
+
+        # Pre-built instance
+        if "instance" in storage_cfg and storage_cfg["instance"] is not None:
+            self._storage = storage_cfg["instance"]
+            self._trace(
+                "DEBUG", "mesh", "Using pre-built storage instance"
+            )
+            return
+
+        # Connector ID lookup
+        connector_id = storage_cfg.get("connector")
+        if connector_id:
+            from modelmesh.connectors import CONNECTOR_REGISTRY
+
+            storage_cls = CONNECTOR_REGISTRY.get(connector_id)
+            if storage_cls:
+                try:
+                    self._storage = storage_cls(storage_cfg.get("config", {}))
+                    self._trace(
+                        "DEBUG",
+                        "mesh",
+                        f"Storage connector '{connector_id}' initialized",
+                    )
+                except Exception:
+                    logger.debug(
+                        "Failed to init storage '%s'",
+                        connector_id,
+                        exc_info=True,
+                    )
+
+    def _setup_secrets(self) -> None:
+        """Resolve secret store connector from config.
+
+        Supports pre-built instance injection via ``"instance"`` key,
+        or connector ID lookup in CONNECTOR_REGISTRY.
+        """
+        assert self._config is not None
+        secrets_cfg = self._config.raw.get("secrets", {})
+        if not secrets_cfg:
+            return
+
+        # Pre-built instance
+        if "instance" in secrets_cfg and secrets_cfg["instance"] is not None:
+            self._secret_store = secrets_cfg["instance"]
+            self._trace(
+                "DEBUG", "mesh", "Using pre-built secret store instance"
+            )
+            return
+
+        # Connector ID lookup
+        store_id = secrets_cfg.get("store")
+        if store_id:
+            from modelmesh.connectors import CONNECTOR_REGISTRY
+
+            store_cls = CONNECTOR_REGISTRY.get(store_id)
+            if store_cls:
+                try:
+                    self._secret_store = store_cls(
+                        secrets_cfg.get("config", {})
+                    )
+                    self._trace(
+                        "DEBUG",
+                        "mesh",
+                        f"Secret store '{store_id}' initialized",
+                    )
+                except Exception:
+                    logger.debug(
+                        "Failed to init secret store '%s'",
+                        store_id,
+                        exc_info=True,
+                    )
+
+    def _setup_discovery(self) -> None:
+        """Resolve discovery connector from config.
+
+        Supports pre-built instance injection via ``"instance"`` key,
+        or connector ID lookup in CONNECTOR_REGISTRY.
+        """
+        assert self._config is not None
+        disc_cfg = self._config.raw.get("discovery", {})
+        if not disc_cfg:
+            return
+
+        # Pre-built instance
+        if "instance" in disc_cfg and disc_cfg["instance"] is not None:
+            self._discovery = disc_cfg["instance"]
+            self._trace(
+                "DEBUG", "mesh", "Using pre-built discovery instance"
+            )
+            return
+
+        # Connector ID lookup
+        connector_id = disc_cfg.get("connector")
+        if connector_id:
+            from modelmesh.connectors import CONNECTOR_REGISTRY
+
+            disc_cls = CONNECTOR_REGISTRY.get(connector_id)
+            if disc_cls:
+                try:
+                    self._discovery = disc_cls(disc_cfg.get("config", {}))
+                    self._trace(
+                        "DEBUG",
+                        "mesh",
+                        f"Discovery connector '{connector_id}' initialized",
+                    )
+                except Exception:
+                    logger.debug(
+                        "Failed to init discovery '%s'",
+                        connector_id,
+                        exc_info=True,
+                    )

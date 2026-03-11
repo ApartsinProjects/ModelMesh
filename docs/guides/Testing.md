@@ -160,3 +160,7 @@ def test_multiple_turns(client):
     assert "help" in r1.choices[0].message.content
     assert "answer" in r2.choices[0].message.content
 ```
+
+---
+
+See also: [FAQ](FAQ.html) · [Quick Start](QuickStart.html) · [Error Handling](ErrorHandling.html)

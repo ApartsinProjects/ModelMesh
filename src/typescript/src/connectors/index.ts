@@ -71,6 +71,29 @@ import { IndexedDBStorage } from './storage/indexeddb-storage';
 // Browser secret store
 import { BrowserSecretStore } from './secret-stores/browser-store';
 
+/**
+ * Register a custom connector class in the global registry.
+ *
+ * Once registered, the connector can be referenced by its ID in
+ * configuration files (e.g. `connector: "custom.my-provider.v1"`).
+ *
+ * @param connectorId - Dot-notated connector ID (e.g. "custom.my-provider.v1").
+ * @param cls - The connector class to register.
+ *
+ * @example
+ * ```typescript
+ * import { registerConnector } from '@nistrapa/modelmesh-core';
+ * registerConnector('custom.my-provider.v1', MyProvider);
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function registerConnector(connectorId: string, cls: any): void {
+  if (!connectorId) {
+    throw new Error("connectorId must not be empty");
+  }
+  CONNECTOR_REGISTRY[connectorId] = cls;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CONNECTOR_REGISTRY: Record<string, any> = {
   // Providers

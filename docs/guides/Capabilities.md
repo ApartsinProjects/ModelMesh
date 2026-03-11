@@ -113,3 +113,7 @@ pools:
 ```
 
 Custom capability paths don't need aliases — use the full dotted path directly.
+
+---
+
+See also: [FAQ](FAQ.html) · [Model Capabilities](../ModelCapabilities.html) · [System Configuration](../SystemConfiguration.html)

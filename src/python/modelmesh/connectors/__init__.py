@@ -82,6 +82,32 @@ from modelmesh.connectors.storage.local_file import LocalFileStorage
 from modelmesh.connectors.storage.memory_storage import MemoryStorage
 from modelmesh.connectors.storage.sqlite_storage import SqliteStorage
 
+def register_connector(connector_id: str, cls: type) -> None:
+    """Register a custom connector class in the global registry.
+
+    Once registered, the connector can be referenced by its ID in YAML
+    configuration files (e.g. ``connector: custom.my-provider.v1``).
+
+    Args:
+        connector_id: Dot-notated connector ID (e.g. ``"custom.my-provider.v1"``).
+        cls: The connector class to register. Must implement the appropriate
+            connector interface (ProviderConnector, ObservabilityConnector, etc.).
+
+    Raises:
+        ValueError: If ``connector_id`` is empty.
+
+    Example::
+
+        from modelmesh.connectors import register_connector
+
+        register_connector("custom.my-provider.v1", MyProvider)
+        # Now usable in YAML: connector: custom.my-provider.v1
+    """
+    if not connector_id:
+        raise ValueError("connector_id must not be empty")
+    CONNECTOR_REGISTRY[connector_id] = cls
+
+
 CONNECTOR_REGISTRY: dict[str, type] = {
     # Providers
     OpenAIProvider.CONNECTOR_ID: OpenAIProvider,
@@ -142,6 +168,7 @@ CONNECTOR_REGISTRY: dict[str, type] = {
 
 __all__ = [
     "CONNECTOR_REGISTRY",
+    "register_connector",
     "OpenAIProvider",
     "AnthropicProvider",
     "GeminiProvider",

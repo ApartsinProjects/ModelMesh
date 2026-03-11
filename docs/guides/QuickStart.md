@@ -342,6 +342,7 @@ providers = client.active_providers()
 
 ## Next Steps
 
+- [FAQ](FAQ.html) — 10 questions developers ask before adopting ModelMesh
 - [Error Handling Guide](ErrorHandling.html) — Full exception hierarchy reference
 - [Middleware Guide](Middleware.html) — Write custom middleware
 - [Testing Guide](Testing.html) — Mock client deep dive

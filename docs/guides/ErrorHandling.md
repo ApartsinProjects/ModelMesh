@@ -135,3 +135,7 @@ The new exceptions maintain backward compatibility:
 - `BudgetExceededError` inherits from `ModelMeshError` → `Error`
 - Code catching base `Error` continues to work
 - All new fields are additive — no existing behavior changed
+
+---
+
+See also: [FAQ](FAQ.html) · [Quick Start](QuickStart.html) · [System Configuration](../SystemConfiguration.html)

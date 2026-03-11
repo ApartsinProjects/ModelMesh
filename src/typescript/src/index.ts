@@ -122,7 +122,7 @@ export { ProxyServer } from './proxy/server';
 export type { ServerStatus } from './proxy/server';
 
 // Connectors
-export { CONNECTOR_REGISTRY } from './connectors';
+export { CONNECTOR_REGISTRY, registerConnector } from './connectors';
 
 // Runtime environment metadata
 export { RuntimeEnvironment } from './interfaces/runtime';

@@ -14,6 +14,7 @@ from modelmesh.core.event_emitter import EventEmitter, EventType
 from modelmesh.core.pool import CapabilityPool, PoolModel
 from modelmesh.exceptions import (
     AllProvidersExhaustedError,
+    BudgetExceededError,
     NoActiveModelError,
 )
 from modelmesh.interfaces.provider import (
@@ -221,6 +222,11 @@ class Router:
                 )
                 return
             except Exception as e:
+                # Budget-aware rotation for streaming
+                on_budget = pool.config.get("on_budget_exceeded", "error")
+                if isinstance(e, BudgetExceededError) and on_budget != "rotate":
+                    raise
+
                 logger.warning(
                     "Streaming failure on '%s': %s",
                     current_model.model_id,
@@ -422,6 +428,13 @@ class Router:
                 )
                 return response
             except Exception as e:
+                # Budget-aware rotation: if the error is a BudgetExceededError
+                # and the pool is configured with on_budget_exceeded: "rotate",
+                # deactivate the model and try the next one. Otherwise, re-raise.
+                on_budget = pool.config.get("on_budget_exceeded", "error")
+                if isinstance(e, BudgetExceededError) and on_budget != "rotate":
+                    raise
+
                 # Run middleware on_error hooks — may return fallback
                 if self._middleware and mw_context and len(self._middleware) > 0:
                     try:

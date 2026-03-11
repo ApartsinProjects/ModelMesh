@@ -49,6 +49,12 @@ export class ModelMesh {
   private _eventEmitter = new EventEmitter();
   private _capabilityTree = new CapabilityTree();
   private _observability: ObservabilityConnector | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _storage: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _secretStore: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _discovery: any = null;
   private _initialized = false;
 
   /** Access the underlying Router instance. */
@@ -77,6 +83,9 @@ export class ModelMesh {
       this._resolveObservability();
     }
 
+    this._setupStorage();
+    this._setupSecrets();
+    this._setupDiscovery();
     this._setupProviders();
     this._setupPools();
     this._router = new Router(
@@ -313,6 +322,24 @@ export class ModelMesh {
     this._observability = connector;
   }
 
+  /** The storage connector, or null if not configured. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get storage(): any {
+    return this._storage;
+  }
+
+  /** The secret store connector, or null if not configured. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get secretStore(): any {
+    return this._secretStore;
+  }
+
+  /** The discovery connector, or null if not configured. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get discovery(): any {
+    return this._discovery;
+  }
+
   private _trace(
     severity: Severity,
     component: string,
@@ -336,8 +363,8 @@ export class ModelMesh {
   /**
    * Resolve observability connector from config.
    *
-   * Reads config.raw["observability"]["connector"], looks it up in the
-   * CONNECTOR_REGISTRY, and instantiates it. Falls back to
+   * Checks for a pre-built "instance" first, then looks up the connector
+   * ID in the CONNECTOR_REGISTRY and instantiates it. Falls back to
    * NullObservabilityConnector if not found.
    */
   private _resolveObservability(): void {
@@ -346,6 +373,11 @@ export class ModelMesh {
         | Record<string, unknown>
         | undefined;
       if (obsCfg) {
+        // Support pre-built instance injection
+        if ("instance" in obsCfg && obsCfg.instance) {
+          this._observability = obsCfg.instance as ObservabilityConnector;
+          return;
+        }
         const connectorId = obsCfg.connector as string | undefined;
         if (connectorId && connectorId in CONNECTOR_REGISTRY) {
           const ConnectorClass = CONNECTOR_REGISTRY[connectorId];
@@ -631,11 +663,135 @@ export class ModelMesh {
         }
       }
 
+      // Resolve selection strategy for this pool
+      this._resolvePoolStrategy(pool, poolDef);
+
       this._pools[poolId] = pool;
       this._trace(Severity.DEBUG, "mesh", `Pool '${poolId}' configured with ${pool.models.length} model(s)`, {
         pool_id: poolId,
         model_count: pool.models.length,
       });
+    }
+  }
+
+  /**
+   * Resolve the selection strategy for a pool.
+   *
+   * Priority:
+   *   1. Pre-built strategyInstance in pool config.
+   *   2. Connector ID in "strategy" field → look up in CONNECTOR_REGISTRY.
+   *   3. Fall back to pool's default (StickUntilFailure).
+   */
+  private _resolvePoolStrategy(
+    pool: CapabilityPool,
+    poolDef: Record<string, unknown>
+  ): void {
+    // 1. Pre-built instance injection
+    if ("strategyInstance" in poolDef && poolDef.strategyInstance) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pool.setStrategy(poolDef.strategyInstance as any);
+      this._trace(Severity.DEBUG, "mesh", `Pool '${pool.poolId}' using pre-built strategy instance`, {
+        pool_id: pool.poolId,
+      });
+      return;
+    }
+
+    // 2. Connector ID from config
+    const strategyId = poolDef.strategy as string | undefined;
+    if (strategyId && typeof strategyId === "string") {
+      const StrategyClass = CONNECTOR_REGISTRY[strategyId];
+      if (StrategyClass) {
+        try {
+          pool.setStrategy(new StrategyClass());
+          this._trace(Severity.DEBUG, "mesh", `Pool '${pool.poolId}' using strategy '${strategyId}'`, {
+            pool_id: pool.poolId,
+            strategy_id: strategyId,
+          });
+          return;
+        } catch {
+          // Fall through to default
+        }
+      }
+    }
+
+    // 3. Default: already set in pool constructor
+  }
+
+  /**
+   * Resolve storage connector from config.
+   * Supports pre-built instance via "instance" key or CONNECTOR_REGISTRY lookup.
+   */
+  private _setupStorage(): void {
+    const storageCfg = this._config?.raw?.storage as Record<string, unknown> | undefined;
+    if (!storageCfg) return;
+
+    if ("instance" in storageCfg && storageCfg.instance) {
+      this._storage = storageCfg.instance;
+      this._trace(Severity.DEBUG, "mesh", "Using pre-built storage instance");
+      return;
+    }
+
+    const connectorId = storageCfg.connector as string | undefined;
+    if (connectorId && connectorId in CONNECTOR_REGISTRY) {
+      try {
+        const StorageClass = CONNECTOR_REGISTRY[connectorId];
+        this._storage = new StorageClass(storageCfg.config ?? {});
+        this._trace(Severity.DEBUG, "mesh", `Storage connector '${connectorId}' initialized`);
+      } catch {
+        // Fall through
+      }
+    }
+  }
+
+  /**
+   * Resolve secret store connector from config.
+   * Supports pre-built instance via "instance" key or CONNECTOR_REGISTRY lookup.
+   */
+  private _setupSecrets(): void {
+    const secretsCfg = this._config?.raw?.secrets as Record<string, unknown> | undefined;
+    if (!secretsCfg) return;
+
+    if ("instance" in secretsCfg && secretsCfg.instance) {
+      this._secretStore = secretsCfg.instance;
+      this._trace(Severity.DEBUG, "mesh", "Using pre-built secret store instance");
+      return;
+    }
+
+    const storeId = secretsCfg.store as string | undefined;
+    if (storeId && storeId in CONNECTOR_REGISTRY) {
+      try {
+        const StoreClass = CONNECTOR_REGISTRY[storeId];
+        this._secretStore = new StoreClass(secretsCfg.config ?? {});
+        this._trace(Severity.DEBUG, "mesh", `Secret store '${storeId}' initialized`);
+      } catch {
+        // Fall through
+      }
+    }
+  }
+
+  /**
+   * Resolve discovery connector from config.
+   * Supports pre-built instance via "instance" key or CONNECTOR_REGISTRY lookup.
+   */
+  private _setupDiscovery(): void {
+    const discCfg = this._config?.raw?.discovery as Record<string, unknown> | undefined;
+    if (!discCfg) return;
+
+    if ("instance" in discCfg && discCfg.instance) {
+      this._discovery = discCfg.instance;
+      this._trace(Severity.DEBUG, "mesh", "Using pre-built discovery instance");
+      return;
+    }
+
+    const connectorId = discCfg.connector as string | undefined;
+    if (connectorId && connectorId in CONNECTOR_REGISTRY) {
+      try {
+        const DiscoveryClass = CONNECTOR_REGISTRY[connectorId];
+        this._discovery = new DiscoveryClass(discCfg.config ?? {});
+        this._trace(Severity.DEBUG, "mesh", `Discovery connector '${connectorId}' initialized`);
+      } catch {
+        // Fall through
+      }
     }
   }
 }

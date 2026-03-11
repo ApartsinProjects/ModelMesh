@@ -34,6 +34,7 @@ from modelmesh.exceptions import (
     RateLimitError,
     RoutingError,
 )
+from modelmesh.connectors import CONNECTOR_REGISTRY, register_connector
 from modelmesh.middleware import Middleware, MiddlewareContext, MiddlewareStack
 from modelmesh.testing import MockClient, MockResponse, mock_client
 from modelmesh.usage import UsageTracker
@@ -67,6 +68,9 @@ __all__ = [
     "mock_client",
     # Capabilities
     "capabilities",
+    # Connector registry
+    "CONNECTOR_REGISTRY",
+    "register_connector",
 ]
 
 

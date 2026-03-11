@@ -174,3 +174,7 @@ result = await stack.run_on_error(error, context)
 ## Backward Compatibility
 
 Middleware is entirely optional. Existing code that doesn't use middleware continues to work identically. The `middleware` parameter defaults to `None`, and the router skips middleware hooks when none are configured.
+
+---
+
+See also: [FAQ](FAQ.html) · [Quick Start](QuickStart.html) · [System Configuration](../SystemConfiguration.html)
