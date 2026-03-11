@@ -178,19 +178,6 @@ Ten reasons to add ModelMesh to your next project.
 | **9** | **Production-grade observability without extra plumbing** | **[Observability Connectors](docs/guides/FAQ.md#9-what-observability-does-modelmesh-provide)** | Pre-built sinks for console, file, JSON-log, Prometheus, and webhooks. Structured traces across routing, failover, and budget events. Plug in custom callbacks for existing dashboards |
 | **10** | **When pre-built doesn't fit, extend without forking** | **[CDK](docs/guides/FAQ.md#10-what-if-the-pre-built-connectors-dont-cover-my-use-case)** | Base classes for providers, rotation policies, secret stores, storage backends, and observability sinks. Inherit, override what you need, ship as a reusable package |
 
-## Key Features
-
-| Feature | Description |
-|---|---|
-| **OpenAI-compatible** | Drop-in replacement for any OpenAI SDK client |
-| **Multi-provider routing** | OpenAI, Anthropic, Gemini, Groq, and more |
-| **Automatic failover** | Retry with backoff, then rotate to next model |
-| **Free-tier aggregation** | Chain quotas across providers |
-| **Capability-based pools** | Request tasks, not specific providers |
-| **8 rotation strategies** | Stick-until-failure, cost-first, latency-first, round-robin, and more |
-| **Pluggable connectors** | Extend any integration point with the CDK |
-| **Zero dependencies** | Core library has no external dependencies |
-
 ## Documentation
 
 | Document | Description |
