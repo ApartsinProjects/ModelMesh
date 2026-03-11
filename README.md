@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C366%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C879%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -161,6 +161,23 @@ pools:
 client = modelmesh.create(config="modelmesh.yaml")
 ```
 
+## Why ModelMesh
+
+Ten reasons to add ModelMesh to your next project.
+
+| # | Value | Feature | How It Delivers |
+|---|---|---|---|
+| **1** | **Integrate in two minutes, scale the configuration as you grow** | **[Progressive Configuration](docs/index.md)** | **Env vars** for instant start. **YAML** for providers, pools, strategies, budgets, secrets. **Programmatic** for dynamic setups. All three compose seamlessly |
+| **2** | **One familiar API across every provider you will ever use** | **[Uniform OpenAI-Compatible API](docs/guides/Capabilities.md)** | Same `client.chat.completions.create()` for OpenAI, Anthropic, Gemini, DeepSeek, Mistral, Ollama, or custom models. Chat, embeddings, TTS, STT, image generation. Swap providers in config, never in code |
+| **3** | **Chain free tiers so you never hit a quota wall** | **[Free-Tier Aggregation](docs/guides/QuickStart.md)** | Set free API keys, call `create("chat")`. The library detects providers, pools them by capability, and rotates silently when a quota exhausts. Your code sees one provider; ModelMesh manages the rotation |
+| **4** | **Provider goes down, your app stays up** | **[Resilient Routing](docs/guides/ErrorHandling.md)** | Multiple rotation strategies: cost-first, latency-first, round-robin, sticky, rate-limit-aware. On failure the router deactivates the model, selects the next candidate, and retries within the same request |
+| **5** | **Request capabilities, not model names** | **[Capability Discovery](docs/guides/Capabilities.md)** | Ask for `"chat-completion"`, not `"gpt-4o"`. ModelMesh resolves to the best available model. New models appear, old ones deprecate, your code stays the same |
+| **6** | **Spending caps enforced before the overage, not after** | **[Budget Enforcement](docs/guides/QuickStart.md#usage-tracking)** | Real-time cost tracking per model and provider. Set daily or monthly limits in config. `BudgetExceededError` fires before the breaching request |
+| **7** | **One library for Python backend, TypeScript frontend, Docker proxy** | **[Full-Stack Deployment](docs/guides/QuickStart.md)** | `pip install`, `npm install`, or `docker run`. Each exposes the same API with zero core dependencies. One config file drives all deployment modes |
+| **8** | **Test AI code like regular code** | **[Mock Client and Testing](docs/guides/Testing.md)** | `mock_client(responses=[...])` returns an identical API with zero network calls and millisecond execution. Typed exceptions carry structured metadata. `client.explain()` dry-runs routing decisions |
+| **9** | **Production-grade observability without extra plumbing** | **[Observability Connectors](docs/ConnectorCatalogue.md)** | Pre-built sinks for console, file, JSON-log, Prometheus, and webhooks. Structured traces across routing, failover, and budget events. Plug in custom callbacks for existing dashboards |
+| **10** | **When pre-built doesn't fit, extend without forking** | **[CDK](docs/ConnectorCatalogue.md)** | Base classes for providers, rotation policies, secret stores, storage backends, and observability sinks. Inherit, override what you need, ship as a reusable package |
+
 ## Key Features
 
 | Feature | Description |
@@ -201,7 +218,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 
 | Collection | Description |
 |---|---|
-| **[Quickstart](samples/quickstart/)** | 6 progressive examples in Python and TypeScript |
+| **[Quickstart](samples/quickstart/)** | 12 progressive examples in Python and TypeScript |
 | **[System Integration](samples/system/)** | Multi-provider, streaming, embeddings, cost optimization |
 | **[CDK Tutorials](samples/cdk/)** | Build providers, rotation policies, and more |
 | **[Custom Connectors](samples/connectors/)** | Full custom connector examples for all 6 types |
@@ -214,11 +231,11 @@ client = modelmesh.create(config="modelmesh.yaml")
 git clone https://github.com/ApartsinProjects/ModelMesh.git
 cd ModelMesh
 
-# Run Python tests (855 tests)
+# Run Python tests (1,166 tests)
 pip install pytest
 cd src/python && python -m pytest ../../tests/ -v
 
-# Run TypeScript tests (511 tests)
+# Run TypeScript tests (713 tests)
 cd src/typescript && npm install && npm test
 
 # Or use the automation script
