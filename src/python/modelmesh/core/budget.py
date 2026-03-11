@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
+from modelmesh.exceptions import BudgetExceededError
 from modelmesh.interfaces.provider import ModelPricing, TokenUsage
 
 logger = logging.getLogger("modelmesh.budget")
@@ -177,9 +178,12 @@ class CostTracker:
             and cost > self._config.per_request_limit
             and self._config.enforce
         ):
-            raise ValueError(
+            raise BudgetExceededError(
                 f"Request cost {cost:.6f} exceeds per-request limit "
-                f"{self._config.per_request_limit:.6f}"
+                f"{self._config.per_request_limit:.6f}",
+                limit_type="per_request",
+                limit_value=self._config.per_request_limit,
+                actual_value=cost,
             )
 
         record = _CostRecord(

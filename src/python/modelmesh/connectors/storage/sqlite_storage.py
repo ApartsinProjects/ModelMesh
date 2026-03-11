@@ -8,6 +8,7 @@ Connector ID: ``modelmesh.sqlite.v1``
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import sqlite3
 from dataclasses import dataclass
@@ -69,7 +70,7 @@ class SqliteStorage(StorageConnector):
         if config is None:
             config = SqliteStorageConfig()
         self._config = config
-        self._conn = sqlite3.connect(config.db_path)
+        self._conn = sqlite3.connect(config.db_path, check_same_thread=False)
         self._ensure_table()
 
     def _ensure_table(self) -> None:
@@ -87,8 +88,7 @@ class SqliteStorage(StorageConnector):
 
     # -- Persistence ---------------------------------------------------------
 
-    async def load(self, key: str) -> StorageEntry | None:
-        """Load a stored entry by key, or return None if not found."""
+    def _sync_load(self, key: str) -> StorageEntry | None:
         table = self._config.table_name
         cursor = self._conn.execute(
             f"SELECT key, data, metadata FROM [{table}] WHERE key = ?",
@@ -103,8 +103,11 @@ class SqliteStorage(StorageConnector):
             metadata=json.loads(row[2]),
         )
 
-    async def save(self, key: str, entry: StorageEntry) -> None:
-        """Save an entry under the given key. Overwrites if key exists."""
+    async def load(self, key: str) -> StorageEntry | None:
+        """Load a stored entry by key, or return None if not found."""
+        return await asyncio.to_thread(self._sync_load, key)
+
+    def _sync_save(self, key: str, entry: StorageEntry) -> None:
         table = self._config.table_name
         now = datetime.now(tz=timezone.utc).isoformat()
         metadata_str = json.dumps(entry.metadata, default=str)
@@ -115,10 +118,13 @@ class SqliteStorage(StorageConnector):
         )
         self._conn.commit()
 
+    async def save(self, key: str, entry: StorageEntry) -> None:
+        """Save an entry under the given key. Overwrites if key exists."""
+        await asyncio.to_thread(self._sync_save, key, entry)
+
     # -- Inventory -----------------------------------------------------------
 
-    async def list(self, prefix: str | None = None) -> list[str]:
-        """Return keys matching the optional prefix, or all keys."""
+    def _sync_list(self, prefix: str | None = None) -> list[str]:
         table = self._config.table_name
         if prefix is None:
             cursor = self._conn.execute(
@@ -131,8 +137,11 @@ class SqliteStorage(StorageConnector):
             )
         return [row[0] for row in cursor.fetchall()]
 
-    async def delete(self, key: str) -> bool:
-        """Delete the entry at the given key. Return True if it existed."""
+    async def list(self, prefix: str | None = None) -> list[str]:
+        """Return keys matching the optional prefix, or all keys."""
+        return await asyncio.to_thread(self._sync_list, prefix)
+
+    def _sync_delete(self, key: str) -> bool:
         table = self._config.table_name
         cursor = self._conn.execute(
             f"DELETE FROM [{table}] WHERE key = ?", (key,)
@@ -140,10 +149,13 @@ class SqliteStorage(StorageConnector):
         self._conn.commit()
         return cursor.rowcount > 0
 
+    async def delete(self, key: str) -> bool:
+        """Delete the entry at the given key. Return True if it existed."""
+        return await asyncio.to_thread(self._sync_delete, key)
+
     # -- Stat Query ----------------------------------------------------------
 
-    async def stat(self, key: str) -> EntryMetadata | None:
-        """Return metadata for the given key, or None if not found."""
+    def _sync_stat(self, key: str) -> EntryMetadata | None:
         table = self._config.table_name
         cursor = self._conn.execute(
             f"SELECT key, LENGTH(data), last_modified, metadata FROM [{table}] "
@@ -160,13 +172,20 @@ class SqliteStorage(StorageConnector):
             content_type="application/octet-stream",
         )
 
-    async def exists(self, key: str) -> bool:
-        """Return True if an entry exists at the given key."""
+    async def stat(self, key: str) -> EntryMetadata | None:
+        """Return metadata for the given key, or None if not found."""
+        return await asyncio.to_thread(self._sync_stat, key)
+
+    def _sync_exists(self, key: str) -> bool:
         table = self._config.table_name
         cursor = self._conn.execute(
             f"SELECT 1 FROM [{table}] WHERE key = ?", (key,)
         )
         return cursor.fetchone() is not None
+
+    async def exists(self, key: str) -> bool:
+        """Return True if an entry exists at the given key."""
+        return await asyncio.to_thread(self._sync_exists, key)
 
     def close(self) -> None:
         """Close the database connection."""

@@ -22,6 +22,7 @@ Typical usage::
 """
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -88,6 +89,7 @@ class CacheMixin:
             max_entries: Maximum number of entries before LRU eviction
                 kicks in on :meth:`_cache_set`.
         """
+        self._cache_lock = threading.Lock()
         self._cache_store = {}
         self._cache_ttl_ms = ttl_ms
         self._cache_max_entries = max_entries
@@ -109,24 +111,25 @@ class CacheMixin:
         Returns:
             The cached value, or ``None`` if missing or expired.
         """
-        entry = self._cache_store.get(key)
-        if entry is None:
-            self._cache_misses += 1
-            return None
+        with self._cache_lock:
+            entry = self._cache_store.get(key)
+            if entry is None:
+                self._cache_misses += 1
+                return None
 
-        created, _accessed, value = entry
-        now = time.monotonic()
-        elapsed_ms = (now - created) * 1000
+            created, _accessed, value = entry
+            now = time.monotonic()
+            elapsed_ms = (now - created) * 1000
 
-        if elapsed_ms > self._cache_ttl_ms:
-            del self._cache_store[key]
-            self._cache_misses += 1
-            return None
+            if elapsed_ms > self._cache_ttl_ms:
+                del self._cache_store[key]
+                self._cache_misses += 1
+                return None
 
-        # Update access time for LRU tracking
-        self._cache_store[key] = (created, now, value)
-        self._cache_hits += 1
-        return value
+            # Update access time for LRU tracking
+            self._cache_store[key] = (created, now, value)
+            self._cache_hits += 1
+            return value
 
     def _cache_set(self, key: str, value: Any) -> None:
         """Store a value under the given key.
@@ -140,13 +143,14 @@ class CacheMixin:
         """
         now = time.monotonic()
 
-        if key not in self._cache_store and len(self._cache_store) >= self._cache_max_entries:
-            # Evict the least-recently-accessed entry
-            lru_key = min(self._cache_store, key=lambda k: self._cache_store[k][1])
-            del self._cache_store[lru_key]
-            self._cache_evictions += 1
+        with self._cache_lock:
+            if key not in self._cache_store and len(self._cache_store) >= self._cache_max_entries:
+                # Evict the least-recently-accessed entry
+                lru_key = min(self._cache_store, key=lambda k: self._cache_store[k][1])
+                del self._cache_store[lru_key]
+                self._cache_evictions += 1
 
-        self._cache_store[key] = (now, now, value)
+            self._cache_store[key] = (now, now, value)
 
     def _cache_invalidate(self, key: str) -> None:
         """Remove a single key from the cache.
@@ -156,14 +160,16 @@ class CacheMixin:
         Args:
             key: Cache key to remove.
         """
-        self._cache_store.pop(key, None)
+        with self._cache_lock:
+            self._cache_store.pop(key, None)
 
     def _cache_clear(self) -> None:
         """Remove all entries and reset stats counters."""
-        self._cache_store.clear()
-        self._cache_hits = 0
-        self._cache_misses = 0
-        self._cache_evictions = 0
+        with self._cache_lock:
+            self._cache_store.clear()
+            self._cache_hits = 0
+            self._cache_misses = 0
+            self._cache_evictions = 0
 
     def _cache_stats(self) -> CacheStats:
         """Return current cache performance counters.
@@ -172,9 +178,10 @@ class CacheMixin:
             A :class:`CacheStats` instance with hits, misses,
             evictions, and current size.
         """
-        return CacheStats(
-            hits=self._cache_hits,
-            misses=self._cache_misses,
-            evictions=self._cache_evictions,
-            size=len(self._cache_store),
-        )
+        with self._cache_lock:
+            return CacheStats(
+                hits=self._cache_hits,
+                misses=self._cache_misses,
+                evictions=self._cache_evictions,
+                size=len(self._cache_store),
+            )

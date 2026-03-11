@@ -15,6 +15,7 @@ from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "python"))
 
+from modelmesh.exceptions import AllProvidersExhaustedError
 from modelmesh.config.mesh_config import MeshConfig
 from modelmesh.core.capability_tree import CapabilityTree
 from modelmesh.core.event_emitter import EventEmitter, EventType
@@ -346,7 +347,7 @@ class TestFailoverBehavior(unittest.TestCase):
         self.assertEqual(prov_c.call_count, 1)
 
     def test_all_models_exhausted_raises_error(self):
-        """When all models fail, router raises RuntimeError."""
+        """When all models fail, router raises AllProvidersExhaustedError."""
         prov = AlwaysFailProvider("all down")
         model_a = _make_pool_model("a.m", "prov")
         model_b = _make_pool_model("b.m", "prov")
@@ -357,7 +358,7 @@ class TestFailoverBehavior(unittest.TestCase):
         router = _make_router(pools, providers, max_retries=2)
 
         req = _make_request()
-        with self.assertRaises(RuntimeError) as ctx:
+        with self.assertRaises(AllProvidersExhaustedError) as ctx:
             asyncio.run(router.route(req))
         self.assertIn("All models exhausted", str(ctx.exception))
 
@@ -499,7 +500,7 @@ class TestQuotaExhaustion(unittest.TestCase):
         self.assertEqual(selected.model_id, "test.m")
 
     def test_multiple_quota_exhausted_providers(self):
-        """All quota-exhausted providers cause RuntimeError."""
+        """All quota-exhausted providers cause AllProvidersExhaustedError."""
         prov_a = QuotaExhaustedProvider()
         prov_b = QuotaExhaustedProvider()
 
@@ -512,7 +513,7 @@ class TestQuotaExhaustion(unittest.TestCase):
         router = _make_router(pools, providers, max_retries=2)
 
         req = _make_request()
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AllProvidersExhaustedError):
             asyncio.run(router.route(req))
 
 
@@ -861,7 +862,7 @@ class TestProductionRouting(unittest.TestCase):
         )
 
         req = _make_request()
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AllProvidersExhaustedError):
             asyncio.run(router.route(req))
         self.assertGreater(len(events), 0)
 
@@ -916,7 +917,7 @@ class TestProductionRouting(unittest.TestCase):
         self.assertGreater(len(chunks), 0)
 
     def test_streaming_all_fail_raises(self):
-        """Stream routing raises RuntimeError when all models fail."""
+        """Stream routing raises AllProvidersExhaustedError when all models fail."""
         prov = AlwaysFailProvider("stream fail")
         model_a = _make_pool_model("a.m", "prov")
         model_b = _make_pool_model("b.m", "prov")
@@ -936,7 +937,7 @@ class TestProductionRouting(unittest.TestCase):
             async for _ in router.route_stream(req):
                 pass
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AllProvidersExhaustedError):
             asyncio.run(try_stream())
 
     def test_three_provider_cascade_via_mesh(self):

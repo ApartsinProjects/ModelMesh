@@ -5,4 +5,8 @@ frameworks like LangChain and LangGraph.
 """
 from __future__ import annotations
 
-__all__: list[str] = []
+from modelmesh.integrations.langchain import ChatModelMesh
+
+__all__ = [
+    "ChatModelMesh",
+]

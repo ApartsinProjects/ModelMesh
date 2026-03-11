@@ -46,10 +46,44 @@ class MeshClient:
         self.audio = _AudioNamespace(self)
         self.models = _ModelsNamespace(self)
 
+    # -- Context manager protocol ------------------------------------------------
+
+    def __enter__(self) -> MeshClient:
+        """Enter the runtime context (sync)."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """Exit the runtime context and shut down the mesh."""
+        self._mesh.shutdown()
+        return False
+
+    async def __aenter__(self) -> MeshClient:
+        """Enter the runtime context (async)."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """Exit the runtime context and shut down the mesh."""
+        self._mesh.shutdown()
+        return False
+
+    # -- Properties --------------------------------------------------------------
+
     @property
     def mesh(self) -> ModelMesh:
         """Access the underlying ModelMesh instance for full control."""
         return self._mesh
+
+    @property
+    def usage(self):
+        """Return a :class:`~modelmesh.usage.UsageTracker` for cost/usage data.
+
+        Lazily creates the tracker on first access.
+        """
+        if not hasattr(self, "_usage_tracker"):
+            from modelmesh.usage import UsageTracker
+
+            self._usage_tracker = UsageTracker(self._mesh)
+        return self._usage_tracker
 
     def pool_status(self, pool: str | None = None) -> dict:
         """Return health status for pools.
@@ -114,6 +148,67 @@ class MeshClient:
             The model ID of the newly selected model, or None.
         """
         return self._mesh.rotate(pool)
+
+    def explain(
+        self,
+        *,
+        model: str,
+        messages: list[dict] | None = None,
+        **kwargs,
+    ) -> dict:
+        """Dry-run the routing pipeline and explain the selection.
+
+        Returns a dict describing which pool, strategy, candidates,
+        and model would be chosen — without calling the provider.
+
+        Args:
+            model: Virtual model name (pool ID).
+            messages: Optional messages (used by selection strategies
+                that inspect the request).
+            **kwargs: Additional request parameters.
+
+        Returns:
+            A dict with ``pool_name``, ``strategy``, ``selected_model``,
+            ``candidates``, and ``reason`` keys.
+        """
+        from modelmesh.interfaces.provider import CompletionRequest
+
+        request = CompletionRequest(
+            model=model,
+            messages=messages or [{"role": "user", "content": ""}],
+            **kwargs,
+        )
+
+        router = self._mesh.get_router()
+        pool = router.resolve_pool(request.model)
+
+        strategy = pool.config.get("strategy", "stick-until-failure")
+        capability = pool.config.get("capability", model)
+
+        candidates = []
+        for m in pool.models:
+            candidates.append({
+                "model_id": m.model_id,
+                "provider_id": m.provider_id,
+                "status": m.status.value if hasattr(m.status, "value") else str(m.status),
+            })
+
+        selected = pool.select(request)
+        selected_model = selected.model_id if selected else None
+        reason = (
+            f"Selected by '{strategy}' strategy"
+            if selected
+            else "No active model available"
+        )
+
+        return {
+            "pool_name": pool.pool_id,
+            "strategy": strategy,
+            "capability": capability,
+            "selected_model": selected_model,
+            "candidates": candidates,
+            "reason": reason,
+        }
 
 
 # ---------------------------------------------------------------------------

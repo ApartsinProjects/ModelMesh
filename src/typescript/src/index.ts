@@ -85,6 +85,35 @@ export { MeshConfig } from './config/mesh-config';
 export { detectProviders, PROVIDER_REGISTRY } from './config/auto-detect';
 export type { DetectedProvider } from './config/auto-detect';
 
+// Exceptions
+export {
+  ModelMeshError,
+  RoutingError,
+  NoActiveModelError,
+  AllProvidersExhaustedError,
+  ProviderError,
+  AuthenticationError,
+  RateLimitError,
+  ProviderTimeoutError,
+  ConfigurationError,
+  BudgetExceededError,
+} from './exceptions';
+
+// Middleware
+export { Middleware, MiddlewareStack, createMiddlewareContext } from './middleware';
+export type { MiddlewareContext } from './middleware';
+
+// Usage
+export { UsageTracker } from './usage';
+export type { ModelUsage, ProviderUsage, BudgetStatus } from './usage';
+
+// Testing
+export { MockClient, mockClient } from './testing';
+export type { MockResponse, MockCall } from './testing';
+
+// Capabilities
+export * as capabilities from './capabilities';
+
 // Client
 export { MeshClient } from './client/mesh-client';
 

@@ -18,15 +18,55 @@ Quick start::
 """
 from __future__ import annotations
 
+from modelmesh import capabilities
 from modelmesh.client.mesh_client import MeshClient
 from modelmesh.config.mesh_config import MeshConfig
 from modelmesh.core.mesh import ModelMesh
+from modelmesh.exceptions import (
+    AllProvidersExhaustedError,
+    AuthenticationError,
+    BudgetExceededError,
+    ConfigurationError,
+    ModelMeshError,
+    NoActiveModelError,
+    ProviderError,
+    ProviderTimeoutError,
+    RateLimitError,
+    RoutingError,
+)
+from modelmesh.middleware import Middleware, MiddlewareContext, MiddlewareStack
+from modelmesh.testing import MockClient, MockResponse, mock_client
+from modelmesh.usage import UsageTracker
 
 __all__ = [
+    # Core
     "ModelMesh",
     "MeshClient",
     "MeshConfig",
     "create",
+    # Exceptions
+    "ModelMeshError",
+    "RoutingError",
+    "NoActiveModelError",
+    "AllProvidersExhaustedError",
+    "ProviderError",
+    "AuthenticationError",
+    "RateLimitError",
+    "ProviderTimeoutError",
+    "ConfigurationError",
+    "BudgetExceededError",
+    # Middleware
+    "Middleware",
+    "MiddlewareContext",
+    "MiddlewareStack",
+    # Usage
+    "UsageTracker",
+    # Testing
+    "MockClient",
+    "MockResponse",
+    "mock_client",
+    # Capabilities
+    "capabilities",
 ]
 
 

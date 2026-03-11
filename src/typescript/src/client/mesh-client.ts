@@ -254,6 +254,7 @@ class ModelsNamespace {
  */
 export class MeshClient {
   private _mesh: ModelMesh;
+  private _usageTracker: import('../usage').UsageTracker | null = null;
   readonly chat: ChatNamespace;
   readonly embeddings: EmbeddingsNamespace;
   readonly audio: AudioNamespace;
@@ -267,9 +268,38 @@ export class MeshClient {
     this.models = new ModelsNamespace(this);
   }
 
+  // -- Disposable / close protocol ------------------------------------------
+
+  /**
+   * Shut down the underlying mesh and release resources.
+   * Call this when done with the client, or use `using` syntax.
+   */
+  async close(): Promise<void> {
+    await this._mesh.shutdown();
+  }
+
+  /**
+   * Support for TC39 Explicit Resource Management (`await using`).
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.close();
+  }
+
+  // -- Properties -----------------------------------------------------------
+
   /** Access the underlying ModelMesh instance for full control. */
   get mesh(): ModelMesh {
     return this._mesh;
+  }
+
+  /** Return a UsageTracker for cost/usage data. */
+  get usage(): import('../usage').UsageTracker {
+    if (!this._usageTracker) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { UsageTracker } = require('../usage');
+      this._usageTracker = new UsageTracker(this._mesh);
+    }
+    return this._usageTracker!;
   }
 
   /**
@@ -350,5 +380,54 @@ export class MeshClient {
    */
   rotate(pool: string): string | null {
     return this._mesh.rotate(pool);
+  }
+
+  /**
+   * Dry-run the routing pipeline and explain the selection.
+   *
+   * Returns an object describing which pool, strategy, candidates,
+   * and model would be chosen -- without calling the provider.
+   *
+   * @param params - At minimum the virtual model name.
+   * @returns Routing explanation object.
+   */
+  explain(params: {
+    model: string;
+    messages?: Record<string, unknown>[];
+  }): Record<string, unknown> {
+    const request: CompletionRequest = {
+      model: params.model,
+      messages: params.messages ?? [{ role: 'user', content: '' }],
+      temperature: 1.0,
+      stream: false,
+      topP: 1.0,
+    };
+
+    const router = this._mesh.getRouter();
+    const pool = router.resolvePool(request.model);
+    const config = pool.config ?? {};
+    const strategy = (config as Record<string, unknown>).strategy ?? 'stick-until-failure';
+    const capability = (config as Record<string, unknown>).capability ?? params.model;
+
+    const candidates = (pool.models ?? []).map((m) => ({
+      modelId: m.modelId,
+      providerId: m.providerId,
+      status: m.status,
+    }));
+
+    const selected = pool.select(request);
+    const selectedModel = selected?.modelId ?? null;
+    const reason = selected
+      ? `Selected by '${strategy}' strategy`
+      : 'No active model available';
+
+    return {
+      poolName: pool.poolId,
+      strategy,
+      capability,
+      selectedModel,
+      candidates,
+      reason,
+    };
   }
 }

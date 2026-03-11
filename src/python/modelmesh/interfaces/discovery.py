@@ -60,7 +60,7 @@ class HealthReport:
     status_code: Optional[int] = None
     error: Optional[str] = None
     availability_score: float = 1.0
-    timestamp: datetime = None
+    timestamp: Optional[datetime] = None
 
     def __post_init__(self) -> None:
         if self.timestamp is None:

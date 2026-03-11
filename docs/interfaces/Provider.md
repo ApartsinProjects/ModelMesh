@@ -55,9 +55,9 @@ class TokenUsage:
 
 @dataclass
 class ModelPricing:
-    """Per-unit pricing for a model."""
-    input_per_token: float
-    output_per_token: float
+    """Per-unit pricing for a model (per 1,000 tokens)."""
+    input_per_1k_tokens: float = 0.0
+    output_per_1k_tokens: float = 0.0
     per_request: Optional[float] = None
 
 

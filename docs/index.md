@@ -17,7 +17,7 @@ title: ModelMesh Lite
   <img src="https://img.shields.io/badge/typescript-5.0%2B-blue" alt="TypeScript 5.0+">
   <img src="https://img.shields.io/badge/docker-supported-2496ED" alt="Docker">
   <a href="https://github.com/ApartsinProjects/ModelMesh/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C366%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/ApartsinProjects/ModelMesh/actions"><img src="https://img.shields.io/badge/tests-1%2C873%20passed-brightgreen" alt="Tests"></a>
   <a href="https://apartsinprojects.github.io/ModelMesh/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
 </p>
 
@@ -176,6 +176,12 @@ client = modelmesh.create(config="modelmesh.yaml")
 | **Free-tier aggregation** | Chain quotas across providers |
 | **Capability-based pools** | Request tasks, not specific providers |
 | **8 rotation strategies** | Stick-until-failure, cost-first, latency-first, round-robin, and more |
+| **Structured error handling** | Typed exceptions with retry hints and structured metadata |
+| **Request/response middleware** | Intercept calls for logging, transforms, caching, error fallbacks |
+| **Built-in test mocking** | `mock_client()` / `mockClient()` for unit testing without APIs |
+| **Usage & budget tracking** | Real-time cost, token, and budget monitoring via `client.usage` |
+| **Capability discovery** | Search, resolve, and explore capabilities without memorizing paths |
+| **Routing explanation** | Debug routing decisions with `client.explain()` dry-run API |
 | **Pluggable connectors** | Extend any integration point with the CDK |
 | **Zero dependencies** | Core library has no external dependencies |
 
@@ -194,6 +200,11 @@ client = modelmesh.create(config="modelmesh.yaml")
 
 | Document | Description |
 |---|---|
+| **[Developer Quick Start](guides/QuickStart.html)** | Get productive in 5 minutes: all features walkthrough with cheat sheet |
+| **[Error Handling](guides/ErrorHandling.html)** | Exception hierarchy, catch patterns, retry guidance |
+| **[Middleware](guides/Middleware.html)** | Write custom middleware: logging, transforms, caching, error fallbacks |
+| **[Testing](guides/Testing.html)** | Unit testing with `mock_client()` — no API keys needed |
+| **[Capabilities](guides/Capabilities.html)** | Discover, resolve, and search capability aliases |
 | **[Proxy Guide](guides/ProxyGuide.html)** | Deploy as OpenAI-compatible proxy: Docker, CLI, config, browser access |
 | **[AI Agent Integration](ForAIAgent.html)** | Guide for AI coding agents (Claude Code, Cursor, etc.) to integrate ModelMesh |
 | **[Browser Usage](guides/BrowserUsage.html)** | BrowserBaseProvider, CORS proxy setup, and browser-specific patterns |
@@ -213,7 +224,7 @@ client = modelmesh.create(config="modelmesh.yaml")
 
 | Collection | Description |
 |---|---|
-| **[Quickstart](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/quickstart/)** | 6 progressive examples in Python and TypeScript |
+| **[Quickstart](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/quickstart/)** | 12 progressive examples in Python and TypeScript |
 | **[System Integration](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/system/)** | Multi-provider, streaming, embeddings, cost optimization |
 | **[CDK Tutorials](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/cdk/)** | Build providers, rotation policies, and more |
 | **[Custom Connectors](https://github.com/ApartsinProjects/ModelMesh/tree/master/samples/connectors/)** | Full custom connector examples for all 6 types |

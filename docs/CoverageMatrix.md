@@ -5,7 +5,7 @@ title: "Test Coverage Matrix"
 
 # Test Coverage Matrix
 
-Correlates documented features with test coverage. The project includes 855 Python tests across 15 test files and 511 TypeScript tests across 13 test files, for a total of 1,366 tests.
+Correlates documented features with test coverage. The project includes 1,028 Python tests across 18 test files and 644 TypeScript tests across 13 test files, for a total of 1,672 tests.
 
 ---
 

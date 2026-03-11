@@ -20,6 +20,7 @@ Typical usage::
 from __future__ import annotations
 
 import asyncio
+import threading
 import time
 
 __all__ = ["RateLimiterMixin"]
@@ -62,6 +63,7 @@ class RateLimiterMixin:
         :meth:`_rate_limit_record_tokens`.  Sets up the sliding
         window data structures.
         """
+        self._rate_limit_lock = threading.Lock()
         self._request_timestamps: list[float] = []
         self._token_counts: list[tuple[float, int]] = []  # (timestamp, tokens)
         self._last_request_at: float = 0
@@ -81,39 +83,53 @@ class RateLimiterMixin:
         now = time.time()
         window_start = now - 60.0
 
-        # Clean old entries outside the sliding window
-        self._request_timestamps = [
-            t for t in self._request_timestamps if t > window_start
-        ]
-        self._token_counts = [
-            (t, n) for t, n in self._token_counts if t > window_start
-        ]
-
-        # Check RPM -- wait until the oldest request in the window
-        # has expired if we are at capacity.
-        while len(self._request_timestamps) >= self._rate_limit_rpm:
-            wait = self._request_timestamps[0] - window_start
-            await asyncio.sleep(max(wait, 0.1))
-            now = time.time()
-            window_start = now - 60.0
+        with self._rate_limit_lock:
+            # Clean old entries outside the sliding window
             self._request_timestamps = [
                 t for t in self._request_timestamps if t > window_start
             ]
+            self._token_counts = [
+                (t, n) for t, n in self._token_counts if t > window_start
+            ]
+            rpm_full = len(self._request_timestamps) >= self._rate_limit_rpm
+            oldest = self._request_timestamps[0] if self._request_timestamps else now
 
-        # Check TPM -- if the estimated request would push us over
-        # the limit, apply a simple back-off pause.
-        current_tokens = sum(n for _, n in self._token_counts)
-        if current_tokens + estimated_tokens > self._rate_limit_tpm:
+        # Check RPM -- wait until the oldest request in the window
+        # has expired if we are at capacity.
+        while rpm_full:
+            wait = oldest - window_start
+            await asyncio.sleep(max(wait, 0.1))
+            now = time.time()
+            window_start = now - 60.0
+            with self._rate_limit_lock:
+                self._request_timestamps = [
+                    t for t in self._request_timestamps if t > window_start
+                ]
+                rpm_full = len(self._request_timestamps) >= self._rate_limit_rpm
+                oldest = self._request_timestamps[0] if self._request_timestamps else now
+
+        with self._rate_limit_lock:
+            # Check TPM -- if the estimated request would push us over
+            # the limit, apply a simple back-off pause.
+            current_tokens = sum(n for _, n in self._token_counts)
+            tpm_exceeded = current_tokens + estimated_tokens > self._rate_limit_tpm
+
+            # Check minimum delay
+            delay_needed = 0.0
+            if self._rate_limit_min_delay > 0:
+                elapsed = now - self._last_request_at
+                if elapsed < self._rate_limit_min_delay:
+                    delay_needed = self._rate_limit_min_delay - elapsed
+
+        if tpm_exceeded:
             await asyncio.sleep(1.0)
 
-        # Enforce minimum delay between consecutive requests
-        if self._rate_limit_min_delay > 0:
-            elapsed = now - self._last_request_at
-            if elapsed < self._rate_limit_min_delay:
-                await asyncio.sleep(self._rate_limit_min_delay - elapsed)
+        if delay_needed > 0:
+            await asyncio.sleep(delay_needed)
 
-        self._request_timestamps.append(time.time())
-        self._last_request_at = time.time()
+        with self._rate_limit_lock:
+            self._request_timestamps.append(time.time())
+            self._last_request_at = time.time()
 
     def _rate_limit_record_tokens(self, tokens: int) -> None:
         """Record actual token usage after a response is received.
@@ -126,4 +142,5 @@ class RateLimiterMixin:
             tokens: Number of tokens consumed by the completed
                 request (input + output).
         """
-        self._token_counts.append((time.time(), tokens))
+        with self._rate_limit_lock:
+            self._token_counts.append((time.time(), tokens))

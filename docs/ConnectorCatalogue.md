@@ -301,13 +301,13 @@ Interface: [ConnectorInterfaces.md — Rotation Policy](ConnectorInterfaces.html
 | Policy | Description |
 | --- | --- |
 | **`rotation.modelmesh.stick-until-failure.v1`** | Use the current model until it fails, then rotate. Default policy. |
-| **`rotation.modelmesh.priority-selection.v1`** | *(Planned)* Follow an ordered model/provider preference list; fall back on exhaust. |
-| **`rotation.modelmesh.round-robin.v1`** | *(Planned)* Cycle through active models in sequence. |
-| **`rotation.modelmesh.cost-first.v1`** | *(Planned)* Select the cheapest active model for each request. |
-| **`rotation.modelmesh.latency-first.v1`** | *(Planned)* Select the model with the lowest observed latency. |
-| **`rotation.modelmesh.session-stickiness.v1`** | *(Planned)* Route all requests in a session to the same model. |
-| **`rotation.modelmesh.rate-limit-aware.v1`** | *(Planned)* Switch models preemptively before hitting rate limits. |
-| **`rotation.modelmesh.load-balanced.v1`** | *(Planned)* Distribute requests proportionally to each model's rate-limit headroom. |
+| **`rotation.modelmesh.priority-selection.v1`** | Follow an ordered model/provider preference list; fall back on exhaust. |
+| **`rotation.modelmesh.round-robin.v1`** | Cycle through active models in sequence. |
+| **`rotation.modelmesh.cost-first.v1`** | Select the model with the lowest accumulated cost. |
+| **`rotation.modelmesh.latency-first.v1`** | Select the model with the lowest observed latency. |
+| **`rotation.modelmesh.session-stickiness.v1`** | Route all requests in a session to the same model via consistent hashing. |
+| **`rotation.modelmesh.rate-limit-aware.v1`** | Track per-model request/token quotas and switch before exhaustion. |
+| **`rotation.modelmesh.load-balanced.v1`** | Distribute requests proportionally using weighted round-robin. |
 
 ---
 
@@ -560,6 +560,7 @@ All trace entries carry a severity level. The `min_severity` configuration optio
 | **`observability.modelmesh.webhook.v1`** | HTTP POST | Sends routing events and logs to a configurable URL. Use for alerting, dashboards, or external log aggregation. |
 | **`observability.modelmesh.json-log.v1`** | JSONL file | Appends JSON Lines records to a file. Each line is a self-contained JSON object with type, timestamp, and payload. Optimized for log aggregation pipelines. |
 | **`observability.modelmesh.callback.v1`** | Python callback | Invokes a user-supplied Python callable for each event. Useful for custom integrations, in-process dashboards, and testing. |
+| **`observability.modelmesh.prometheus.v1`** | Prometheus text | Exposes metrics in Prometheus text exposition format. Zero-dependency implementation with counters, gauges, and histograms. Call `render_metrics()` for scrape output. |
 
 ### Connector-Specific Configuration
 

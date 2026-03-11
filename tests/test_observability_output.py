@@ -15,6 +15,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "python"))
 
+from modelmesh.exceptions import AllProvidersExhaustedError
 from modelmesh.config.mesh_config import MeshConfig
 from modelmesh.core.capability_tree import CapabilityTree
 from modelmesh.core.event_emitter import EventEmitter, EventType
@@ -269,7 +270,7 @@ class TestConsoleConnectorDuringRouting(unittest.TestCase):
                 model="chat-completion",
                 messages=[{"role": "user", "content": "test"}],
             )
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(AllProvidersExhaustedError):
                 asyncio.run(mesh.route(req))
 
         warning_traces = [t for t in traces if t.severity == Severity.WARNING]
@@ -313,7 +314,7 @@ class TestEventEmitterDuringRouting(unittest.TestCase):
             model="chat-completion",
             messages=[{"role": "user", "content": "test"}],
         )
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AllProvidersExhaustedError):
             asyncio.run(mesh.route(req))
 
         self.assertGreater(len(events), 0)

@@ -12,6 +12,10 @@ from typing import TYPE_CHECKING, AsyncIterator, Optional
 from modelmesh.core.capability_tree import CapabilityTree
 from modelmesh.core.event_emitter import EventEmitter, EventType
 from modelmesh.core.pool import CapabilityPool, PoolModel
+from modelmesh.exceptions import (
+    AllProvidersExhaustedError,
+    NoActiveModelError,
+)
 from modelmesh.interfaces.provider import (
     CompletionRequest,
     CompletionResponse,
@@ -19,17 +23,11 @@ from modelmesh.interfaces.provider import (
 )
 
 if TYPE_CHECKING:
-    pass
+    from modelmesh.middleware import MiddlewareStack
 
 logger = logging.getLogger("modelmesh.router")
 
 __all__ = ["NoActiveModelError", "Router"]
-
-
-class NoActiveModelError(Exception):
-    """Raised when no active model is available in a pool."""
-
-    pass
 
 
 class Router:
@@ -60,6 +58,7 @@ class Router:
         event_emitter: Optional[EventEmitter] = None,
         observability=None,
         max_retries: int = 3,
+        middleware: Optional[MiddlewareStack] = None,
     ) -> None:
         self._pools = pools
         self._capability_tree = capability_tree
@@ -67,6 +66,7 @@ class Router:
         self._emitter = event_emitter or EventEmitter()
         self._observability = observability
         self._max_retries = max_retries
+        self._middleware = middleware
 
     def _trace(
         self,
@@ -254,9 +254,11 @@ class Router:
             pool_id=pool.pool_id,
             attempts=attempts,
         )
-        raise RuntimeError(
+        raise AllProvidersExhaustedError(
             f"All models exhausted in pool '{request.model}' after "
-            f"{attempts} attempts"
+            f"{attempts} attempts",
+            pool_name=request.model,
+            attempts=attempts,
         )
 
     def resolve_pool(self, model_name: str) -> CapabilityPool:
@@ -379,7 +381,30 @@ class Router:
             )
 
             try:
-                response = await provider.complete(provider_request)
+                # Run middleware before_request hooks
+                effective_request = provider_request
+                mw_context = None
+                if self._middleware and len(self._middleware) > 0:
+                    from modelmesh.middleware import MiddlewareContext
+
+                    mw_context = MiddlewareContext(
+                        model_id=current_model.model_id,
+                        provider_id=current_model.provider_id,
+                        pool_name=request.model,
+                        attempt=attempts + 1,
+                    )
+                    effective_request = await self._middleware.run_before_request(
+                        provider_request, mw_context
+                    )
+
+                response = await provider.complete(effective_request)
+
+                # Run middleware after_response hooks
+                if self._middleware and mw_context and len(self._middleware) > 0:
+                    response = await self._middleware.run_after_response(
+                        response, mw_context
+                    )
+
                 pool.record_success(current_model.model_id)
                 self._emitter.emit(
                     EventType.REQUEST_SUCCESS,
@@ -397,6 +422,17 @@ class Router:
                 )
                 return response
             except Exception as e:
+                # Run middleware on_error hooks — may return fallback
+                if self._middleware and mw_context and len(self._middleware) > 0:
+                    try:
+                        fallback = await self._middleware.run_on_error(
+                            e, mw_context
+                        )
+                        pool.record_success(current_model.model_id)
+                        return fallback
+                    except Exception:
+                        pass  # Middleware didn't handle it; continue with rotation
+
                 last_error = e
                 logger.warning(
                     "Request failure on '%s' (attempt %d): %s",
@@ -448,7 +484,12 @@ class Router:
             pool_id=pool.pool_id,
             attempts=attempts,
         )
-        raise RuntimeError(error_msg)
+        raise AllProvidersExhaustedError(
+            error_msg,
+            pool_name=request.model,
+            attempts=attempts,
+            last_error=last_error,
+        )
 
     @staticmethod
     def _build_provider_request(

@@ -5,7 +5,7 @@ construction time and held in memory for the lifetime of the store.
 This is the simplest store, useful for testing, scripting, and cases
 where the caller already has API keys in hand.
 
-Connector ID: ``modelmesh.memory.v1``
+Connector ID: ``modelmesh.memory-secrets.v1``
 """
 from __future__ import annotations
 

@@ -43,11 +43,18 @@ from modelmesh.cdk.base_storage import BaseStorage, BaseStorageConfig
 from modelmesh.cdk.mixins import (
     CacheMixin,
     CacheStats,
+    CircuitBreakerMixin,
+    CircuitOpenError,
+    CircuitState,
     HttpClientMixin,
     MetricsMixin,
     MetricSnapshot,
     RateLimiterMixin,
+    RequestTimeoutError,
     RetryMixin,
+    StreamCheckpoint,
+    StreamingCheckpointMixin,
+    TimeoutMixin,
 )
 
 # -- Specialized classes -----------------------------------------------------
@@ -100,11 +107,18 @@ __all__ = [
     # ── Mixins ──────────────────────────────────────────────────────
     "CacheMixin",
     "CacheStats",
+    "CircuitBreakerMixin",
+    "CircuitOpenError",
+    "CircuitState",
     "HttpClientMixin",
     "MetricsMixin",
     "MetricSnapshot",
     "RateLimiterMixin",
+    "RequestTimeoutError",
     "RetryMixin",
+    "StreamCheckpoint",
+    "StreamingCheckpointMixin",
+    "TimeoutMixin",
     # ── Specialized classes ─────────────────────────────────────────
     "OpenAICompatibleConfig",
     "OpenAICompatibleProvider",

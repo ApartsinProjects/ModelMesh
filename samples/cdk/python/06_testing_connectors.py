@@ -8,6 +8,7 @@ implementations without making real HTTP calls. Covers:
 """
 
 import asyncio
+import json
 from datetime import datetime
 
 from modelmesh.cdk import (
@@ -41,7 +42,7 @@ async def test_provider_with_mock() -> None:
     mock_client = MockHttpClient()
 
     # Enqueue a canned completion response
-    mock_client.add_response(MockHttpResponse(status_code=200, body={
+    mock_client.add_response(MockHttpResponse(status_code=200, body=json.dumps({
         "id": "chatcmpl-test-123",
         "model": "gpt-4o",
         "choices": [
@@ -56,7 +57,7 @@ async def test_provider_with_mock() -> None:
             "completion_tokens": 5,
             "total_tokens": 15,
         },
-    }))
+    })))
 
     # Verify recorded requests
     await mock_client.post("/v1/chat/completions", json={"model": "gpt-4o"})

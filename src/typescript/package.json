@@ -1,6 +1,6 @@
 {
   "name": "@nistrapa/modelmesh-core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "One integration point for all your AI providers. Automatic failover, free-tier aggregation, and capability-based routing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,6 +14,31 @@
       "types": "./dist/cdk/browser-provider.d.ts",
       "require": "./dist/cdk/browser-provider.js",
       "default": "./dist/cdk/browser-provider.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "require": "./dist/testing.js",
+      "default": "./dist/testing.js"
+    },
+    "./capabilities": {
+      "types": "./dist/capabilities.d.ts",
+      "require": "./dist/capabilities.js",
+      "default": "./dist/capabilities.js"
+    },
+    "./middleware": {
+      "types": "./dist/middleware.d.ts",
+      "require": "./dist/middleware.js",
+      "default": "./dist/middleware.js"
+    },
+    "./exceptions": {
+      "types": "./dist/exceptions.d.ts",
+      "require": "./dist/exceptions.js",
+      "default": "./dist/exceptions.js"
+    },
+    "./usage": {
+      "types": "./dist/usage.d.ts",
+      "require": "./dist/usage.js",
+      "default": "./dist/usage.js"
     }
   },
   "scripts": {

@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "python"))
 
+from modelmesh.exceptions import AllProvidersExhaustedError
 from modelmesh.core.capability_tree import CapabilityTree
 from modelmesh.core.event_emitter import EventEmitter
 from modelmesh.core.pool import CapabilityPool, PoolModel
@@ -199,7 +200,7 @@ class TestRouter(unittest.TestCase):
             model="chat-completion",
             messages=[{"role": "user", "content": "Hello"}],
         )
-        with self.assertRaises(RuntimeError) as ctx:
+        with self.assertRaises(AllProvidersExhaustedError) as ctx:
             asyncio.run(router.route(request))
         self.assertIn("All models exhausted", str(ctx.exception))
 
@@ -292,7 +293,7 @@ class TestRouter(unittest.TestCase):
                 model="chat-completion",
                 messages=[{"role": "user", "content": "Hello"}],
             )
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(AllProvidersExhaustedError):
                 asyncio.run(router.route(request))
             obs.close()
 

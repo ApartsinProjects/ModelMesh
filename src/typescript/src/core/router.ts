@@ -18,14 +18,13 @@ import type {
 import type { ObservabilityConnector } from "../interfaces/observability";
 import { Severity } from "../interfaces/observability";
 import type { TraceEntry } from "../interfaces/observability";
+import {
+  NoActiveModelError,
+  AllProvidersExhaustedError,
+} from "../exceptions";
+import type { MiddlewareStack, MiddlewareContext } from "../middleware";
 
-/** Raised when no active model is available in a pool. */
-export class NoActiveModelError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "NoActiveModelError";
-  }
-}
+export { NoActiveModelError } from "../exceptions";
 
 /**
  * Routes requests through the capability resolution / model selection pipeline.
@@ -52,6 +51,7 @@ export class Router {
   private readonly _emitter: EventEmitter;
   private readonly _observability: ObservabilityConnector | null;
   private readonly _maxRetries: number;
+  private readonly _middleware: MiddlewareStack | null;
 
   constructor(
     pools: Record<string, CapabilityPool>,
@@ -59,7 +59,8 @@ export class Router {
     providers: Record<string, ProviderConnector>,
     eventEmitter?: EventEmitter,
     observability?: ObservabilityConnector | null,
-    maxRetries: number = 3
+    maxRetries: number = 3,
+    middleware?: MiddlewareStack | null
   ) {
     this._pools = pools;
     this._capabilityTree = capabilityTree;
@@ -67,6 +68,7 @@ export class Router {
     this._emitter = eventEmitter ?? new EventEmitter();
     this._observability = observability ?? null;
     this._maxRetries = maxRetries;
+    this._middleware = middleware ?? null;
   }
 
   private _trace(
@@ -236,8 +238,9 @@ export class Router {
       "All models exhausted",
       { pool_id: pool.poolId, attempts }
     );
-    throw new Error(
-      `All models exhausted in pool '${request.model}' after ${attempts} attempts`
+    throw new AllProvidersExhaustedError(
+      `All models exhausted in pool '${request.model}' after ${attempts} attempts`,
+      { poolName: request.model, attempts }
     );
   }
 
@@ -356,7 +359,30 @@ export class Router {
       });
 
       try {
-        const response = await provider.complete(providerRequest);
+        // Run middleware beforeRequest hooks
+        let effectiveRequest = providerRequest;
+        let mwContext: MiddlewareContext | null = null;
+        if (this._middleware && this._middleware.length > 0) {
+          mwContext = {
+            modelId: currentModel.modelId,
+            providerId: currentModel.providerId,
+            poolName: request.model,
+            attempt: attempts + 1,
+            timestamp: Date.now() / 1000,
+            metadata: {},
+          };
+          effectiveRequest = await this._middleware.runBeforeRequest(
+            providerRequest, mwContext
+          );
+        }
+
+        let response = await provider.complete(effectiveRequest);
+
+        // Run middleware afterResponse hooks
+        if (this._middleware && mwContext && this._middleware.length > 0) {
+          response = await this._middleware.runAfterResponse(response, mwContext);
+        }
+
         pool.recordSuccess(currentModel.modelId);
         this._emitter.emit(EventType.REQUEST_SUCCESS, {
           pool_id: pool.poolId,
@@ -377,6 +403,26 @@ export class Router {
         return response;
       } catch (e) {
         lastError = e instanceof Error ? e : new Error(String(e));
+
+        // Run middleware onError hooks — may return fallback
+        if (this._middleware && this._middleware.length > 0) {
+          const mwCtx: MiddlewareContext = {
+            modelId: currentModel!.modelId,
+            providerId: currentModel!.providerId,
+            poolName: request.model,
+            attempt: attempts + 1,
+            timestamp: Date.now() / 1000,
+            metadata: {},
+          };
+          try {
+            const fallback = await this._middleware.runOnError(lastError, mwCtx);
+            pool.recordSuccess(currentModel!.modelId);
+            return fallback;
+          } catch {
+            // Middleware didn't handle it; continue with rotation
+          }
+        }
+
         this._trace(
           Severity.WARNING,
           "router",
@@ -417,7 +463,11 @@ export class Router {
       pool_id: pool.poolId,
       attempts,
     });
-    throw new Error(errorMsg);
+    throw new AllProvidersExhaustedError(errorMsg, {
+      poolName: request.model,
+      attempts,
+      lastError: lastError ?? undefined,
+    });
   }
 
   /**
